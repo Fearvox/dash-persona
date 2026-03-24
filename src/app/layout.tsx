@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -50,7 +51,27 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <div id="main">{children}</div>
+        <div id="main" className="flex-1">{children}</div>
+        <footer
+          className="flex items-center justify-center gap-6 px-6 py-4 text-xs"
+          style={{ color: 'var(--text-subtle)', borderTop: '1px solid var(--border-subtle)' }}
+        >
+          <Link
+            href="/"
+            className="transition-colors hover:opacity-80"
+            style={{ color: 'var(--text-subtle)' }}
+          >
+            Home
+          </Link>
+          <Link
+            href="/settings"
+            className="transition-colors hover:opacity-80"
+            style={{ color: 'var(--text-subtle)' }}
+          >
+            Settings
+          </Link>
+          <span>DashPersona v0.1.0</span>
+        </footer>
       </body>
     </html>
   );

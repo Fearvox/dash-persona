@@ -15,6 +15,7 @@ import DashboardInteractive from '@/components/dashboard-interactive';
 import PlatformComparison from '@/components/platform-comparison';
 import StrategySuggestions from '@/components/strategy-suggestions';
 import LiveDashboardWrapper from '@/components/live-dashboard-wrapper';
+import ForYouCard from '@/components/for-you-card';
 
 interface DashboardSearchParams {
   source?: string;
@@ -159,10 +160,23 @@ export default async function DashboardPage({
             <span className="badge badge-green mt-1">Demo Mode</span>
           )}
         </div>
-        <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-          Persona: {personaType}
-        </p>
+        <div className="flex items-center gap-4">
+          <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
+            Persona: {personaType}
+          </p>
+          <Link
+            href="/settings"
+            className="text-xs font-medium transition-colors hover:opacity-80"
+            style={{ color: 'var(--text-subtle)' }}
+            aria-label="Settings"
+          >
+            Settings
+          </Link>
+        </div>
       </header>
+
+      {/* For You — personalised insights */}
+      <ForYouCard profiles={profiles} />
 
       {/* 2. Growth Overview */}
       <section aria-labelledby="growth-heading">
