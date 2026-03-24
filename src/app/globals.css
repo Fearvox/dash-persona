@@ -17,7 +17,7 @@
   --accent-red: #c87e7e;
   --accent-yellow: #d2c87e;
   --accent-blue: #7eb8d2;
-  --accent-highlight: #e4f222;
+  --accent-highlight: #f0f545;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.75rem;
@@ -91,4 +91,17 @@ body {
 .detail-link:hover,
 a:hover > .detail-link {
   color: var(--accent-green);
+}
+
+.nav-pill {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  transition: background 0.15s, color 0.15s;
+  color: var(--text-subtle);
+}
+.nav-pill:hover {
+  background: rgba(240, 245, 69, 0.12);
+  color: #f0f545;
 }

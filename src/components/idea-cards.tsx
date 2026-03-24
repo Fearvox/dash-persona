@@ -56,7 +56,7 @@ export default function IdeaCards({ ideas, onUseIdea }: IdeaCardsProps) {
                 {idea.title}
               </h4>
               <span
-                className="badge shrink-0 text-[10px]"
+                className="badge shrink-0 text-xs"
                 style={{ background: impact.bg, color: impact.text }}
               >
                 {idea.potentialImpact}
@@ -73,7 +73,7 @@ export default function IdeaCards({ ideas, onUseIdea }: IdeaCardsProps) {
 
             {/* Rationale */}
             <p
-              className="mt-1.5 text-[11px] leading-relaxed"
+              className="mt-1.5 text-xs leading-relaxed"
               style={{ color: 'var(--text-subtle)' }}
             >
               {idea.rationale}
@@ -85,7 +85,7 @@ export default function IdeaCards({ ideas, onUseIdea }: IdeaCardsProps) {
                 {idea.basedOn.slice(0, 2).map((point, i) => (
                   <span
                     key={i}
-                    className="rounded-full px-2 py-0.5 text-[10px]"
+                    className="rounded-full px-2 py-0.5 text-xs"
                     style={{
                       background: 'var(--bg-secondary)',
                       color: 'var(--text-subtle)',

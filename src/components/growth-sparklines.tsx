@@ -17,13 +17,8 @@ import {
   type SparklinePoint,
   type GrowthDelta,
 } from '@/lib/engine';
+import { PLATFORM_LABELS } from '@/lib/utils/constants';
 import TimeRangeSelector from './time-range-selector';
-
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: 'Douyin',
-  tiktok: 'TikTok',
-  xhs: 'Red Note',
-};
 
 // Hardcoded hex values because Recharts SVG elements don't support CSS custom properties.
 // These must stay in sync with --accent-green and --accent-red in globals.css.

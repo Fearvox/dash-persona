@@ -62,8 +62,7 @@ export default async function CalendarPage({
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
         <Link
           href={`/dashboard?source=${params.source ?? 'demo'}&persona=${personaType}`}
-          className="text-sm font-medium transition-colors hover:opacity-80"
-          style={{ color: 'var(--accent-green)' }}
+          className="nav-pill"
           aria-label="Back to dashboard"
         >
           &larr; Dashboard
@@ -96,8 +95,7 @@ export default async function CalendarPage({
       <header className="flex flex-col gap-2">
         <Link
           href={`/dashboard?source=${params.source ?? 'demo'}&persona=${personaType}`}
-          className="text-sm font-medium transition-colors hover:opacity-80"
-          style={{ color: 'var(--accent-green)' }}
+          className="nav-pill"
           aria-label="Back to dashboard"
         >
           &larr; Dashboard

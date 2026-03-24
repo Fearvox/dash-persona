@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import SiteFooter from "@/components/site-footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: "DashPersona — Creator Intelligence Engine",
   description:
     "Data-agnostic creator intelligence engine. Analyze your social media presence across Douyin, TikTok, and Red Note with deterministic, AI-free algorithms.",
+  icons: {
+    icon: '/favicon.svg',
+  },
   openGraph: {
     title: "DashPersona — Creator Intelligence Engine",
     description:
@@ -24,6 +27,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://dash-persona.vercel.app",
     siteName: "DashPersona",
+    images: [{ url: '/og-image.svg', width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
@@ -52,26 +56,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <div id="main" className="flex-1">{children}</div>
-        <footer
-          className="flex items-center justify-center gap-6 px-6 py-4 text-xs"
-          style={{ color: 'var(--text-subtle)', borderTop: '1px solid var(--border-subtle)' }}
-        >
-          <Link
-            href="/"
-            className="transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-subtle)' }}
-          >
-            Home
-          </Link>
-          <Link
-            href="/settings"
-            className="transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-subtle)' }}
-          >
-            Settings
-          </Link>
-          <span>DashPersona v0.1.0</span>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

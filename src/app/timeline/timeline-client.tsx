@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { PersonaTreeNode } from '@/lib/schema/persona-tree';
 import type { ExperimentIdea } from '@/lib/engine/idea-generator';
 import { detectConflicts } from '@/lib/engine';
+import { scoreColor } from '@/lib/utils/constants';
 import ExperimentForm from '@/components/experiment-form';
 import IdeaCards from '@/components/idea-cards';
 
@@ -45,12 +46,6 @@ const OUTCOME_STYLES: Record<
   branch: { bg: 'rgba(210, 200, 126, 0.15)', text: 'var(--accent-yellow)' },
   boundary: { bg: 'rgba(200, 126, 126, 0.15)', text: 'var(--accent-red)' },
 };
-
-function scoreColor(value: number): string {
-  if (value >= 70) return 'var(--accent-green)';
-  if (value >= 40) return 'var(--accent-yellow)';
-  return 'var(--accent-red)';
-}
 
 // ---------------------------------------------------------------------------
 // Node card
@@ -96,7 +91,7 @@ function NodeCard({
             {node.id}
           </span>
           <span
-            className="badge text-[10px]"
+            className="badge text-xs"
             style={{ background: status.bg, color: status.text }}
           >
             {status.label}
@@ -113,7 +108,7 @@ function NodeCard({
 
         {/* Hypothesis preview */}
         <p
-          className="mt-1 text-[11px] leading-relaxed"
+          className="mt-1 text-xs leading-relaxed"
           style={{ color: 'var(--text-subtle)' }}
         >
           {node.hypothesis.length > 80
@@ -131,14 +126,14 @@ function NodeCard({
               {node.scoring.compositeScore}
             </span>
             <span
-              className="text-[10px]"
+              className="text-xs"
               style={{ color: 'var(--text-subtle)' }}
             >
               composite
             </span>
             {hasConflict && (
               <span
-                className="badge text-[10px]"
+                className="badge text-xs"
                 style={{
                   background: 'rgba(210, 200, 126, 0.15)',
                   color: 'var(--accent-yellow)',
@@ -164,7 +159,7 @@ function NodeCard({
                 e.stopPropagation();
                 onSetOutcome(outcome);
               }}
-              className="rounded px-2 py-0.5 text-[10px] font-medium transition-colors"
+              className="rounded px-2 py-0.5 text-xs font-medium transition-colors"
               style={{
                 background: isActive ? style.bg : 'transparent',
                 color: isActive ? style.text : 'var(--text-subtle)',
@@ -185,7 +180,7 @@ function NodeCard({
               e.stopPropagation();
               onDiscard();
             }}
-            className="ml-auto rounded px-2 py-0.5 text-[10px] font-medium transition-colors"
+            className="ml-auto rounded px-2 py-0.5 text-xs font-medium transition-colors"
             style={{
               color: 'var(--accent-red)',
               background: 'transparent',
@@ -348,7 +343,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
                   {variant.label}
                 </span>
                 <span
-                  className="metric-value text-[10px]"
+                  className="metric-value text-xs"
                   style={{ color: 'var(--text-subtle)' }}
                 >
                   {variant.id}
@@ -361,7 +356,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
                 {variant.description}
               </p>
               <p
-                className="mt-1 text-[10px]"
+                className="mt-1 text-xs"
                 style={{ color: 'var(--text-subtle)' }}
               >
                 {variant.postIds.length} post{variant.postIds.length !== 1 ? 's' : ''}:{' '}
@@ -398,7 +393,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
             </p>
             {node.decision.mergedBack && (
               <p
-                className="mt-1 text-[10px]"
+                className="mt-1 text-xs"
                 style={{ color: 'var(--text-subtle)' }}
               >
                 Merged back to: {node.decision.mergedBack}
@@ -406,7 +401,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
             )}
             {node.decision.rejected && (
               <p
-                className="mt-1 text-[10px]"
+                className="mt-1 text-xs"
                 style={{ color: 'var(--accent-red)' }}
               >
                 Rejected: {node.decision.rejected}
@@ -432,7 +427,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
             Metric Conflict Detected
           </p>
           <p
-            className="mt-1 text-[11px] leading-relaxed"
+            className="mt-1 text-xs leading-relaxed"
             style={{ color: 'var(--text-secondary)' }}
           >
             {node.status === 'adopted'
@@ -449,6 +444,12 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
 // Lane renderer
 // ---------------------------------------------------------------------------
 
+function formatShortDate(iso: string): string {
+  const d = new Date(iso);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
 function Lane({
   label,
   nodes,
@@ -464,30 +465,76 @@ function Lane({
   onDiscard: (id: string) => void;
   onSetOutcome: (id: string, outcome: 'mainline' | 'branch' | 'boundary') => void;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to the rightmost (latest) node on mount
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
+    }
+  }, [nodes.length]);
+
+  const scrollToLatest = useCallback(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        left: scrollRef.current.scrollWidth,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
   if (nodes.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-2">
       <p className="kicker">{label}</p>
-      <div className="flex gap-4 overflow-x-auto pb-2">
-        {nodes.map((node, idx) => (
-          <div key={node.id} className="flex shrink-0 items-center gap-0">
-            <NodeCard
-              node={node}
-              isSelected={selectedId === node.id}
-              onClick={() => onSelect(node.id)}
-              onDiscard={() => onDiscard(node.id)}
-              onSetOutcome={(outcome) => onSetOutcome(node.id, outcome)}
-            />
-            {/* Connector line between nodes in same lane */}
-            {idx < nodes.length - 1 && (
-              <div
-                className="h-px w-6 shrink-0"
-                style={{ background: 'var(--border-medium)' }}
-              />
-            )}
-          </div>
-        ))}
+      <div className="relative">
+        <div ref={scrollRef} className="flex gap-4 overflow-x-auto pb-2" role="list">
+          {nodes.map((node, idx) => (
+            <div key={node.id} className="flex shrink-0 flex-col items-center gap-0" role="listitem">
+              <div className="flex items-center gap-0">
+                <NodeCard
+                  node={node}
+                  isSelected={selectedId === node.id}
+                  onClick={() => onSelect(node.id)}
+                  onDiscard={() => onDiscard(node.id)}
+                  onSetOutcome={(outcome) => onSetOutcome(node.id, outcome)}
+                />
+                {/* Connector line between nodes in same lane */}
+                {idx < nodes.length - 1 && (
+                  <div
+                    className="h-px w-6 shrink-0"
+                    style={{ background: 'var(--border-medium)' }}
+                  />
+                )}
+              </div>
+              {/* Date label below each node */}
+              <span
+                className="mt-1 text-xs"
+                style={{ color: 'var(--text-subtle)' }}
+              >
+                {formatShortDate(node.startedAt)}
+              </span>
+            </div>
+          ))}
+        </div>
+        {/* Scroll to latest button */}
+        {nodes.length > 2 && (
+          <button
+            type="button"
+            onClick={scrollToLatest}
+            className="absolute right-0 top-1/2 -translate-y-1/2 rounded-l-lg px-2 py-1 text-xs font-medium transition-opacity"
+            style={{
+              background: 'var(--bg-card)',
+              color: 'var(--accent-green)',
+              border: '1px solid var(--border-subtle)',
+              borderRight: 'none',
+            }}
+            aria-label="Scroll to latest experiment"
+          >
+            &rarr; Latest
+          </button>
+        )}
       </div>
     </div>
   );
@@ -807,7 +854,7 @@ export default function TimelineClient({
               Experiment Ideas
             </h2>
             <span
-              className="text-[10px]"
+              className="text-xs"
               style={{ color: 'var(--text-subtle)' }}
             >
               {ideas.length} suggestion{ideas.length !== 1 ? 's' : ''} based on

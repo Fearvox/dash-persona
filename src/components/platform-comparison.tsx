@@ -3,12 +3,7 @@
 import { useState } from 'react';
 import type { CrossPlatformComparison, PlatformSummary } from '@/lib/engine';
 import { formatNumber } from '@/lib/engine';
-
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: 'Douyin',
-  tiktok: 'TikTok',
-  xhs: 'Red Note',
-};
+import { PLATFORM_LABELS } from '@/lib/utils/constants';
 
 interface PlatformComparisonProps {
   comparison: CrossPlatformComparison;
@@ -167,8 +162,8 @@ export default function PlatformComparison({
               key={i}
               className="rounded-lg px-4 py-3 text-sm"
               style={{
-                background: 'rgba(228, 242, 34, 0.06)',
-                border: '1px solid rgba(228, 242, 34, 0.12)',
+                background: 'rgba(240, 245, 69, 0.06)',
+                border: '1px solid rgba(240, 245, 69, 0.12)',
                 color: 'var(--accent-highlight)',
               }}
             >

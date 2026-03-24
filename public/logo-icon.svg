@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" fill="none">
+  <!-- D: left half-circle sharing a vertical stem -->
+  <path d="M14 6 L14 34" stroke="#e8fff6" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M14 6 C28 6 28 20 14 20" stroke="#e8fff6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- P: smaller half-circle on right top, sharing the stem -->
+  <path d="M14 20 C26 20 26 30 14 30" stroke="#e8fff6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- Accent dot: data-point cursor -->
+  <circle cx="28" cy="10" r="2.5" fill="#f0f545"/>
+</svg>

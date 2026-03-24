@@ -93,7 +93,7 @@ function SlotCard({
 
   return (
     <div
-      className="relative rounded-lg px-3 py-2.5 transition-all"
+      className="relative min-w-[200px] overflow-hidden rounded-lg px-3 py-2.5 transition-all"
       style={{
         background: 'var(--bg-card)',
         border: `1px solid ${isDismissed ? 'var(--border-subtle)' : 'var(--border-medium)'}`,
@@ -103,7 +103,7 @@ function SlotCard({
         textDecoration: isDismissed ? 'line-through' : 'none',
       }}
     >
-      {/* Content type + platform badge */}
+      {/* Row 1: checkmark + content type name */}
       <div className="flex items-center gap-2">
         {isAccepted && (
           <span
@@ -115,7 +115,7 @@ function SlotCard({
           </span>
         )}
         <span
-          className="text-sm font-medium"
+          className="truncate text-sm font-medium"
           style={{
             color: isDismissed
               ? 'var(--text-subtle)'
@@ -124,8 +124,12 @@ function SlotCard({
         >
           {capitalise(slot.contentType)}
         </span>
+      </div>
+
+      {/* Row 2: platform badge + priority indicator */}
+      <div className="mt-1 flex items-center gap-2">
         <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+          className="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
           style={{
             background: 'var(--bg-secondary)',
             color: 'var(--text-secondary)',
@@ -133,6 +137,11 @@ function SlotCard({
         >
           {capitalise(slot.platform)}
         </span>
+        <span
+          className="inline-block h-2 w-2 shrink-0 rounded-full"
+          style={{ background: PRIORITY_COLORS[slot.priority] }}
+          aria-label={`${slot.priority} priority`}
+        />
       </div>
 
       {/* Time */}
@@ -166,7 +175,7 @@ function SlotCard({
       <div className="mt-2 flex gap-2">
         <button
           type="button"
-          className="rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors"
+          className="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
           style={{
             background: isAccepted
               ? 'var(--accent-green)'
@@ -184,7 +193,7 @@ function SlotCard({
         </button>
         <button
           type="button"
-          className="rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors"
+          className="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
           style={{
             background: isDismissed
               ? 'var(--accent-red)'
@@ -398,7 +407,7 @@ export default function CalendarClient({ plan }: CalendarClientProps) {
                     <div key={timeSlot} className="min-h-[2rem]">
                       {slotsForTime.length === 0 ? (
                         <div
-                          className="flex h-8 items-center justify-center rounded-lg text-[10px]"
+                          className="flex h-8 items-center justify-center rounded-lg text-xs"
                           style={{
                             background: 'var(--bg-secondary)',
                             color: 'var(--text-subtle)',

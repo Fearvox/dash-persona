@@ -6,12 +6,7 @@ import type {
   PlatformScoreEntry,
   ContentOverlapEntry,
 } from './page';
-
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: 'Douyin',
-  tiktok: 'TikTok',
-  xhs: 'Red Note',
-};
+import { PLATFORM_LABELS } from '@/lib/utils/constants';
 
 const PLATFORMS = ['douyin', 'tiktok', 'xhs'] as const;
 
@@ -160,7 +155,7 @@ export default function CompareTable({
                     {v?.display ?? '\u2014'}
                     {isWinner && (
                       <span
-                        className="ml-1 text-[10px]"
+                        className="ml-1 text-xs"
                         style={{ color: 'var(--accent-green)' }}
                       >
                         #1

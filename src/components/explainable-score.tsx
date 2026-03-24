@@ -120,7 +120,7 @@ export default function ExplainableScore({
         <div className="border-t px-4 pb-4 pt-3" style={{ borderColor: 'var(--border-subtle)' }}>
           {/* Formula */}
           <p
-            className="rounded px-2 py-1.5 font-mono text-[11px] leading-relaxed"
+            className="rounded px-2 py-1.5 font-mono text-xs leading-relaxed"
             style={{
               background: 'var(--bg-primary)',
               color: 'var(--text-secondary)',
@@ -139,7 +139,7 @@ export default function ExplainableScore({
           {/* Top posts */}
           {explanation.factors.some((f) => f.topPostIds.length > 0) && (
             <p
-              className="mt-3 text-[11px]"
+              className="mt-3 text-xs"
               style={{ color: 'var(--text-subtle)' }}
             >
               Driven by{' '}
@@ -175,7 +175,7 @@ function FactorRow({ factor }: { factor: ScoreFactor }) {
   return (
     <div className="flex items-center gap-2">
       <span
-        className="w-24 shrink-0 truncate text-[11px] font-medium"
+        className="w-24 shrink-0 truncate text-xs font-medium"
         style={{ color: 'var(--text-secondary)' }}
         title={factor.name}
       >
@@ -199,7 +199,7 @@ function FactorRow({ factor }: { factor: ScoreFactor }) {
       </div>
 
       <span
-        className="w-10 shrink-0 text-right text-[11px] font-medium"
+        className="w-10 shrink-0 text-right text-xs font-medium"
         style={{ color: impactColor(factor.impact) }}
       >
         {typeof factor.value === 'number' && factor.value % 1 !== 0

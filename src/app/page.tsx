@@ -80,13 +80,16 @@ export default function HomePage() {
       >
         <p className="kicker mb-4">Creator Intelligence Engine</p>
 
-        <h1
-          id="hero-heading"
-          className="max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
-          style={{ color: "var(--text-primary)" }}
-        >
-          DashPersona
-        </h1>
+        <div className="flex items-center gap-3">
+          <img src="/logo-icon.svg" alt="" width={40} height={40} aria-hidden="true" />
+          <h1
+            id="hero-heading"
+            className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
+            style={{ color: "var(--text-primary)" }}
+          >
+            DashPersona
+          </h1>
+        </div>
 
         <p
           className="mt-2 text-lg font-medium sm:text-xl"

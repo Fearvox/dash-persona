@@ -75,11 +75,42 @@ export default function PostDrawer({
 
   const sortedPosts = sortPosts(filteredPosts, sortKey);
 
-  // Close on escape
+  // Close on escape + focus trap
   useEffect(() => {
     if (!isOpen) return;
+
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    // Focus the first focusable element on open
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusableElements = panel.querySelectorAll<HTMLElement>(focusableSelector);
+    const firstFocusable = focusableElements[0];
+    const lastFocusable = focusableElements[focusableElements.length - 1];
+    firstFocusable?.focus();
+
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      // Focus trap: cycle focus within the drawer
+      if (e.key === 'Tab' && panel) {
+        const currentFocusables = panel.querySelectorAll<HTMLElement>(focusableSelector);
+        const first = currentFocusables[0];
+        const last = currentFocusables[currentFocusables.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last?.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first?.focus();
+          }
+        }
+      }
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -252,7 +283,7 @@ function PostCard({ post }: { post: Post }) {
       {/* Platform badge */}
       {post.contentType && (
         <span
-          className="mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium"
+          className="mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium"
           style={{
             background: `${platformBadgeColor}20`,
             color: platformBadgeColor,
@@ -276,7 +307,7 @@ function PostCard({ post }: { post: Post }) {
 
 function MetricPill({ label, value }: { label: string; value: number }) {
   return (
-    <span className="text-[10px]" style={{ color: 'var(--text-subtle)' }}>
+    <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
       <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>
         {formatNumber(value)}
       </span>{' '}

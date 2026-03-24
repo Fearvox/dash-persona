@@ -100,6 +100,8 @@ export default function ExperimentForm({
       className="flex flex-col gap-5"
       aria-label="Experiment form"
     >
+      <fieldset className="flex flex-col gap-5 border-none p-0 m-0">
+        <legend className="sr-only">Experiment details</legend>
       {/* Title */}
       <div className="flex flex-col gap-1.5">
         <label
@@ -270,6 +272,8 @@ export default function ExperimentForm({
           <option value="running">Running</option>
         </select>
       </div>
+
+      </fieldset>
 
       {/* Actions */}
       <div className="flex items-center gap-3 pt-2">

@@ -8,6 +8,7 @@ import {
   formatNumber,
   type PersonaScore,
 } from '@/lib/engine';
+import { PLATFORM_LABELS, VALID_PERSONAS, scoreColor } from '@/lib/utils/constants';
 import PersonaBarChart from './persona-bar-chart';
 
 export async function generateMetadata({
@@ -28,17 +29,9 @@ export async function generateMetadata({
 // Constants
 // ---------------------------------------------------------------------------
 
-const VALID_PERSONAS = new Set<DemoPersonaType>([
-  'tutorial',
-  'entertainment',
-  'lifestyle',
-]);
-
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: 'Douyin',
-  tiktok: 'TikTok',
-  xhs: 'Red Note',
-};
+const VALID_PERSONAS_SET = new Set<DemoPersonaType>(
+  VALID_PERSONAS as readonly DemoPersonaType[],
+);
 
 const PLATFORMS = ['douyin', 'tiktok', 'xhs'] as const;
 
@@ -55,12 +48,6 @@ const DAY_NAMES = [
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function scoreColor(value: number): string {
-  if (value >= 70) return 'var(--accent-green)';
-  if (value >= 40) return 'var(--accent-yellow)';
-  return 'var(--accent-red)';
-}
 
 function overallScore(score: PersonaScore): number {
   const engagementPart = Math.min(score.engagement.overallRate * 100 * 5, 100);
@@ -123,7 +110,7 @@ interface PersonaPageProps {
 export default async function PersonaPage({ searchParams }: PersonaPageProps) {
   const params = await searchParams;
   const personaParam = params.persona ?? 'tutorial';
-  const personaType: DemoPersonaType = VALID_PERSONAS.has(
+  const personaType: DemoPersonaType = VALID_PERSONAS_SET.has(
     personaParam as DemoPersonaType,
   )
     ? (personaParam as DemoPersonaType)
@@ -177,8 +164,7 @@ export default async function PersonaPage({ searchParams }: PersonaPageProps) {
       <header className="flex flex-col gap-4">
         <Link
           href={`/dashboard?source=${params.source ?? 'demo'}&persona=${personaType}`}
-          className="text-sm font-medium transition-colors hover:opacity-80"
-          style={{ color: 'var(--accent-green)' }}
+          className="nav-pill"
           aria-label="Back to dashboard"
         >
           &larr; Dashboard
@@ -538,7 +524,7 @@ export default async function PersonaPage({ searchParams }: PersonaPageProps) {
                       {s.title}
                     </p>
                     <p
-                      className="mt-0.5 text-[11px] leading-relaxed"
+                      className="mt-0.5 text-xs leading-relaxed"
                       style={{ color: 'var(--text-subtle)' }}
                     >
                       {s.description.length > 120

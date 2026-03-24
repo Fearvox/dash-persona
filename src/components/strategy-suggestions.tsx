@@ -73,7 +73,7 @@ export default function StrategySuggestions({
                       {s.title}
                     </h3>
                     <span
-                      className="shrink-0 text-[10px] font-medium uppercase"
+                      className="shrink-0 text-xs font-medium uppercase"
                       style={{ color: accent }}
                     >
                       {s.priority}

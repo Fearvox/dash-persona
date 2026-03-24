@@ -2,23 +2,16 @@ import Link from 'next/link';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
 import { generateDemoTree, getTreeLanes, generateExperimentIdeas } from '@/lib/engine';
+import { PLATFORM_LABELS, VALID_PERSONAS } from '@/lib/utils/constants';
 import TimelineClient from './timeline-client';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const VALID_PERSONAS = new Set<DemoPersonaType>([
-  'tutorial',
-  'entertainment',
-  'lifestyle',
-]);
-
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: 'Douyin',
-  tiktok: 'TikTok',
-  xhs: 'Red Note',
-};
+const VALID_PERSONAS_SET = new Set<DemoPersonaType>(
+  VALID_PERSONAS as readonly DemoPersonaType[],
+);
 
 const PLATFORMS = ['douyin', 'tiktok', 'xhs'] as const;
 
@@ -39,7 +32,7 @@ export default async function TimelinePage({
 }: TimelinePageProps) {
   const params = await searchParams;
   const personaParam = params.persona ?? 'tutorial';
-  const personaType: DemoPersonaType = VALID_PERSONAS.has(
+  const personaType: DemoPersonaType = VALID_PERSONAS_SET.has(
     personaParam as DemoPersonaType,
   )
     ? (personaParam as DemoPersonaType)
@@ -74,8 +67,7 @@ export default async function TimelinePage({
       <header className="flex flex-col gap-4">
         <Link
           href={`/dashboard?source=${params.source ?? 'demo'}&persona=${personaType}`}
-          className="text-sm font-medium transition-colors hover:opacity-80"
-          style={{ color: 'var(--accent-green)' }}
+          className="nav-pill"
           aria-label="Back to dashboard"
         >
           &larr; Dashboard

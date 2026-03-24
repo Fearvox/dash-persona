@@ -181,7 +181,7 @@ export default function PersonaOverview({
             Overall Score
           </p>
           <p
-            className="text-[10px]"
+            className="text-xs"
             style={{ color: 'var(--text-subtle)' }}
           >
             Best: {bestPlatform}
@@ -271,7 +271,7 @@ function ViewPostsButton({
     <button
       type="button"
       onClick={() => onClick(postIds)}
-      className="mt-1 w-full text-center text-[10px] font-medium"
+      className="mt-1 w-full text-center text-xs font-medium"
       style={{
         color: 'var(--accent-green)',
         background: 'transparent',

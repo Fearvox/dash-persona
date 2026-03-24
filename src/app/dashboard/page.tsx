@@ -166,8 +166,7 @@ export default async function DashboardPage({
           </p>
           <Link
             href="/settings"
-            className="text-xs font-medium transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-subtle)' }}
+            className="nav-pill"
             aria-label="Settings"
           >
             Settings
@@ -179,17 +178,16 @@ export default async function DashboardPage({
       <ForYouCard profiles={profiles} />
 
       {/* 2. Growth Overview */}
-      <section aria-labelledby="growth-heading">
+      <section className="mt-10" aria-labelledby="growth-heading">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="growth-heading" className="kicker">
             Growth Overview
           </h2>
           <Link
             href={`/compare?source=${params.source ?? 'demo'}&persona=${personaType}`}
-            className="text-xs font-medium transition-colors"
-            style={{ color: 'var(--text-subtle)' }}
+            className="nav-pill"
           >
-            <span className="detail-link">View details &rarr;</span>
+            View details &rarr;
           </Link>
         </div>
         {/* Interactive growth sparklines + persona overview + post drawer */}
@@ -201,51 +199,48 @@ export default async function DashboardPage({
         />
       </section>
 
-      {/* 3. Persona Score heading (component rendered inside DashboardInteractive) */}
-      <section aria-labelledby="persona-heading">
+      {/* 3. Persona Score heading ABOVE the PersonaOverview content */}
+      <section className="mt-10" aria-labelledby="persona-heading">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="persona-heading" className="kicker">
             Persona Score
           </h2>
           <Link
             href={`/persona?source=${params.source ?? 'demo'}&persona=${personaType}`}
-            className="text-xs font-medium transition-colors"
-            style={{ color: 'var(--text-subtle)' }}
+            className="nav-pill"
           >
-            <span className="detail-link">View details &rarr;</span>
+            View details &rarr;
           </Link>
         </div>
       </section>
 
       {/* 4. Cross-Platform Comparison */}
-      <section aria-labelledby="platforms-heading">
+      <section className="mt-10" aria-labelledby="platforms-heading">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="platforms-heading" className="kicker">
             Cross-Platform Comparison
           </h2>
           <Link
             href={`/compare?source=${params.source ?? 'demo'}&persona=${personaType}`}
-            className="text-xs font-medium transition-colors"
-            style={{ color: 'var(--text-subtle)' }}
+            className="nav-pill"
           >
-            <span className="detail-link">View details &rarr;</span>
+            View details &rarr;
           </Link>
         </div>
         <PlatformComparison comparison={comparison} />
       </section>
 
       {/* 5. Content Calendar */}
-      <section aria-labelledby="calendar-heading">
+      <section className="mt-10" aria-labelledby="calendar-heading">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="calendar-heading" className="kicker">
             Content Calendar
           </h2>
           <Link
             href={`/calendar?source=${params.source ?? 'demo'}&persona=${personaType}`}
-            className="text-xs font-medium transition-colors"
-            style={{ color: 'var(--text-subtle)' }}
+            className="nav-pill"
           >
-            <span className="detail-link">View calendar &rarr;</span>
+            View calendar &rarr;
           </Link>
         </div>
         <div className="card p-5">
@@ -267,17 +262,16 @@ export default async function DashboardPage({
       </section>
 
       {/* 6. Persona Timeline (renumbered) */}
-      <section aria-labelledby="timeline-heading">
+      <section className="mt-10" aria-labelledby="timeline-heading">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="timeline-heading" className="kicker">
             Persona Timeline
           </h2>
           <Link
             href={`/timeline?source=${params.source ?? 'demo'}&persona=${personaType}`}
-            className="text-xs font-medium transition-colors"
-            style={{ color: 'var(--text-subtle)' }}
+            className="nav-pill"
           >
-            <span className="detail-link">View details &rarr;</span>
+            View details &rarr;
           </Link>
         </div>
         <div className="card p-5">
@@ -298,7 +292,7 @@ export default async function DashboardPage({
       </section>
 
       {/* 6. Strategy Suggestions */}
-      <section aria-labelledby="strategy-heading">
+      <section className="mt-10" aria-labelledby="strategy-heading">
         <h2 id="strategy-heading" className="kicker mb-3">
           Strategy Suggestions
         </h2>

@@ -9,6 +9,7 @@ import {
   type PersonaScore,
   type CrossPlatformComparison,
 } from '@/lib/engine';
+import { PLATFORM_LABELS, VALID_PERSONAS, scoreColor } from '@/lib/utils/constants';
 import CompareTable from './compare-table';
 
 export async function generateMetadata({
@@ -29,29 +30,15 @@ export async function generateMetadata({
 // Constants
 // ---------------------------------------------------------------------------
 
-const VALID_PERSONAS = new Set<DemoPersonaType>([
-  'tutorial',
-  'entertainment',
-  'lifestyle',
-]);
-
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: 'Douyin',
-  tiktok: 'TikTok',
-  xhs: 'Red Note',
-};
+const VALID_PERSONAS_SET = new Set<DemoPersonaType>(
+  VALID_PERSONAS as readonly DemoPersonaType[],
+);
 
 const PLATFORMS = ['douyin', 'tiktok', 'xhs'] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function scoreColor(value: number): string {
-  if (value >= 70) return 'var(--accent-green)';
-  if (value >= 40) return 'var(--accent-yellow)';
-  return 'var(--accent-red)';
-}
 
 function overallScore(score: PersonaScore): number {
   const engagementPart = Math.min(score.engagement.overallRate * 100 * 5, 100);
@@ -106,7 +93,7 @@ interface ComparePageProps {
 export default async function ComparePage({ searchParams }: ComparePageProps) {
   const params = await searchParams;
   const personaParam = params.persona ?? 'tutorial';
-  const personaType: DemoPersonaType = VALID_PERSONAS.has(
+  const personaType: DemoPersonaType = VALID_PERSONAS_SET.has(
     personaParam as DemoPersonaType,
   )
     ? (personaParam as DemoPersonaType)
@@ -145,8 +132,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       <header className="flex flex-col gap-2">
         <Link
           href={`/dashboard?source=${params.source ?? 'demo'}&persona=${personaType}`}
-          className="text-sm font-medium transition-colors hover:opacity-80"
-          style={{ color: 'var(--accent-green)' }}
+          className="nav-pill"
           aria-label="Back to dashboard"
         >
           &larr; Dashboard
@@ -194,7 +180,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                   {insight.text}
                 </p>
                 <p
-                  className="mt-1 text-[10px] uppercase tracking-wider"
+                  className="mt-1 text-xs uppercase tracking-wider"
                   style={{ color: 'var(--text-subtle)' }}
                 >
                   {insight.type.replace(/_/g, ' ')}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <!-- D: half-circle left -->
+  <path d="M11 5 L11 27" stroke="#e8fff6" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M11 5 C23 5 23 16 11 16" stroke="#e8fff6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- P: smaller half-circle right -->
+  <path d="M11 16 C21 16 21 24 11 24" stroke="#e8fff6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- Accent dot -->
+  <circle cx="22" cy="8" r="2" fill="#f0f545"/>
+</svg>

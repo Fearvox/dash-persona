@@ -14,6 +14,7 @@ const GREEN = '#7ed29a';
 
 interface PersonaBarChartProps {
   data: [string, number][];
+  onBarClick?: (category: string, value: number) => void;
 }
 
 interface ChartDatum {
@@ -47,7 +48,7 @@ function ChartTooltip({
   );
 }
 
-export default function PersonaBarChart({ data }: PersonaBarChartProps) {
+export default function PersonaBarChart({ data, onBarClick }: PersonaBarChartProps) {
   const chartData: ChartDatum[] = data.map(([name, value]) => ({
     name,
     value,
@@ -90,7 +91,17 @@ export default function PersonaBarChart({ data }: PersonaBarChartProps) {
             style={{ textTransform: 'capitalize' }}
           />
           <Tooltip content={<ChartTooltip />} cursor={false} />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20}>
+          <Bar
+            dataKey="value"
+            radius={[0, 4, 4, 0]}
+            maxBarSize={20}
+            style={{ cursor: onBarClick ? 'pointer' : undefined }}
+            onClick={(barData) => {
+              if (onBarClick && barData && typeof barData.name === 'string') {
+                onBarClick(barData.name, barData.value as number);
+              }
+            }}
+          >
             {chartData.map((_, index) => (
               <Cell
                 key={index}
