@@ -5,6 +5,7 @@ const features = [
     title: "Cross-Platform Analysis",
     description:
       "Unified metrics across Douyin, TikTok, and Red Note. Compare performance with normalized, platform-agnostic scoring.",
+    href: "/compare?source=demo&persona=tutorial",
     icon: (
       <svg
         aria-hidden="true"
@@ -28,6 +29,7 @@ const features = [
     title: "Persona Scoring",
     description:
       "Deterministic algorithms evaluate content consistency, audience alignment, and brand positioning without any AI black boxes.",
+    href: "/persona?source=demo&persona=tutorial",
     icon: (
       <svg
         aria-hidden="true"
@@ -49,6 +51,7 @@ const features = [
     title: "Growth Tracking",
     description:
       "Historical snapshots with delta calculations. Sparkline visualizations show trends at a glance across all connected platforms.",
+    href: "/dashboard?source=demo&persona=tutorial",
     icon: (
       <svg
         aria-hidden="true"
@@ -135,8 +138,9 @@ export default function HomePage() {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
-            <article
+            <Link
               key={feature.title}
+              href={feature.href}
               className="card flex flex-col gap-4 p-6 transition-colors"
             >
               <div
@@ -155,7 +159,7 @@ export default function HomePage() {
               >
                 {feature.description}
               </p>
-            </article>
+            </Link>
           ))}
         </div>
       </section>

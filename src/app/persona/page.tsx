@@ -170,7 +170,7 @@ export default async function PersonaPage({ searchParams }: PersonaPageProps) {
         </Link>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
             Persona Detail
           </h1>
 
@@ -212,7 +212,7 @@ export default async function PersonaPage({ searchParams }: PersonaPageProps) {
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-8">
           <div className="flex flex-col items-center gap-1 sm:min-w-[140px]">
             <p
-              className="metric-value text-6xl font-bold"
+              className="metric-value text-4xl font-bold sm:text-5xl lg:text-6xl"
               style={{ color: scoreColor(overall) }}
             >
               {overall}
@@ -247,7 +247,7 @@ export default async function PersonaPage({ searchParams }: PersonaPageProps) {
         <h2 id="dimensions-heading" className="kicker mb-3">
           Dimension Breakdown
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {/* Content Mix */}
           <div className="card p-5">
             <p
@@ -429,7 +429,7 @@ export default async function PersonaPage({ searchParams }: PersonaPageProps) {
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <p
-                className="metric-value text-3xl font-bold"
+                className="metric-value text-2xl font-bold sm:text-3xl"
                 style={{
                   color: scoreColor(score.consistency.score),
                 }}

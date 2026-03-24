@@ -11,7 +11,7 @@
 
   --text-primary: #e8fff6;
   --text-secondary: #b8c4be;
-  --text-subtle: #6b7a72;
+  --text-subtle: #8a9590;
 
   --accent-green: #7ed29a;
   --accent-red: #c87e7e;
@@ -83,3 +83,12 @@ body {
 .badge-green { background: rgba(126, 210, 154, 0.15); color: var(--accent-green); }
 .badge-red { background: rgba(200, 126, 126, 0.15); color: var(--accent-red); }
 .badge-yellow { background: rgba(210, 200, 126, 0.15); color: var(--accent-yellow); }
+
+.detail-link {
+  transition: color 0.15s ease;
+}
+
+.detail-link:hover,
+a:hover > .detail-link {
+  color: var(--accent-green);
+}

@@ -107,7 +107,7 @@ export default async function DashboardPage({
           >
             &larr; DashPersona
           </Link>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+          <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
             Dashboard
           </h1>
           {isDemo && (
@@ -121,25 +121,52 @@ export default async function DashboardPage({
 
       {/* 2. Growth Overview */}
       <section aria-labelledby="growth-heading">
-        <h2 id="growth-heading" className="kicker mb-3">
-          Growth Overview
-        </h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 id="growth-heading" className="kicker">
+            Growth Overview
+          </h2>
+          <Link
+            href={`/compare?source=${params.source ?? 'demo'}&persona=${personaType}`}
+            className="text-xs font-medium transition-colors"
+            style={{ color: 'var(--text-subtle)' }}
+          >
+            <span className="detail-link">View details &rarr;</span>
+          </Link>
+        </div>
         <GrowthSparklines profiles={profiles} />
       </section>
 
       {/* 3. Persona Score */}
       <section aria-labelledby="persona-heading">
-        <h2 id="persona-heading" className="kicker mb-3">
-          Persona Score
-        </h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 id="persona-heading" className="kicker">
+            Persona Score
+          </h2>
+          <Link
+            href={`/persona?source=${params.source ?? 'demo'}&persona=${personaType}`}
+            className="text-xs font-medium transition-colors"
+            style={{ color: 'var(--text-subtle)' }}
+          >
+            <span className="detail-link">View details &rarr;</span>
+          </Link>
+        </div>
         <PersonaOverview scores={personaScores} />
       </section>
 
       {/* 4. Cross-Platform Comparison */}
       <section aria-labelledby="platforms-heading">
-        <h2 id="platforms-heading" className="kicker mb-3">
-          Cross-Platform Comparison
-        </h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 id="platforms-heading" className="kicker">
+            Cross-Platform Comparison
+          </h2>
+          <Link
+            href={`/compare?source=${params.source ?? 'demo'}&persona=${personaType}`}
+            className="text-xs font-medium transition-colors"
+            style={{ color: 'var(--text-subtle)' }}
+          >
+            <span className="detail-link">View details &rarr;</span>
+          </Link>
+        </div>
         <PlatformComparison comparison={comparison} />
       </section>
 

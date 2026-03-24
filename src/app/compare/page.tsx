@@ -136,7 +136,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         >
           &larr; Dashboard
         </Link>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+        <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
           Cross-Platform Comparison
         </h1>
         <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
@@ -267,7 +267,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         <h2 id="scores-heading" className="kicker mb-3">
           Persona Score Comparison
         </h2>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
           {scoreEntries.map((entry) => {
             const bestScore = Math.max(...scoreEntries.map((e) => e.overall));
             const isBest = entry.overall === bestScore;
@@ -288,7 +288,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                   {entry.label}
                 </p>
                 <p
-                  className="metric-value mt-2 text-4xl font-bold"
+                  className="metric-value mt-2 text-3xl font-bold sm:text-4xl"
                   style={{ color: scoreColor(entry.overall) }}
                 >
                   {entry.overall}
