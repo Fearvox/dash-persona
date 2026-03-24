@@ -352,42 +352,58 @@ function generateHistory(
 ): HistorySnapshot[] {
   const snapshots: HistorySnapshot[] = [];
   const now = Date.now();
+  // Use more data points for visible wave patterns
+  const actualEntries = Math.max(entries, 20);
 
-  // Growth rates per snapshot interval
-  const followerGrowthPerStep = rng.int(200, 1_500);
-  const likeGrowthPerStep = rng.int(500, 8_000);
+  // Base growth per step (net positive overall)
+  const baseGrowth = rng.int(100, 600);
+  const likeBaseGrowth = rng.int(300, 4_000);
   const videoGrowthPerStep = rng.next() < 0.6 ? 1 : 0;
 
-  // Start BELOW current values so history shows growth toward current
-  const totalFollowerGrowth = followerGrowthPerStep * entries;
-  const totalLikeGrowth = likeGrowthPerStep * entries;
-  const totalVideoGrowth = videoGrowthPerStep * entries;
+  // Wave parameters — creates visible ups AND downs
+  const waveFreq = 1.5 + rng.next() * 2.5; // 1.5–4 cycles over the period
+  const waveAmp = baseGrowth * (2 + rng.next() * 3); // amplitude 2–5x base growth
 
-  let followers = targetFollowers - totalFollowerGrowth;
-  let likes = targetLikes - totalLikeGrowth;
-  let videos = Math.max(targetVideos - totalVideoGrowth, 1);
+  // Pre-compute the follower trajectory to land near targetFollowers
+  const trajectory: number[] = [];
+  let f = 0;
+  for (let i = 0; i < actualEntries; i++) {
+    const t = i / (actualEntries - 1);
+    const wave = Math.sin(t * Math.PI * waveFreq * 2) * waveAmp;
+    const jitter = rng.int(-300, 300);
+    f += baseGrowth + wave + jitter;
+    trajectory.push(f);
+  }
 
-  // Generate oldest-to-newest (i=0 is oldest, i=entries-1 is most recent)
-  for (let i = 0; i < entries; i++) {
-    const hoursAgo = ((entries - 1 - i) * (7 * 24)) / Math.max(entries - 1, 1);
+  // Scale trajectory so [0] starts below target and [last] ≈ target
+  const totalDrift = trajectory[trajectory.length - 1];
+  const desiredDrift = baseGrowth * actualEntries * 0.8; // net ~80% of linear growth
+  const scale = totalDrift !== 0 ? desiredDrift / totalDrift : 1;
+  const startFollowers = targetFollowers - desiredDrift;
+
+  let likes = targetLikes - likeBaseGrowth * actualEntries;
+  let videos = Math.max(targetVideos - videoGrowthPerStep * actualEntries, 1);
+
+  for (let i = 0; i < actualEntries; i++) {
+    const hoursAgo = ((actualEntries - 1 - i) * (7 * 24)) / Math.max(actualEntries - 1, 1);
     const date = new Date(now - hoursAgo * 3_600_000);
+
+    const currentFollowers = Math.max(Math.round(startFollowers + trajectory[i] * scale), 0);
 
     snapshots.push({
       fetchedAt: date.toISOString(),
       profile: {
-        followers: Math.max(followers, 0),
-        likesTotal: Math.max(likes, 0),
-        videosCount: Math.max(videos, 0),
+        followers: currentFollowers,
+        likesTotal: Math.max(Math.round(likes), 0),
+        videosCount: Math.max(Math.round(videos), 0),
       },
     });
 
-    // Grow toward current values with jitter
-    followers += followerGrowthPerStep + rng.int(-200, 400);
-    likes += likeGrowthPerStep + rng.int(-1_000, 2_000);
+    likes += likeBaseGrowth + rng.int(-1_000, 2_000);
     videos += videoGrowthPerStep;
   }
 
-  return snapshots; // already oldest first
+  return snapshots;
 }
 
 function buildProfile(
