@@ -75,3 +75,14 @@ export {
   type StrategySuggestion,
   generateStrategySuggestions,
 } from './strategy';
+
+// -- Persona event tree engine --
+export {
+  type TreeViewNode,
+  type TreeView,
+  buildTreeStructure,
+  scoreNode,
+  generateDemoTree,
+  getTreeLanes,
+  detectConflicts,
+} from './persona-tree';

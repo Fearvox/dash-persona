@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
@@ -9,6 +10,20 @@ import {
   type CrossPlatformComparison,
 } from '@/lib/engine';
 import CompareTable from './compare-table';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ source?: string; persona?: string }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  return {
+    title:
+      params.source === 'demo'
+        ? 'Demo Comparison — DashPersona'
+        : 'Cross-Platform Comparison — DashPersona',
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Constants

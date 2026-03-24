@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
@@ -8,6 +9,20 @@ import {
   type PersonaScore,
 } from '@/lib/engine';
 import PersonaBarChart from './persona-bar-chart';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ source?: string; persona?: string; platform?: string }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  return {
+    title:
+      params.source === 'demo'
+        ? 'Demo Persona Detail — DashPersona'
+        : 'Persona Detail — DashPersona',
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Constants

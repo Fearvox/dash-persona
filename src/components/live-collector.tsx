@@ -9,6 +9,18 @@ type CollectorState =
   | { status: 'success'; profile: CreatorProfile }
   | { status: 'error'; message: string };
 
+/** Map known API error substrings to user-friendly messages. */
+function friendlyError(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (lower.includes('timed out'))
+    return 'TikTok took too long to respond. This sometimes happens due to rate limiting.';
+  if (lower.includes('not allowed'))
+    return 'This URL is not supported. Please use a TikTok profile URL.';
+  if (lower.includes('could not find'))
+    return 'Could not extract profile data. The page may be private or geo-restricted.';
+  return raw;
+}
+
 interface LiveCollectorProps {
   url: string;
   onSuccess: (profile: CreatorProfile) => void;
@@ -37,10 +49,16 @@ export default function LiveCollector({
 
         if (cancelled) return;
 
-        const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch {
+          throw new Error('Server returned an invalid response. Please try again.');
+        }
 
         if (!res.ok) {
-          const msg = data?.error ?? `Request failed (${res.status})`;
+          const raw = data?.error ?? `Request failed (${res.status})`;
+          const msg = friendlyError(raw);
           setState({ status: 'error', message: msg });
           onError();
           return;

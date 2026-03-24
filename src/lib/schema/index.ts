@@ -9,3 +9,10 @@ export type {
 } from './creator-data';
 
 export { validateCreatorProfile, isCreatorProfile } from './validate';
+
+export type {
+  NodeScoring,
+  PersonaVariant,
+  PersonaTreeNode,
+  PersonaTree,
+} from './persona-tree';

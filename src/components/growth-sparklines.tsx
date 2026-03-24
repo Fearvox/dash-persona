@@ -24,6 +24,8 @@ const PLATFORM_LABELS: Record<string, string> = {
   xhs: 'Red Note',
 };
 
+// Hardcoded hex values because Recharts SVG elements don't support CSS custom properties.
+// These must stay in sync with --accent-green and --accent-red in globals.css.
 const GREEN = '#7ed29a';
 const RED = '#c87e7e';
 
