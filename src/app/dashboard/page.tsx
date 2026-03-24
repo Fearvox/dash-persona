@@ -6,10 +6,12 @@ import {
   computePersonaScore,
   comparePlatforms,
   generateStrategySuggestions,
+  explainPersonaScore,
   type PersonaScore,
 } from '@/lib/engine';
-import GrowthSparklines from '@/components/growth-sparklines';
-import PersonaOverview from '@/components/persona-overview';
+import type { ScoreExplanation } from '@/lib/engine/explain';
+import type { Post } from '@/lib/schema/creator-data';
+import DashboardInteractive from '@/components/dashboard-interactive';
 import PlatformComparison from '@/components/platform-comparison';
 import StrategySuggestions from '@/components/strategy-suggestions';
 import LiveDashboardWrapper from '@/components/live-dashboard-wrapper';
@@ -73,7 +75,7 @@ export default async function DashboardPage({
     const fallbackProfiles = getDemoProfile(personaType);
 
     if (!liveUrl || !isValidUrl(liveUrl)) {
-      // No URL or invalid URL — direct user to onboarding
+      // No URL or invalid URL -- direct user to onboarding
       return (
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -116,14 +118,26 @@ export default async function DashboardPage({
     personaScores[platform] = computePersonaScore(profile);
   }
 
-  // 3. Cross-platform comparison
+  // 3. Compute explanations for each platform
+  const explanations: Record<string, Record<string, ScoreExplanation>> = {};
+  for (const [platform, profile] of Object.entries(profiles)) {
+    explanations[platform] = explainPersonaScore(
+      personaScores[platform],
+      profile.posts,
+    );
+  }
+
+  // 4. Cross-platform comparison
   const comparison = comparePlatforms(Object.values(profiles));
 
-  // 4. Strategy suggestions (use the best-scoring platform's PersonaScore)
+  // 5. Strategy suggestions (use the best-scoring platform's PersonaScore)
   const bestPlatform =
     comparison.bestEngagementPlatform ?? Object.keys(personaScores)[0];
   const bestPersonaScore = personaScores[bestPlatform] ?? Object.values(personaScores)[0];
   const suggestions = generateStrategySuggestions(bestPersonaScore, comparison);
+
+  // 6. Collect all posts across platforms for the PostDrawer
+  const allPosts: Post[] = Object.values(profiles).flatMap((p) => p.posts);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
@@ -164,10 +178,16 @@ export default async function DashboardPage({
             <span className="detail-link">View details &rarr;</span>
           </Link>
         </div>
-        <GrowthSparklines profiles={profiles} />
+        {/* Interactive growth sparklines + persona overview + post drawer */}
+        <DashboardInteractive
+          profiles={profiles}
+          personaScores={personaScores}
+          explanations={explanations}
+          allPosts={allPosts}
+        />
       </section>
 
-      {/* 3. Persona Score */}
+      {/* 3. Persona Score heading (component rendered inside DashboardInteractive) */}
       <section aria-labelledby="persona-heading">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="persona-heading" className="kicker">
@@ -181,7 +201,6 @@ export default async function DashboardPage({
             <span className="detail-link">View details &rarr;</span>
           </Link>
         </div>
-        <PersonaOverview scores={personaScores} />
       </section>
 
       {/* 4. Cross-Platform Comparison */}

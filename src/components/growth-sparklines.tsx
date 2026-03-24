@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import {
   AreaChart,
   Area,
@@ -17,6 +17,7 @@ import {
   type SparklinePoint,
   type GrowthDelta,
 } from '@/lib/engine';
+import TimeRangeSelector from './time-range-selector';
 
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: 'Douyin',
@@ -31,6 +32,7 @@ const RED = '#c87e7e';
 
 interface GrowthSparklinesProps {
   profiles: Record<string, CreatorProfile>;
+  onChartClick?: (platformKey: string, point: SparklinePoint) => void;
 }
 
 function DeltaIndicator({ delta }: { delta: number }) {
@@ -85,8 +87,8 @@ function SparklineTooltip({
 }
 
 /**
- * Build SVG gradient stops that blend green↔red based on whether each
- * segment is rising or falling. The gradient runs horizontally (x1→x2)
+ * Build SVG gradient stops that blend green/red based on whether each
+ * segment is rising or falling. The gradient runs horizontally (x1->x2)
  * so each data point maps to a percentage along the X axis.
  */
 function buildDirectionStops(data: SparklinePoint[]): React.ReactNode[] {
@@ -112,7 +114,7 @@ function buildDirectionStops(data: SparklinePoint[]): React.ReactNode[] {
       const prevPrevRising =
         i > 1 ? data[i - 1].followers >= data[i - 2].followers : prevRising;
       if (prevRising !== prevPrevRising) {
-        // Direction changed — add a blending zone
+        // Direction changed -- add a blending zone
         const blendPct = `${(((i - 0.5) / (data.length - 1)) * 100).toFixed(1)}%`;
         stops.push(
           <stop
@@ -131,14 +133,31 @@ function buildDirectionStops(data: SparklinePoint[]): React.ReactNode[] {
   return stops;
 }
 
-export default function GrowthSparklines({ profiles }: GrowthSparklinesProps) {
+export default function GrowthSparklines({
+  profiles,
+  onChartClick,
+}: GrowthSparklinesProps) {
+  const [hoursBack, setHoursBack] = useState(168);
   const platforms = Object.entries(profiles);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {platforms.map(([key, profile]) => (
-        <SparklineCard key={key} platformKey={key} profile={profile} />
-      ))}
+    <div>
+      {/* Time range selector */}
+      <div className="mb-4 flex justify-end">
+        <TimeRangeSelector value={hoursBack} onChange={setHoursBack} />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {platforms.map(([key, profile]) => (
+          <SparklineCard
+            key={key}
+            platformKey={key}
+            profile={profile}
+            hoursBack={hoursBack}
+            onChartClick={onChartClick}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -146,13 +165,17 @@ export default function GrowthSparklines({ profiles }: GrowthSparklinesProps) {
 function SparklineCard({
   platformKey,
   profile,
+  hoursBack,
+  onChartClick,
 }: {
   platformKey: string;
   profile: CreatorProfile;
+  hoursBack: number;
+  onChartClick?: (platformKey: string, point: SparklinePoint) => void;
 }) {
   const sparkData = useMemo(
-    () => extractSparklineData(profile, 168),
-    [profile],
+    () => extractSparklineData(profile, hoursBack),
+    [profile, hoursBack],
   );
   const growthDelta: GrowthDelta | null = useMemo(
     () => computeGrowthDelta(profile),
@@ -175,6 +198,21 @@ function SparklineCard({
 
   const strokeGradId = `stroke-${platformKey}`;
   const fillGradId = `fill-${platformKey}`;
+
+  const handleClick = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (nextState: any) => {
+      const idx = nextState?.activeTooltipIndex;
+      if (
+        onChartClick &&
+        typeof idx === 'number' &&
+        sparkData[idx]
+      ) {
+        onChartClick(platformKey, sparkData[idx]);
+      }
+    },
+    [onChartClick, platformKey, sparkData],
+  );
 
   return (
     <div className="card p-5">
@@ -215,9 +253,11 @@ function SparklineCard({
             <AreaChart
               data={sparkData}
               margin={{ top: 4, right: 2, bottom: 0, left: 2 }}
+              onClick={handleClick}
+              style={{ cursor: onChartClick ? 'pointer' : undefined }}
             >
               <defs>
-                {/* Horizontal stroke gradient: green↔red by direction */}
+                {/* Horizontal stroke gradient: green/red by direction */}
                 <linearGradient
                   id={strokeGradId}
                   x1="0%"

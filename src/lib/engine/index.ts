@@ -86,3 +86,12 @@ export {
   getTreeLanes,
   detectConflicts,
 } from './persona-tree';
+
+// -- Score explanation engine --
+export {
+  type ScoreFactor,
+  type ScoreExplanation,
+  explainPersonaScore,
+  explainGrowthDelta,
+  explainNodeScoring,
+} from './explain';
