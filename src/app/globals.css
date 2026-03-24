@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+:root {
+  /* DashPersona Design Tokens */
+  --bg-primary: #0a0f0d;
+  --bg-secondary: #111916;
+  --bg-card: #151d19;
+  --bg-card-hover: #1a241f;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.12);
+
+  --text-primary: #e8fff6;
+  --text-secondary: #b8c4be;
+  --text-subtle: #6b7a72;
+
+  --accent-green: #7ed29a;
+  --accent-red: #c87e7e;
+  --accent-yellow: #d2c87e;
+  --accent-blue: #7eb8d2;
+  --accent-highlight: #e4f222;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --font-sans: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', monospace;
+}
+
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utility classes */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.card:hover {
+  border-color: var(--border-medium);
+  background: var(--bg-card-hover);
+}
+
+.kicker {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.badge-green { background: rgba(126, 210, 154, 0.15); color: var(--accent-green); }
+.badge-red { background: rgba(200, 126, 126, 0.15); color: var(--accent-red); }
+.badge-yellow { background: rgba(210, 200, 126, 0.15); color: var(--accent-yellow); }
