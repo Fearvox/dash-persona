@@ -4,33 +4,16 @@ interface StrategySuggestionsProps {
   suggestions: StrategySuggestion[];
 }
 
-const AREA_ICONS: Record<string, string> = {
-  content_mix: '\u{1F3AF}', // target
-  rhythm: '\u{23F0}',       // alarm clock
-  cross_platform: '\u{1F310}', // globe
-  engagement: '\u{1F4AC}',    // speech bubble
-  growth: '\u{1F680}',        // rocket
+const PRIORITY_WEIGHT: Record<SuggestionPriority, number> = {
+  high: 3,
+  medium: 2,
+  low: 1,
 };
 
-const PRIORITY_STYLES: Record<
-  SuggestionPriority,
-  { border: string; badge: string; badgeText: string }
-> = {
-  high: {
-    border: 'rgba(126, 210, 154, 0.2)',
-    badge: 'rgba(126, 210, 154, 0.15)',
-    badgeText: 'var(--accent-green)',
-  },
-  medium: {
-    border: 'rgba(210, 200, 126, 0.2)',
-    badge: 'rgba(210, 200, 126, 0.15)',
-    badgeText: 'var(--accent-yellow)',
-  },
-  low: {
-    border: 'var(--border-subtle)',
-    badge: 'rgba(126, 184, 210, 0.15)',
-    badgeText: 'var(--accent-blue)',
-  },
+const PRIORITY_ACCENT: Record<SuggestionPriority, string> = {
+  high: 'var(--accent-green)',
+  medium: 'var(--accent-yellow)',
+  low: 'var(--accent-blue)',
 };
 
 export default function StrategySuggestions({
@@ -48,51 +31,66 @@ export default function StrategySuggestions({
     );
   }
 
-  return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {suggestions.map((s) => {
-        const styles = PRIORITY_STYLES[s.priority];
-        const icon = AREA_ICONS[s.area] ?? '\u{2728}';
+  // Sort by priority weight (high first), then by relevance within same priority
+  const sorted = [...suggestions].sort(
+    (a, b) => PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority],
+  );
 
-        return (
-          <div
-            key={s.ruleId}
-            className="card p-5"
-            style={{ borderColor: styles.border }}
-          >
-            <div className="flex items-start gap-3">
-              <span className="text-xl leading-none" aria-hidden="true">
-                {icon}
-              </span>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3
-                    className="text-sm font-semibold"
-                    style={{ color: 'var(--text-primary)' }}
+  // Split into 3 equal-width columns
+  const columns: StrategySuggestion[][] = [[], [], []];
+  sorted.forEach((s, i) => {
+    columns[i % 3].push(s);
+  });
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-3">
+      {columns.map((col, colIdx) => (
+        <div key={colIdx} className="flex flex-col gap-0">
+          {col.map((s, idx) => {
+            const accent = PRIORITY_ACCENT[s.priority];
+            return (
+              <div
+                key={s.ruleId}
+                className="flex gap-3 py-4"
+                style={{
+                  borderBottom:
+                    idx < col.length - 1
+                      ? '1px solid var(--border-subtle)'
+                      : 'none',
+                }}
+              >
+                {/* Priority indicator bar */}
+                <div
+                  className="mt-0.5 h-full w-0.5 shrink-0 rounded-full"
+                  style={{ background: accent, minHeight: '2rem' }}
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3
+                      className="text-sm font-medium leading-snug"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {s.title}
+                    </h3>
+                    <span
+                      className="shrink-0 text-[10px] font-medium uppercase"
+                      style={{ color: accent }}
+                    >
+                      {s.priority}
+                    </span>
+                  </div>
+                  <p
+                    className="mt-1 text-xs leading-relaxed"
+                    style={{ color: 'var(--text-secondary)' }}
                   >
-                    {s.title}
-                  </h3>
-                  <span
-                    className="rounded-full px-2 py-0.5 text-[10px] font-medium uppercase"
-                    style={{
-                      background: styles.badge,
-                      color: styles.badgeText,
-                    }}
-                  >
-                    {s.priority}
-                  </span>
+                    {s.description}
+                  </p>
                 </div>
-                <p
-                  className="mt-1.5 text-xs leading-relaxed"
-                  style={{ color: 'var(--text-secondary)' }}
-                >
-                  {s.description}
-                </p>
               </div>
-            </div>
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

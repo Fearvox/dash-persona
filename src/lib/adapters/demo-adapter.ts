@@ -345,46 +345,49 @@ function extractTags(desc: string): string[] {
 
 function generateHistory(
   rng: ReturnType<typeof createRng>,
-  baseFollowers: number,
-  baseLikes: number,
-  baseVideos: number,
+  targetFollowers: number,
+  targetLikes: number,
+  targetVideos: number,
   entries: number,
 ): HistorySnapshot[] {
   const snapshots: HistorySnapshot[] = [];
   const now = Date.now();
 
-  // Walk backwards from now, with slight daily growth
-  let followers = baseFollowers;
-  let likes = baseLikes;
-  let videos = baseVideos;
+  // Growth rates per snapshot interval
+  const followerGrowthPerStep = rng.int(200, 1_500);
+  const likeGrowthPerStep = rng.int(500, 8_000);
+  const videoGrowthPerStep = rng.next() < 0.6 ? 1 : 0;
 
-  // Pre-compute growth rates
-  const dailyFollowerGrowth = rng.int(50, 800);
-  const dailyLikeGrowth = rng.int(200, 5_000);
-  const dailyVideoGrowth = rng.next() < 0.6 ? 1 : 0;
+  // Start BELOW current values so history shows growth toward current
+  const totalFollowerGrowth = followerGrowthPerStep * entries;
+  const totalLikeGrowth = likeGrowthPerStep * entries;
+  const totalVideoGrowth = videoGrowthPerStep * entries;
 
-  for (let i = entries - 1; i >= 0; i--) {
-    const hoursAgo = i * (7 * 24) / entries; // spread over 7 days
+  let followers = targetFollowers - totalFollowerGrowth;
+  let likes = targetLikes - totalLikeGrowth;
+  let videos = Math.max(targetVideos - totalVideoGrowth, 1);
+
+  // Generate oldest-to-newest (i=0 is oldest, i=entries-1 is most recent)
+  for (let i = 0; i < entries; i++) {
+    const hoursAgo = ((entries - 1 - i) * (7 * 24)) / Math.max(entries - 1, 1);
     const date = new Date(now - hoursAgo * 3_600_000);
 
     snapshots.push({
       fetchedAt: date.toISOString(),
       profile: {
-        followers,
-        likesTotal: likes,
-        videosCount: videos,
+        followers: Math.max(followers, 0),
+        likesTotal: Math.max(likes, 0),
+        videosCount: Math.max(videos, 0),
       },
     });
 
-    // Grow for next (more recent) snapshot
-    followers += dailyFollowerGrowth + rng.int(-100, 200);
-    likes += dailyLikeGrowth + rng.int(-500, 1_000);
-    videos += dailyVideoGrowth;
+    // Grow toward current values with jitter
+    followers += followerGrowthPerStep + rng.int(-200, 400);
+    likes += likeGrowthPerStep + rng.int(-1_000, 2_000);
+    videos += videoGrowthPerStep;
   }
 
-  // Oldest first by convention
-  snapshots.reverse();
-  return snapshots;
+  return snapshots; // already oldest first
 }
 
 function buildProfile(

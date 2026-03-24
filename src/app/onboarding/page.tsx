@@ -152,7 +152,7 @@ export default function OnboardingPage() {
                     <div
                       className="pointer-events-none absolute inset-y-[1px] right-[1px] w-28 rounded-r-lg"
                       style={{
-                        background: "linear-gradient(to right, transparent 0%, var(--bg-primary) 15%, var(--bg-primary) 25%, var(--bg-primary) 50%, var(--bg-primary) 85%)",
+                        background: "linear-gradient(to right, rgba(10,15,13,0) 0%, rgba(10,15,13,0.15) 15%, rgba(10,15,13,0.25) 30%, rgba(10,15,13,0.50) 50%, rgba(10,15,13,0.85) 85%, rgba(10,15,13,1) 100%)",
                         opacity: entry.url.length > 30 ? 1 : 0,
                         transition: "opacity 0.2s",
                       }}
@@ -270,7 +270,7 @@ export default function OnboardingPage() {
                     <div
                       className="pointer-events-none absolute inset-y-[1px] right-[1px] w-28 rounded-r-lg"
                       style={{
-                        background: "linear-gradient(to right, transparent 0%, var(--bg-primary) 15%, var(--bg-primary) 25%, var(--bg-primary) 50%, var(--bg-primary) 85%)",
+                        background: "linear-gradient(to right, rgba(10,15,13,0) 0%, rgba(10,15,13,0.15) 15%, rgba(10,15,13,0.25) 30%, rgba(10,15,13,0.50) 50%, rgba(10,15,13,0.85) 85%, rgba(10,15,13,1) 100%)",
                         opacity: entry.url.length > 30 ? 1 : 0,
                         transition: "opacity 0.2s",
                       }}
