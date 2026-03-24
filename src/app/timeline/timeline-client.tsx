@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { PersonaTreeNode } from '@/lib/schema/persona-tree';
+import type { ExperimentIdea } from '@/lib/engine/idea-generator';
 import { detectConflicts } from '@/lib/engine';
+import ExperimentForm from '@/components/experiment-form';
+import IdeaCards from '@/components/idea-cards';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -34,6 +37,15 @@ const STATUS_STYLES: Record<
   },
 };
 
+const OUTCOME_STYLES: Record<
+  string,
+  { bg: string; text: string }
+> = {
+  mainline: { bg: 'rgba(126, 210, 154, 0.15)', text: 'var(--accent-green)' },
+  branch: { bg: 'rgba(210, 200, 126, 0.15)', text: 'var(--accent-yellow)' },
+  boundary: { bg: 'rgba(200, 126, 126, 0.15)', text: 'var(--accent-red)' },
+};
+
 function scoreColor(value: number): string {
   if (value >= 70) return 'var(--accent-green)';
   if (value >= 40) return 'var(--accent-yellow)';
@@ -48,92 +60,144 @@ function NodeCard({
   node,
   isSelected,
   onClick,
+  onDiscard,
+  onSetOutcome,
 }: {
   node: PersonaTreeNode;
   isSelected: boolean;
   onClick: () => void;
+  onDiscard: () => void;
+  onSetOutcome: (outcome: 'mainline' | 'branch' | 'boundary') => void;
 }) {
   const status = STATUS_STYLES[node.status] ?? STATUS_STYLES.planned;
   const hasConflict = detectConflicts(node);
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="card w-full cursor-pointer p-4 text-left transition-all"
-      style={{
-        borderColor: isSelected
-          ? 'var(--accent-green)'
-          : undefined,
-        borderWidth: isSelected ? '2px' : undefined,
-        minWidth: 220,
-        maxWidth: 280,
-      }}
-      aria-pressed={isSelected}
+    <div
+      className="flex flex-col gap-0"
+      style={{ minWidth: 220, maxWidth: 280 }}
     >
-      {/* Header: ID + status badge */}
-      <div className="flex items-center justify-between gap-2">
-        <span
-          className="metric-value text-xs font-medium"
-          style={{ color: 'var(--text-subtle)' }}
-        >
-          {node.id}
-        </span>
-        <span
-          className="badge text-[10px]"
-          style={{ background: status.bg, color: status.text }}
-        >
-          {status.label}
-        </span>
-      </div>
-
-      {/* Title */}
-      <p
-        className="mt-2 text-sm font-semibold leading-snug"
-        style={{ color: 'var(--text-primary)' }}
+      <button
+        type="button"
+        onClick={onClick}
+        className="card w-full cursor-pointer p-4 text-left transition-all"
+        style={{
+          borderColor: isSelected ? 'var(--accent-green)' : undefined,
+          borderWidth: isSelected ? '2px' : undefined,
+        }}
+        aria-pressed={isSelected}
       >
-        {node.title}
-      </p>
-
-      {/* Hypothesis preview */}
-      <p
-        className="mt-1 text-[11px] leading-relaxed"
-        style={{ color: 'var(--text-subtle)' }}
-      >
-        {node.hypothesis.length > 80
-          ? node.hypothesis.slice(0, 80) + '...'
-          : node.hypothesis}
-      </p>
-
-      {/* Composite score */}
-      {node.scoring && (
-        <div className="mt-3 flex items-center gap-2">
+        {/* Header: ID + status badge */}
+        <div className="flex items-center justify-between gap-2">
           <span
-            className="metric-value text-lg font-bold"
-            style={{ color: scoreColor(node.scoring.compositeScore) }}
-          >
-            {node.scoring.compositeScore}
-          </span>
-          <span
-            className="text-[10px]"
+            className="metric-value text-xs font-medium"
             style={{ color: 'var(--text-subtle)' }}
           >
-            composite
+            {node.id}
           </span>
-          {hasConflict && (
-            <span
-              className="badge text-[10px]"
-              style={{
-                background: 'rgba(210, 200, 126, 0.15)',
-                color: 'var(--accent-yellow)',
-              }}
-            >
-              Conflict
-            </span>
-          )}
+          <span
+            className="badge text-[10px]"
+            style={{ background: status.bg, color: status.text }}
+          >
+            {status.label}
+          </span>
         </div>
-      )}
-    </button>
+
+        {/* Title */}
+        <p
+          className="mt-2 text-sm font-semibold leading-snug"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          {node.title}
+        </p>
+
+        {/* Hypothesis preview */}
+        <p
+          className="mt-1 text-[11px] leading-relaxed"
+          style={{ color: 'var(--text-subtle)' }}
+        >
+          {node.hypothesis.length > 80
+            ? node.hypothesis.slice(0, 80) + '...'
+            : node.hypothesis}
+        </p>
+
+        {/* Composite score */}
+        {node.scoring && (
+          <div className="mt-3 flex items-center gap-2">
+            <span
+              className="metric-value text-lg font-bold"
+              style={{ color: scoreColor(node.scoring.compositeScore) }}
+            >
+              {node.scoring.compositeScore}
+            </span>
+            <span
+              className="text-[10px]"
+              style={{ color: 'var(--text-subtle)' }}
+            >
+              composite
+            </span>
+            {hasConflict && (
+              <span
+                className="badge text-[10px]"
+                style={{
+                  background: 'rgba(210, 200, 126, 0.15)',
+                  color: 'var(--accent-yellow)',
+                }}
+              >
+                Conflict
+              </span>
+            )}
+          </div>
+        )}
+      </button>
+
+      {/* Outcome selector + discard button */}
+      <div className="mt-1 flex items-center gap-1">
+        {(['mainline', 'branch', 'boundary'] as const).map((outcome) => {
+          const isActive = node.outcome === outcome;
+          const style = OUTCOME_STYLES[outcome];
+          return (
+            <button
+              key={outcome}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetOutcome(outcome);
+              }}
+              className="rounded px-2 py-0.5 text-[10px] font-medium transition-colors"
+              style={{
+                background: isActive ? style.bg : 'transparent',
+                color: isActive ? style.text : 'var(--text-subtle)',
+                border: isActive
+                  ? `1px solid ${style.text}`
+                  : '1px solid transparent',
+              }}
+              aria-label={`Set outcome to ${outcome}`}
+            >
+              {outcome.charAt(0).toUpperCase() + outcome.slice(1)}
+            </button>
+          );
+        })}
+        {node.status !== 'discarded' && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDiscard();
+            }}
+            className="ml-auto rounded px-2 py-0.5 text-[10px] font-medium transition-colors"
+            style={{
+              color: 'var(--accent-red)',
+              background: 'transparent',
+              border: '1px solid transparent',
+            }}
+            aria-label={`Discard experiment ${node.id}`}
+          >
+            Discard
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -390,11 +454,15 @@ function Lane({
   nodes,
   selectedId,
   onSelect,
+  onDiscard,
+  onSetOutcome,
 }: {
   label: string;
   nodes: PersonaTreeNode[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onDiscard: (id: string) => void;
+  onSetOutcome: (id: string, outcome: 'mainline' | 'branch' | 'boundary') => void;
 }) {
   if (nodes.length === 0) return null;
 
@@ -408,6 +476,8 @@ function Lane({
               node={node}
               isSelected={selectedId === node.id}
               onClick={() => onSelect(node.id)}
+              onDiscard={() => onDiscard(node.id)}
+              onSetOutcome={(outcome) => onSetOutcome(node.id, outcome)}
             />
             {/* Connector line between nodes in same lane */}
             {idx < nodes.length - 1 && (
@@ -434,23 +504,58 @@ interface TimelineClientProps {
     branches: PersonaTreeNode[];
     boundaries: PersonaTreeNode[];
   };
+  ideas?: ExperimentIdea[];
 }
 
 export default function TimelineClient({
-  nodes,
-  lanes,
+  nodes: initialNodes,
+  lanes: initialLanes,
+  ideas = [],
 }: TimelineClientProps) {
+  const [treeNodes, setTreeNodes] = useState<PersonaTreeNode[]>(initialNodes);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [seriesFilter, setSeriesFilter] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formPrefill, setFormPrefill] = useState<Partial<PersonaTreeNode> | null>(null);
+
+  // Recompute lanes from local state
+  const lanes = useMemo(() => {
+    const mainline: PersonaTreeNode[] = [];
+    const branches: PersonaTreeNode[] = [];
+    const boundaries: PersonaTreeNode[] = [];
+
+    for (const node of treeNodes) {
+      switch (node.outcome) {
+        case 'mainline':
+          mainline.push(node);
+          break;
+        case 'branch':
+          branches.push(node);
+          break;
+        case 'boundary':
+          boundaries.push(node);
+          break;
+      }
+    }
+
+    const byDate = (a: PersonaTreeNode, b: PersonaTreeNode) =>
+      new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime();
+
+    mainline.sort(byDate);
+    branches.sort(byDate);
+    boundaries.sort(byDate);
+
+    return { mainline, branches, boundaries };
+  }, [treeNodes]);
 
   // Extract unique series values
   const allSeries = useMemo(() => {
     const set = new Set<string>();
-    for (const node of nodes) {
+    for (const node of treeNodes) {
       set.add(node.series);
     }
     return [...set].sort();
-  }, [nodes]);
+  }, [treeNodes]);
 
   // Filter lanes by series
   const filteredLanes = useMemo(() => {
@@ -464,52 +569,160 @@ export default function TimelineClient({
   }, [lanes, seriesFilter]);
 
   const selectedNode = useMemo(
-    () => nodes.find((n) => n.id === selectedId) ?? null,
-    [nodes, selectedId],
+    () => treeNodes.find((n) => n.id === selectedId) ?? null,
+    [treeNodes, selectedId],
   );
+
+  // --- Handlers ---
+
+  const handleDiscard = useCallback((nodeId: string) => {
+    setTreeNodes((prev) =>
+      prev.map((n) =>
+        n.id === nodeId ? { ...n, status: 'discarded' as const } : n,
+      ),
+    );
+  }, []);
+
+  const handleSetOutcome = useCallback(
+    (nodeId: string, outcome: 'mainline' | 'branch' | 'boundary') => {
+      setTreeNodes((prev) =>
+        prev.map((n) => (n.id === nodeId ? { ...n, outcome } : n)),
+      );
+    },
+    [],
+  );
+
+  const handleFormSubmit = useCallback(
+    (partial: Partial<PersonaTreeNode>) => {
+      const newNode: PersonaTreeNode = {
+        id: partial.id ?? `PE-${Date.now().toString(36)}`,
+        parentId: partial.parentId ?? null,
+        title: partial.title ?? 'Untitled Experiment',
+        series: partial.series ?? 'content-mix',
+        status: partial.status ?? 'planned',
+        outcome: partial.outcome ?? 'branch',
+        hypothesis: partial.hypothesis ?? '',
+        startedAt: partial.startedAt ?? new Date().toISOString(),
+        variants: partial.variants ?? [],
+      };
+
+      setTreeNodes((prev) => [...prev, newNode]);
+      setShowForm(false);
+      setFormPrefill(null);
+    },
+    [],
+  );
+
+  const handleUseIdea = useCallback((idea: ExperimentIdea) => {
+    setFormPrefill({
+      title: idea.title,
+      hypothesis: idea.hypothesis,
+      series: idea.series,
+    });
+    setShowForm(true);
+  }, []);
+
+  const handleCancelForm = useCallback(() => {
+    setShowForm(false);
+    setFormPrefill(null);
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Series filter pills */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setSeriesFilter(null)}
-          className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
-          style={{
-            background: seriesFilter === null
-              ? 'var(--accent-green)'
-              : 'var(--bg-secondary)',
-            color: seriesFilter === null
-              ? 'var(--bg-primary)'
-              : 'var(--text-subtle)',
-            border: '1px solid var(--border-subtle)',
-          }}
-        >
-          All
-        </button>
-        {allSeries.map((series) => (
+      {/* Header with New Experiment button */}
+      <div className="flex items-center justify-between">
+        {/* Series filter pills */}
+        <div className="flex flex-wrap gap-2">
           <button
-            key={series}
             type="button"
-            onClick={() =>
-              setSeriesFilter(seriesFilter === series ? null : series)
-            }
+            onClick={() => setSeriesFilter(null)}
             className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
             style={{
-              background: seriesFilter === series
-                ? 'var(--accent-green)'
-                : 'var(--bg-secondary)',
-              color: seriesFilter === series
-                ? 'var(--bg-primary)'
-                : 'var(--text-subtle)',
+              background:
+                seriesFilter === null
+                  ? 'var(--accent-green)'
+                  : 'var(--bg-secondary)',
+              color:
+                seriesFilter === null
+                  ? 'var(--bg-primary)'
+                  : 'var(--text-subtle)',
               border: '1px solid var(--border-subtle)',
             }}
           >
-            {series}
+            All
           </button>
-        ))}
+          {allSeries.map((series) => (
+            <button
+              key={series}
+              type="button"
+              onClick={() =>
+                setSeriesFilter(seriesFilter === series ? null : series)
+              }
+              className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+              style={{
+                background:
+                  seriesFilter === series
+                    ? 'var(--accent-green)'
+                    : 'var(--bg-secondary)',
+                color:
+                  seriesFilter === series
+                    ? 'var(--bg-primary)'
+                    : 'var(--text-subtle)',
+                border: '1px solid var(--border-subtle)',
+              }}
+            >
+              {series}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setFormPrefill(null);
+            setShowForm(true);
+          }}
+          className="shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+          style={{
+            background: 'var(--accent-green)',
+            color: 'var(--bg-primary)',
+          }}
+        >
+          + New Experiment
+        </button>
       </div>
+
+      {/* Experiment form modal */}
+      {showForm && (
+        <div
+          className="card p-6"
+          style={{
+            border: '2px solid var(--accent-green)',
+          }}
+        >
+          <h3
+            className="mb-4 text-sm font-bold"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {formPrefill ? 'Create Experiment from Idea' : 'New Experiment'}
+          </h3>
+          <ExperimentForm
+            onSubmit={handleFormSubmit}
+            onCancel={handleCancelForm}
+            parentNodes={treeNodes}
+            editingNode={
+              formPrefill
+                ? ({
+                    title: formPrefill.title ?? '',
+                    hypothesis: formPrefill.hypothesis ?? '',
+                    series: formPrefill.series ?? '',
+                  } as PersonaTreeNode)
+                : undefined
+            }
+            existingSeries={allSeries}
+          />
+        </div>
+      )}
 
       {/* Tree visualization: 3 lanes */}
       <div className="flex flex-col gap-6">
@@ -519,6 +732,8 @@ export default function TimelineClient({
           nodes={filteredLanes.branches}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          onDiscard={handleDiscard}
+          onSetOutcome={handleSetOutcome}
         />
 
         {/* Vertical connectors from branches to mainline */}
@@ -538,6 +753,8 @@ export default function TimelineClient({
           nodes={filteredLanes.mainline}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          onDiscard={handleDiscard}
+          onSetOutcome={handleSetOutcome}
         />
 
         {/* Vertical connectors from mainline to boundaries */}
@@ -557,6 +774,8 @@ export default function TimelineClient({
           nodes={filteredLanes.boundaries}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          onDiscard={handleDiscard}
+          onSetOutcome={handleSetOutcome}
         />
       </div>
 
@@ -577,6 +796,25 @@ export default function TimelineClient({
             </button>
           </div>
           <DetailPanel node={selectedNode} />
+        </section>
+      )}
+
+      {/* Idea Generator section */}
+      {ideas.length > 0 && (
+        <section aria-labelledby="ideas-heading">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 id="ideas-heading" className="kicker">
+              Experiment Ideas
+            </h2>
+            <span
+              className="text-[10px]"
+              style={{ color: 'var(--text-subtle)' }}
+            >
+              {ideas.length} suggestion{ideas.length !== 1 ? 's' : ''} based on
+              your data
+            </span>
+          </div>
+          <IdeaCards ideas={ideas} onUseIdea={handleUseIdea} />
         </section>
       )}
     </div>

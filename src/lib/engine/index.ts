@@ -103,3 +103,9 @@ export {
   generateContentPlan,
   exportToICS,
 } from './content-planner';
+
+// -- Experiment idea generator --
+export {
+  type ExperimentIdea,
+  generateExperimentIdeas,
+} from './idea-generator';

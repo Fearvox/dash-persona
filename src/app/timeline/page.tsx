@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
-import { generateDemoTree, getTreeLanes } from '@/lib/engine';
+import { generateDemoTree, getTreeLanes, generateExperimentIdeas } from '@/lib/engine';
 import TimelineClient from './timeline-client';
 
 // ---------------------------------------------------------------------------
@@ -52,11 +52,12 @@ export default async function TimelinePage({
     ? platformParam
     : 'douyin';
 
-  // Load demo profile and generate tree
+  // Load demo profile and generate tree + ideas
   const profiles = getDemoProfile(personaType);
   const profile = profiles[platform];
   const tree = generateDemoTree(profile);
   const lanes = getTreeLanes(tree);
+  const ideas = generateExperimentIdeas(profiles, tree);
 
   // Build search params for platform tabs
   function platformHref(p: string) {
@@ -167,7 +168,7 @@ export default async function TimelinePage({
       </section>
 
       {/* Tree visualization (interactive client component) */}
-      <TimelineClient nodes={tree.nodes} lanes={lanes} />
+      <TimelineClient nodes={tree.nodes} lanes={lanes} ideas={ideas} />
     </div>
   );
 }
