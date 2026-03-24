@@ -11,9 +11,10 @@ import GrowthSparklines from '@/components/growth-sparklines';
 import PersonaOverview from '@/components/persona-overview';
 import PlatformComparison from '@/components/platform-comparison';
 import StrategySuggestions from '@/components/strategy-suggestions';
+import LiveDashboardWrapper from '@/components/live-dashboard-wrapper';
 
 interface DashboardPageProps {
-  searchParams: Promise<{ source?: string; persona?: string }>;
+  searchParams: Promise<{ source?: string; persona?: string; url?: string }>;
 }
 
 const VALID_PERSONAS = new Set<DemoPersonaType>([
@@ -26,7 +27,9 @@ export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
   const params = await searchParams;
+  const isLive = params.source === 'live';
   const isDemo = params.source === 'demo';
+  const liveUrl = params.url ?? '';
   const personaParam = params.persona ?? 'tutorial';
   const personaType: DemoPersonaType = VALID_PERSONAS.has(
     personaParam as DemoPersonaType,
@@ -34,6 +37,45 @@ export default async function DashboardPage({
     ? (personaParam as DemoPersonaType)
     : 'tutorial';
 
+  // --- Live data collection mode ---
+  if (isLive) {
+    // Always prepare fallback demo data
+    const fallbackProfiles = getDemoProfile(personaType);
+
+    if (!liveUrl) {
+      // No URL provided — direct user to onboarding
+      return (
+        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            No profile URL provided
+          </h1>
+          <p
+            className="max-w-md text-center text-sm leading-6"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            To use live data collection, please go through the onboarding
+            flow and paste your TikTok profile URL.
+          </p>
+          <Link
+            href="/onboarding"
+            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
+            style={{
+              background: 'var(--accent-green)',
+              color: 'var(--bg-primary)',
+            }}
+          >
+            Go to Onboarding
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <LiveDashboardWrapper url={liveUrl} fallbackProfiles={fallbackProfiles} />
+    );
+  }
+
+  // --- Demo mode (default) ---
   // 1. Get demo profiles (one per platform)
   const profiles = getDemoProfile(personaType);
 

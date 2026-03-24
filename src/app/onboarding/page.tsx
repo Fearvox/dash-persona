@@ -78,7 +78,14 @@ export default function OnboardingPage() {
   }
 
   function handleFinish() {
-    router.push("/dashboard?source=live");
+    const firstValidUrl = entries.find((e) => e.platform !== null)?.url;
+    if (firstValidUrl) {
+      router.push(
+        `/dashboard?source=live&url=${encodeURIComponent(firstValidUrl)}`,
+      );
+    } else {
+      router.push("/dashboard?source=live");
+    }
   }
 
   return (
