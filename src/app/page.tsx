@@ -4,7 +4,7 @@ const features = [
   {
     title: "Cross-Platform Analysis",
     description:
-      "Unified metrics across Douyin, TikTok, and Xiaohongshu. Compare performance with normalized, platform-agnostic scoring.",
+      "Unified metrics across Douyin, TikTok, and Red Note. Compare performance with normalized, platform-agnostic scoring.",
     icon: (
       <svg
         aria-hidden="true"
@@ -97,7 +97,7 @@ export default function HomePage() {
           style={{ color: "var(--text-secondary)" }}
         >
           Analyze your social media presence across Douyin, TikTok, and
-          Xiaohongshu with deterministic, AI-free algorithms.
+          Red Note with deterministic, AI-free algorithms.
         </p>
 
         <div className="mt-10 flex flex-col gap-4 sm:flex-row">

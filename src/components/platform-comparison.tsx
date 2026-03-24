@@ -7,7 +7,7 @@ import { formatNumber } from '@/lib/engine';
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: 'Douyin',
   tiktok: 'TikTok',
-  xhs: 'Xiaohongshu',
+  xhs: 'Red Note',
 };
 
 interface PlatformComparisonProps {

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "DashPersona — Creator Intelligence Engine",
   description:
-    "Data-agnostic creator intelligence engine. Analyze your social media presence across Douyin, TikTok, and Xiaohongshu with deterministic, AI-free algorithms.",
+    "Data-agnostic creator intelligence engine. Analyze your social media presence across Douyin, TikTok, and Red Note with deterministic, AI-free algorithms.",
 };
 
 export default function RootLayout({

@@ -19,7 +19,7 @@ import {
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: 'Douyin',
   tiktok: 'TikTok',
-  xhs: 'Xiaohongshu',
+  xhs: 'Red Note',
 };
 
 interface GrowthSparklinesProps {
@@ -95,7 +95,9 @@ export default function GrowthSparklines({ profiles }: GrowthSparklinesProps) {
         const sparkData = extractSparklineData(profile, 168); // 7 days
         const growthDelta: GrowthDelta | null = computeGrowthDelta(profile);
         const followerDelta = growthDelta?.followers.delta ?? 0;
+        const pctChange = growthDelta?.followers.pct ?? 0;
         const label = PLATFORM_LABELS[key] ?? key;
+        const trendColor = followerDelta >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
 
         return (
           <div key={key} className="card p-5">
@@ -115,14 +117,24 @@ export default function GrowthSparklines({ profiles }: GrowthSparklinesProps) {
             >
               {formatNumber(profile.profile.followers)}
             </p>
-            <p
-              className="mt-0.5 text-xs"
-              style={{ color: 'var(--text-subtle)' }}
-            >
-              followers
-            </p>
+            <div className="mt-0.5 flex items-center gap-2">
+              <p
+                className="text-xs"
+                style={{ color: 'var(--text-subtle)' }}
+              >
+                followers
+              </p>
+              {pctChange !== 0 && (
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: trendColor }}
+                >
+                  {pctChange > 0 ? '+' : ''}{pctChange.toFixed(1)}%
+                </span>
+              )}
+            </div>
 
-            <div className="mt-3 h-12 w-full">
+            <div className="mt-3 h-14 w-full">
               {sparkData.length >= 2 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
@@ -139,12 +151,12 @@ export default function GrowthSparklines({ profiles }: GrowthSparklinesProps) {
                       >
                         <stop
                           offset="0%"
-                          stopColor="var(--accent-green)"
+                          stopColor={trendColor}
                           stopOpacity={0.3}
                         />
                         <stop
                           offset="100%"
-                          stopColor="var(--accent-green)"
+                          stopColor={trendColor}
                           stopOpacity={0}
                         />
                       </linearGradient>
@@ -156,13 +168,13 @@ export default function GrowthSparklines({ profiles }: GrowthSparklinesProps) {
                     <Area
                       type="monotone"
                       dataKey="followers"
-                      stroke="var(--accent-green)"
+                      stroke={trendColor}
                       strokeWidth={1.5}
                       fill={`url(#grad-${key})`}
                       dot={false}
                       activeDot={{
                         r: 3,
-                        fill: 'var(--accent-green)',
+                        fill: trendColor,
                         stroke: 'var(--bg-card)',
                         strokeWidth: 2,
                       }}

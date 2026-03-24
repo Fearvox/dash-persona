@@ -20,14 +20,14 @@ function detectPlatform(url: string): string | null {
     lower.includes("xhslink.com") ||
     lower.includes("xhs.com")
   )
-    return "Xiaohongshu";
+    return "Red Note";
   return null;
 }
 
 const platformBadgeColor: Record<string, string> = {
   Douyin: "badge-red",
   TikTok: "badge-green",
-  Xiaohongshu: "badge-yellow",
+  "Red Note": "badge-yellow",
 };
 
 export default function OnboardingPage() {
@@ -142,10 +142,19 @@ export default function OnboardingPage() {
                       onChange={(e) =>
                         updateEntry(entries, setEntries, index, e.target.value)
                       }
-                      className="h-12 w-full rounded-lg border bg-transparent px-4 text-sm outline-none transition-colors focus:border-[var(--accent-green)]"
+                      className="h-12 w-full rounded-lg border bg-transparent px-4 pr-28 text-sm outline-none transition-colors focus:border-[var(--accent-green)]"
                       style={{
                         borderColor: "var(--border-medium)",
                         color: "var(--text-primary)",
+                      }}
+                    />
+                    {/* Gradient fade overlay to prevent text/badge overlap */}
+                    <div
+                      className="pointer-events-none absolute inset-y-[1px] right-[1px] w-28 rounded-r-lg"
+                      style={{
+                        background: "linear-gradient(to right, transparent 0%, var(--bg-primary) 15%, var(--bg-primary) 25%, var(--bg-primary) 50%, var(--bg-primary) 85%)",
+                        opacity: entry.url.length > 30 ? 1 : 0,
+                        transition: "opacity 0.2s",
                       }}
                     />
                     {entry.platform && (
@@ -251,10 +260,19 @@ export default function OnboardingPage() {
                           e.target.value,
                         )
                       }
-                      className="h-12 w-full rounded-lg border bg-transparent px-4 text-sm outline-none transition-colors focus:border-[var(--accent-green)]"
+                      className="h-12 w-full rounded-lg border bg-transparent px-4 pr-28 text-sm outline-none transition-colors focus:border-[var(--accent-green)]"
                       style={{
                         borderColor: "var(--border-medium)",
                         color: "var(--text-primary)",
+                      }}
+                    />
+                    {/* Gradient fade overlay to prevent text/badge overlap */}
+                    <div
+                      className="pointer-events-none absolute inset-y-[1px] right-[1px] w-28 rounded-r-lg"
+                      style={{
+                        background: "linear-gradient(to right, transparent 0%, var(--bg-primary) 15%, var(--bg-primary) 25%, var(--bg-primary) 50%, var(--bg-primary) 85%)",
+                        opacity: entry.url.length > 30 ? 1 : 0,
+                        transition: "opacity 0.2s",
                       }}
                     />
                     {entry.platform && (
