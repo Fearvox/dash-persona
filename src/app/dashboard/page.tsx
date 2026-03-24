@@ -220,7 +220,39 @@ export default async function DashboardPage({
         <PlatformComparison comparison={comparison} />
       </section>
 
-      {/* 5. Persona Timeline */}
+      {/* 5. Content Calendar */}
+      <section aria-labelledby="calendar-heading">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 id="calendar-heading" className="kicker">
+            Content Calendar
+          </h2>
+          <Link
+            href={`/calendar?source=${params.source ?? 'demo'}&persona=${personaType}`}
+            className="text-xs font-medium transition-colors"
+            style={{ color: 'var(--text-subtle)' }}
+          >
+            <span className="detail-link">View calendar &rarr;</span>
+          </Link>
+        </div>
+        <div className="card p-5">
+          <p
+            className="text-sm font-medium"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Publishing Planner
+          </p>
+          <p
+            className="mt-1 text-xs leading-relaxed"
+            style={{ color: 'var(--text-subtle)' }}
+          >
+            AI-free content scheduling based on your engagement patterns.
+            See what to post, when to post, and where to post — all
+            derived from your historical data.
+          </p>
+        </div>
+      </section>
+
+      {/* 6. Persona Timeline (renumbered) */}
       <section aria-labelledby="timeline-heading">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="timeline-heading" className="kicker">

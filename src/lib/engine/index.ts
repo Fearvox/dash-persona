@@ -95,3 +95,11 @@ export {
   explainGrowthDelta,
   explainNodeScoring,
 } from './explain';
+
+// -- Content planner engine --
+export {
+  type ContentSlot,
+  type ContentPlan,
+  generateContentPlan,
+  exportToICS,
+} from './content-planner';
