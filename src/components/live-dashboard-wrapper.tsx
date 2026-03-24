@@ -77,6 +77,19 @@ export default function LiveDashboardWrapper({
         <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
           {usedFallback ? 'Showing demo data' : url}
         </p>
+        {!usedFallback && profiles !== null && (
+          <p
+            className="mt-1 rounded-md px-3 py-1.5 text-xs leading-5"
+            style={{
+              background: 'rgba(126, 184, 210, 0.08)',
+              color: 'var(--accent-blue)',
+              border: '1px solid rgba(126, 184, 210, 0.15)',
+            }}
+          >
+            Showing current snapshot only. Growth history and trend tracking
+            will be available once continuous data collection is enabled.
+          </p>
+        )}
       </header>
 
       {/* Live collector status */}

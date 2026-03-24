@@ -70,7 +70,11 @@ export default function OnboardingPage() {
     setter(list.filter((_, i) => i !== index));
   }
 
-  const hasValidEntry = entries.some((e) => e.platform !== null);
+  const hasTikTok = entries.some((e) => e.platform === "TikTok");
+  const hasNonTikTok = entries.some(
+    (e) => e.platform !== null && e.platform !== "TikTok",
+  );
+  const hasValidEntry = hasTikTok;
 
   function handleContinueToStep2() {
     if (!hasValidEntry) return;
@@ -126,8 +130,20 @@ export default function OnboardingPage() {
               className="mt-2 text-sm leading-6"
               style={{ color: "var(--text-secondary)" }}
             >
-              Paste your profile URL from any supported platform. We will
-              auto-detect which platform it belongs to.
+              Paste your TikTok profile URL to get started. We will
+              auto-detect the platform from the link.
+            </p>
+            <p
+              className="mt-1.5 rounded-md px-3 py-2 text-xs leading-5"
+              style={{
+                background: "rgba(210, 200, 126, 0.08)",
+                color: "var(--accent-yellow)",
+                border: "1px solid rgba(210, 200, 126, 0.15)",
+              }}
+            >
+              Currently only TikTok is supported for live data collection.
+              Douyin and Red Note support is coming soon. You can still
+              explore all platforms using demo data.
             </p>
 
             <fieldset className="mt-8 flex flex-col gap-4">
@@ -144,7 +160,7 @@ export default function OnboardingPage() {
                     <input
                       id={`url-${index}`}
                       type="url"
-                      placeholder="https://www.douyin.com/user/..."
+                      placeholder="https://www.tiktok.com/@username"
                       value={entry.url}
                       onChange={(e) =>
                         updateEntry(entries, setEntries, index, e.target.value)
@@ -196,6 +212,16 @@ export default function OnboardingPage() {
                 </div>
               ))}
             </fieldset>
+
+            {hasNonTikTok && (
+              <p
+                className="mt-3 text-xs"
+                style={{ color: "var(--accent-red)" }}
+              >
+                Douyin and Red Note URLs detected but not yet supported for live
+                collection. Please use a TikTok URL or try demo data.
+              </p>
+            )}
 
             <button
               type="button"
