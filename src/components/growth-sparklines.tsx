@@ -3,6 +3,7 @@
 import {
   AreaChart,
   Area,
+  YAxis,
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
@@ -161,6 +162,7 @@ export default function GrowthSparklines({ profiles }: GrowthSparklinesProps) {
                         />
                       </linearGradient>
                     </defs>
+                    <YAxis domain={['dataMin', 'dataMax']} hide />
                     <Tooltip
                       content={<SparklineTooltip />}
                       cursor={false}
