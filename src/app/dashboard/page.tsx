@@ -9,6 +9,7 @@ import {
   explainPersonaScore,
   compareToBenchmarkByNiche,
   detectNiche,
+  overallScore,
   type PersonaScore,
 } from '@/lib/engine';
 import type { ScoreExplanation } from '@/lib/engine/explain';
@@ -22,6 +23,9 @@ import ForYouCard from '@/components/for-you-card';
 import NicheDetectCard from '@/components/niche-detect-card';
 import ImportDashboardLoader from '@/components/import-dashboard-loader';
 import ExportButton from '@/components/export-button';
+import AnalysisDeltaBadge from '@/components/analysis-delta-badge';
+import { extractAnalysisSnapshot } from '@/lib/history/analysis-types';
+import { profileKey } from '@/lib/history/store';
 
 interface DashboardSearchParams {
   source?: string;
@@ -231,6 +235,21 @@ export default async function DashboardPage({
   // 8. Collect all posts across platforms for the PostDrawer
   const allPosts: Post[] = Object.values(profiles).flatMap((p) => p.posts);
 
+  // 9. Build analysis snapshot for history tracking
+  const bestProfile = profiles[bestPlatform] ?? Object.values(profiles)[0];
+  const bestOverall = overallScore(bestPersonaScore);
+  const analysisSnapshot = extractAnalysisSnapshot(
+    bestPlatform,
+    bestOverall,
+    bestPersonaScore,
+    nicheResult,
+  );
+  // Fill profile-level fields that extractAnalysisSnapshot can't access
+  analysisSnapshot.followers = bestProfile.profile.followers;
+  analysisSnapshot.likesTotal = bestProfile.profile.likesTotal;
+
+  const analysisStoreKey = profileKey(bestPlatform, bestProfile.profile.uniqueId);
+
   const sourceParam = params.source ?? 'demo';
 
   return (
@@ -249,6 +268,7 @@ export default async function DashboardPage({
           <h1 className="text-lg font-bold tracking-tight sm:text-xl">
             Dashboard
           </h1>
+          <AnalysisDeltaBadge current={analysisSnapshot} storeKey={analysisStoreKey} />
           {isDemo && (
             <span className="badge badge-green">Demo</span>
           )}

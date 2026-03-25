@@ -48,3 +48,35 @@ export async function exportToPNG(
 export function exportToPDF(): void {
   window.print();
 }
+
+// ---------------------------------------------------------------------------
+// CSV export
+// ---------------------------------------------------------------------------
+
+/**
+ * Download a CSV string as a file.
+ *
+ * @param csvContent  The full CSV content (should include UTF-8 BOM for Excel).
+ * @param filename    Download filename (without extension).
+ */
+export function exportToCSV(
+  csvContent: string,
+  filename = 'dashpersona-export',
+): void {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+// Re-export CSV builders for convenience
+export {
+  buildPersonaScoreCSV,
+  buildPostsCSV,
+  buildComparisonCSV,
+  buildGrowthCSV,
+  combineSections,
+} from './csv-builder';

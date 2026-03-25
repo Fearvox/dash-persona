@@ -1,17 +1,19 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { exportToPNG, exportToPDF } from '@/lib/export';
+import { exportToPNG, exportToPDF, exportToCSV, buildPostsCSV, buildPersonaScoreCSV, combineSections } from '@/lib/export';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type ExportFormat = 'png' | 'pdf';
+type ExportFormat = 'png' | 'pdf' | 'csv';
 
 interface ExportButtonProps {
   /** CSS selector or ref-id for the dashboard content area to capture. */
   contentSelector?: string;
+  /** Callback to get CSV content — called when user selects CSV export. */
+  onCSVExport?: () => string;
 }
 
 // ---------------------------------------------------------------------------
@@ -20,6 +22,7 @@ interface ExportButtonProps {
 
 export default function ExportButton({
   contentSelector = '#dashboard-content',
+  onCSVExport,
 }: ExportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -62,8 +65,15 @@ export default function ExportButton({
             return;
           }
           await exportToPNG(el);
-        } else {
+        } else if (format === 'pdf') {
           exportToPDF();
+        } else if (format === 'csv') {
+          const csvContent = onCSVExport?.() ?? '';
+          if (csvContent) {
+            exportToCSV(csvContent);
+          } else {
+            console.error('No CSV content available');
+          }
         }
       } catch (err) {
         console.error('Export failed:', err);
@@ -71,7 +81,7 @@ export default function ExportButton({
         setIsExporting(false);
       }
     },
-    [contentSelector],
+    [contentSelector, onCSVExport],
   );
 
   return (
@@ -181,6 +191,34 @@ export default function ExportButton({
               />
             </svg>
             Export as PDF
+          </button>
+          <button
+            type="button"
+            onClick={() => handleExport('csv')}
+            className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-[var(--text-primary)] border-t border-t-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-secondary)]"
+            role="menuitem"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 2.5h10a.5.5 0 01.5.5v10a.5.5 0 01-.5.5H3a.5.5 0 01-.5-.5V3a.5.5 0 01.5-.5z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M2.5 6h11M2.5 10h11M6 2.5v11M10 2.5v11"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeOpacity="0.4"
+              />
+            </svg>
+            Export as CSV
           </button>
         </div>
       )}
