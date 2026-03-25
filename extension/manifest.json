@@ -4,7 +4,12 @@
   "version": "0.1.0",
   "description": "One-click creator data capture for DashPersona",
   "permissions": ["activeTab", "storage", "downloads", "tabs", "scripting"],
-  "host_permissions": ["https://creator.douyin.com/*"],
+  "host_permissions": [
+    "https://creator.douyin.com/*",
+    "https://dash-persona.vercel.app/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*"
+  ],
   "background": {
     "service_worker": "src/background/service-worker.ts",
     "type": "module"
