@@ -127,13 +127,34 @@ export default async function DashboardPage({
     const fallbackProfiles = getDemoProfile(personaType);
     return (
       <ExtensionDataLoader fallbackProfiles={fallbackProfiles}>
-        {({ profiles, isExtensionData, isLoading }) => {
+        {({ profiles, isExtensionData, isLoading, error }) => {
           if (isLoading) {
             return (
               <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                   Waiting for extension data...
                 </p>
+              </div>
+            );
+          }
+          if (error) {
+            return (
+              <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
+                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                  Extension Error
+                </h1>
+                <p
+                  className="max-w-md text-center text-sm leading-6"
+                  style={{ color: 'var(--accent-red)' }}
+                >
+                  {error}
+                </p>
+                <Link
+                  href={`/dashboard?source=demo&persona=${personaType}`}
+                  className="nav-pill"
+                >
+                  View demo instead
+                </Link>
               </div>
             );
           }

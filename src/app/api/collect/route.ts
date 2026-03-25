@@ -5,7 +5,10 @@ import {
 } from '@/lib/adapters/html-parse-adapter';
 
 // SSRF protection: only allow known social media domains
-const ALLOWED_HOSTS = ['tiktok.com', 'www.tiktok.com', 'vm.tiktok.com'];
+const ALLOWED_HOSTS = [
+  'tiktok.com', 'www.tiktok.com', 'vm.tiktok.com',
+  'douyin.com', 'www.douyin.com', 'creator.douyin.com', 'v.douyin.com',
+];
 
 function isAllowedUrl(url: string): boolean {
   try {

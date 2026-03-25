@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ExtensionAdapter } from '../extension-adapter';
+import { ExtensionAdapter, ExtensionAdapterError } from '../extension-adapter';
 
 describe('ExtensionAdapter', () => {
   const adapter = new ExtensionAdapter();
@@ -27,17 +27,17 @@ describe('ExtensionAdapter', () => {
     expect(result!.posts[0].views).toBe(100);
   });
 
-  it('returns null for invalid JSON', async () => {
-    const result = await adapter.collect('not json at all');
-    expect(result).toBeNull();
+  it('throws ExtensionAdapterError for invalid JSON', async () => {
+    await expect(adapter.collect('not json at all')).rejects.toThrow(ExtensionAdapterError);
+    await expect(adapter.collect('not json at all')).rejects.toMatchObject({ code: 'PARSE_ERROR' });
   });
 
-  it('returns null for missing required fields', async () => {
-    const result = await adapter.collect(JSON.stringify({ platform: 'douyin' }));
-    expect(result).toBeNull();
+  it('throws ExtensionAdapterError for missing required fields', async () => {
+    await expect(adapter.collect(JSON.stringify({ platform: 'douyin' }))).rejects.toThrow(ExtensionAdapterError);
+    await expect(adapter.collect(JSON.stringify({ platform: 'douyin' }))).rejects.toMatchObject({ code: 'MISSING_FIELDS' });
   });
 
-  it('returns null when profile is missing nickname', async () => {
+  it('throws ExtensionAdapterError when profile is missing nickname', async () => {
     const input = JSON.stringify({
       platform: 'douyin',
       profileUrl: 'https://creator.douyin.com',
@@ -45,8 +45,8 @@ describe('ExtensionAdapter', () => {
       profile: { uniqueId: 'test', followers: 0, likesTotal: 0, videosCount: 0 },
       posts: [],
     });
-    const result = await adapter.collect(input);
-    expect(result).toBeNull();
+    await expect(adapter.collect(input)).rejects.toThrow(ExtensionAdapterError);
+    await expect(adapter.collect(input)).rejects.toMatchObject({ code: 'INVALID_PROFILE' });
   });
 
   it('defaults missing numeric fields to 0', async () => {

@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
-import { ExtensionAdapter } from '@/lib/adapters/extension-adapter';
+import { ExtensionAdapter, ExtensionAdapterError } from '@/lib/adapters/extension-adapter';
 
-const DASHPERSONA_ORIGIN = 'https://dash-persona.vercel.app';
 const STORAGE_KEY = 'dashpersona-extension-profile';
 
 interface ExtensionDataLoaderProps {
@@ -15,6 +14,7 @@ interface ExtensionDataLoaderProps {
     profiles: Record<string, CreatorProfile>;
     isExtensionData: boolean;
     isLoading: boolean;
+    error: string | null;
   }) => React.ReactNode;
 }
 
@@ -24,6 +24,7 @@ interface ExtensionDataLoaderProps {
  * 2. localStorage fallback (extension stores data before opening tab)
  *
  * Once data arrives, passes it to children via render prop.
+ * Surfaces structured errors instead of silently falling back.
  */
 export default function ExtensionDataLoader({
   fallbackProfiles,
@@ -32,6 +33,7 @@ export default function ExtensionDataLoader({
   const [profiles, setProfiles] = useState<Record<string, CreatorProfile>>(fallbackProfiles);
   const [isExtensionData, setIsExtensionData] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const adapter = new ExtensionAdapter();
 
@@ -42,13 +44,17 @@ export default function ExtensionDataLoader({
       if (profile) {
         setProfiles({ [profile.platform]: profile });
         setIsExtensionData(true);
-        // Persist for page refreshes
+        setError(null);
         try {
           localStorage.setItem(STORAGE_KEY, json);
         } catch { /* storage full — ignore */ }
       }
-    } catch {
-      // Invalid data — stay on fallback
+    } catch (err) {
+      if (err instanceof ExtensionAdapterError) {
+        setError(`Extension data error: ${err.message} (${err.code})`);
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to process extension data');
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -56,9 +62,8 @@ export default function ExtensionDataLoader({
   useEffect(() => {
     // Strategy 1: Listen for postMessage from extension
     const handleMessage = (event: MessageEvent) => {
-      // Origin validation — only accept from extension or same origin
+      // Origin validation — accept from same origin or chrome extensions
       if (
-        event.origin !== DASHPERSONA_ORIGIN &&
         event.origin !== window.location.origin &&
         !event.origin.startsWith('chrome-extension://')
       ) {
@@ -83,5 +88,5 @@ export default function ExtensionDataLoader({
     return () => window.removeEventListener('message', handleMessage);
   }, [loadProfile]);
 
-  return <>{children({ profiles, isExtensionData, isLoading })}</>;
+  return <>{children({ profiles, isExtensionData, isLoading, error })}</>;
 }
