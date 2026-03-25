@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import FileDropZone, { type FileParseResult } from "@/components/file-drop-zone";
+import { parseFileContent } from "@/lib/adapters/file-import-adapter";
+import type { CreatorProfile } from "@/lib/schema/creator-data";
 
 type PlatformEntry = {
   url: string;
@@ -33,12 +36,61 @@ const platformBadgeColor: Record<string, string> = {
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
+  const [mode, setMode] = useState<"import" | "url">("import");
   const [entries, setEntries] = useState<PlatformEntry[]>([
     { url: "", platform: null },
   ]);
   const [benchmarks, setBenchmarks] = useState<PlatformEntry[]>([
     { url: "", platform: null },
   ]);
+  const [importResults, setImportResults] = useState<FileParseResult[]>([]);
+  const [importedProfiles, setImportedProfiles] = useState<CreatorProfile[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  async function handleFilesSelected(files: File[]) {
+    setIsProcessing(true);
+    const newResults: FileParseResult[] = [];
+    const newProfiles: CreatorProfile[] = [];
+
+    for (const file of files) {
+      try {
+        const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+        let content: string;
+
+        if (ext === ".xlsx" || ext === ".xls") {
+          const buffer = await file.arrayBuffer();
+          const bytes = new Uint8Array(buffer);
+          let binary = "";
+          for (let j = 0; j < bytes.length; j++) binary += String.fromCharCode(bytes[j]);
+          content = btoa(binary);
+        } else {
+          content = await file.text();
+        }
+
+        const profiles = await parseFileContent(content, file.name);
+        newProfiles.push(...profiles);
+        newResults.push({ fileName: file.name, status: "success", profileCount: profiles.length });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        newResults.push({ fileName: file.name, status: "error", error: message });
+      }
+    }
+
+    setImportResults((prev) => [...prev, ...newResults]);
+    setImportedProfiles((prev) => [...prev, ...newProfiles]);
+    setIsProcessing(false);
+  }
+
+  function handleLaunchImport() {
+    if (importedProfiles.length === 0) return;
+    const profilesMap: Record<string, CreatorProfile> = {};
+    for (const p of importedProfiles) {
+      const key = p.platform === "unknown" ? `import-${Object.keys(profilesMap).length}` : p.platform;
+      profilesMap[key] = p;
+    }
+    sessionStorage.setItem("dashpersona-import-profiles", JSON.stringify(profilesMap));
+    router.push("/dashboard?source=import");
+  }
 
   function updateEntry(
     list: PlatformEntry[],
@@ -130,11 +182,76 @@ export default function OnboardingPage() {
               className="mt-2 text-sm leading-6"
               style={{ color: "var(--text-secondary)" }}
             >
-              Paste your TikTok profile URL to get started. We will
-              auto-detect the platform from the link.
+              Import your data files or paste a TikTok profile URL to get started.
             </p>
+
+            {/* Mode toggle */}
+            <div
+              className="mt-6 flex rounded-lg bg-[var(--bg-card)] p-1"
+              role="tablist"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "import"}
+                onClick={() => setMode("import")}
+                className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
+                  mode === "import"
+                    ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
+                    : "bg-transparent text-[var(--text-secondary)]"
+                }`}
+              >
+                Import Files
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "url"}
+                onClick={() => setMode("url")}
+                className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
+                  mode === "url"
+                    ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
+                    : "bg-transparent text-[var(--text-secondary)]"
+                }`}
+              >
+                Paste URL
+              </button>
+            </div>
+
+            {/* File import mode */}
+            {mode === "import" && (
+              <div className="mt-8">
+                <FileDropZone
+                  onFilesSelected={handleFilesSelected}
+                  results={importResults}
+                  isProcessing={isProcessing}
+                />
+                {importedProfiles.length > 0 && (
+                  <div className="mt-6 flex items-center justify-between">
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {importedProfiles.length} profile{importedProfiles.length > 1 ? "s" : ""} ready
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleLaunchImport}
+                      className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
+                      style={{
+                        background: "var(--accent-green)",
+                        color: "var(--bg-primary)",
+                      }}
+                    >
+                      Launch Dashboard
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* URL paste mode */}
+            {mode === "url" && (
+              <>
             <p
-              className="mt-1.5 rounded-md px-3 py-2 text-xs leading-5"
+              className="mt-4 rounded-md px-3 py-2 text-xs leading-5"
               style={{
                 background: "rgba(210, 200, 126, 0.08)",
                 color: "var(--accent-yellow)",
@@ -262,6 +379,8 @@ export default function OnboardingPage() {
                 Continue
               </button>
             </div>
+              </>
+            )}
           </div>
         )}
 
