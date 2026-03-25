@@ -1,4 +1,4 @@
-# DashPersona &nbsp;<a href="https://github.com/EverMemOS"><img src="https://img.shields.io/badge/EverMemOS-F5A623?style=flat-square&logo=github&logoColor=000" alt="EverMemOS" /></a>
+# DashPersona
 
 **Understand your creator persona across Douyin, TikTok, and Red Note — with zero AI.**
 
@@ -6,6 +6,7 @@
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6.svg)](https://www.typescriptlang.org/)
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg)](https://vercel.com/)
+[![Built with EverMemOS](https://img.shields.io/badge/Built%20with-EverMemOS-F5A623?style=flat&logo=github&logoColor=000)](https://github.com/EverMind-AI/EverMemOS)
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=XwvHWx6m6dw">
@@ -39,7 +40,7 @@ China's creator economy exceeds **¥1.5 trillion** annually, but individual crea
 
 ### How It Was Built — EverMem-Powered Development
 
-DashPersona was built across **20+ sessions** spanning multiple weeks using [EverMemOS](https://github.com/EverMemOS) as the persistent memory layer for AI-assisted development. This project is a living case study of what structured agent memory enables:
+DashPersona was built across **20+ sessions** spanning multiple weeks using [EverMemOS](https://github.com/EverMind-AI/EverMemOS) as the persistent memory layer for AI-assisted development. EverMemOS is an open-source structured memory system for AI coding agents — it runs as a Claude Code plugin that automatically captures architectural decisions, sprint plans, and debugging context into a queryable knowledge base. Each session starts with relevant memories recalled, not a blank slate. This project is a living case study of what structured agent memory enables:
 
 **Full-lifecycle plan tracking** — From initial scaffold to 9 analysis engines, every sprint (Phase 1–5 + visual overhaul + Data Passport extension) was planned, executed, and tracked through EverMem. Architecture decisions made in Session 1 were correctly recalled and enforced in Session 20 — no context hallucination, no re-discovery.
 
