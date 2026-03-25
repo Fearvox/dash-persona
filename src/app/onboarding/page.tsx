@@ -141,9 +141,9 @@ export default function OnboardingPage() {
                 border: "1px solid rgba(210, 200, 126, 0.15)",
               }}
             >
-              Currently only TikTok is supported for live data collection.
-              Douyin and Red Note support is coming soon. You can still
-              explore all platforms using demo data.
+              TikTok is supported via URL paste. For Douyin, install the
+              Data Passport browser extension for one-click data capture.
+              Red Note support is coming soon.
             </p>
 
             <fieldset className="mt-8 flex flex-col gap-4">
@@ -233,13 +233,22 @@ export default function OnboardingPage() {
             </button>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <Link
-                href="/dashboard?source=demo&persona=tutorial"
-                className="text-sm font-medium transition-colors hover:opacity-80"
-                style={{ color: "var(--text-subtle)" }}
-              >
-                Skip &mdash; use demo data
-              </Link>
+              <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+                <Link
+                  href="/dashboard?source=demo&persona=tutorial"
+                  className="text-sm font-medium transition-colors hover:opacity-80"
+                  style={{ color: "var(--text-subtle)" }}
+                >
+                  Skip &mdash; use demo data
+                </Link>
+                <Link
+                  href="/dashboard?source=extension"
+                  className="text-sm font-medium transition-colors hover:opacity-80"
+                  style={{ color: "var(--accent-blue)" }}
+                >
+                  Use extension (Douyin)
+                </Link>
+              </div>
               <button
                 type="button"
                 onClick={handleContinueToStep2}

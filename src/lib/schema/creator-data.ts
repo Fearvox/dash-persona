@@ -50,6 +50,29 @@ export interface Post {
   /** Total save / bookmark count. */
   saves: number;
 
+  // --- Platform-specific content quality signals (Douyin / TikTok) ---
+
+  /**
+   * 5-second completion rate (0-1). Fraction of viewers who watched >= 5s.
+   * Primary ranking signal on Douyin — weighted higher than likes.
+   * @platform douyin, tiktok
+   */
+  completionRate?: number;
+
+  /**
+   * 2-second bounce rate (0-1). Fraction of viewers who left within 2s.
+   * Inverse quality signal — high bounce = low content quality.
+   * @platform douyin
+   */
+  bounceRate?: number;
+
+  /**
+   * Average watch duration in seconds.
+   * Direct measure of content holding power.
+   * @platform douyin, tiktok, youtube
+   */
+  avgWatchDuration?: number;
+
   /** Hashtags extracted from the post description. */
   tags?: string[];
 

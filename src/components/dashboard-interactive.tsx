@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import type { Post } from '@/lib/schema/creator-data';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
-import type { PersonaScore, SparklinePoint } from '@/lib/engine';
+import type { PersonaScore, SparklinePoint, BenchmarkResult } from '@/lib/engine';
 import type { ScoreExplanation } from '@/lib/engine/explain';
+import BenchmarkCard from './benchmark-card';
+import { useProfileHistory } from '@/lib/history';
 import PersonaOverview from './persona-overview';
 import GrowthSparklines from './growth-sparklines';
 import PostDrawer from './post-drawer';
@@ -18,6 +21,9 @@ interface DashboardInteractiveProps {
   personaScores: Record<string, PersonaScore>;
   explanations: Record<string, Record<string, ScoreExplanation>>;
   allPosts: Post[];
+  source: string;
+  personaType: string;
+  benchmarkResult?: BenchmarkResult & { niche: string; nicheLabel: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -34,7 +40,12 @@ export default function DashboardInteractive({
   personaScores,
   explanations,
   allPosts,
+  source,
+  personaType,
+  benchmarkResult,
 }: DashboardInteractiveProps) {
+  const { enrichedProfiles, isLoading: historyLoading, collectNow } = useProfileHistory(profiles);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerTitle, setDrawerTitle] = useState('Posts');
   const [drawerFilterIds, setDrawerFilterIds] = useState<string[] | undefined>(
@@ -61,16 +72,67 @@ export default function DashboardInteractive({
     setDrawerOpen(false);
   }, []);
 
+  const openAllPosts = useCallback(() => {
+    setDrawerFilterIds(undefined);
+    setDrawerTitle(`Posts (${allPosts.length})`);
+    setDrawerOpen(true);
+  }, [allPosts.length]);
+
   return (
     <>
+      {/* Browse Posts button + Collect Now */}
+      <div className="mb-4 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={openAllPosts}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors"
+          style={{
+            background: 'rgba(126, 210, 154, 0.1)',
+            color: 'var(--accent-green)',
+            border: '1px solid rgba(126, 210, 154, 0.2)',
+          }}
+        >
+          <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 4h16v16H4z" /><path d="M4 10h16" /><path d="M10 4v16" />
+          </svg>
+          Browse All Posts ({allPosts.length})
+        </button>
+        <button
+          type="button"
+          className="nav-pill"
+          onClick={collectNow}
+          disabled={historyLoading}
+          style={{ color: 'var(--accent-blue)', opacity: historyLoading ? 0.5 : 1 }}
+        >
+          {historyLoading ? 'Collecting...' : 'Collect Now'}
+        </button>
+      </div>
+
       {/* Growth sparklines section */}
       <GrowthSparklines
-        profiles={profiles}
+        profiles={enrichedProfiles}
         onChartClick={handleChartClick}
       />
 
-      {/* Persona overview section - rendered separately so dashboard can
-          place section headers around them */}
+      {/* Benchmark comparison */}
+      {benchmarkResult && (
+        <BenchmarkCard benchmarkResult={benchmarkResult} />
+      )}
+
+      {/* Persona Score heading */}
+      <div className="mb-3 mt-10 flex items-center justify-between">
+        <h2 id="persona-heading" className="kicker">
+          Persona Score
+        </h2>
+        <Link
+          href={`/persona?source=${source}&persona=${personaType}`}
+          className="nav-pill"
+        >
+          View details &rarr;
+        </Link>
+      </div>
+
+      {/* Persona overview section */}
       <PersonaOverview
         scores={personaScores}
         explanations={explanations}

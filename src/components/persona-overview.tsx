@@ -1,6 +1,6 @@
 'use client';
 
-import type { PersonaScore } from '@/lib/engine';
+import { overallScore, type PersonaScore } from '@/lib/engine';
 import type { ScoreExplanation } from '@/lib/engine/explain';
 import ExplainableScore from './explainable-score';
 
@@ -33,28 +33,6 @@ function viralPotentialScore(score: PersonaScore): number {
   const bestRate = score.engagement.byCategory[0].meanEngagementRate;
   // Scale: 15%+ engagement = 100, linear down
   return Math.min(Math.round(bestRate * 100 * 6.67), 100);
-}
-
-/** Compute a composite "overall" score (0-100). */
-function overallScore(score: PersonaScore): number {
-  const engagementPart = Math.min(score.engagement.overallRate * 100 * 5, 100);
-  const rhythmPart = score.rhythm.consistencyScore;
-  const consistencyPart = score.consistency.score;
-  const growthPart =
-    score.growthHealth.momentum === 'accelerating'
-      ? 80
-      : score.growthHealth.momentum === 'steady'
-        ? 60
-        : score.growthHealth.momentum === 'decelerating'
-          ? 30
-          : 0;
-
-  return Math.round(
-    engagementPart * 0.3 +
-      rhythmPart * 0.2 +
-      consistencyPart * 0.25 +
-      growthPart * 0.25,
-  );
 }
 
 /** Collect all unique post IDs from explanation factors for a dimension. */

@@ -51,6 +51,7 @@ export {
   computeGrowthHealth,
   generatePersonaTags,
   computePersonaScore,
+  overallScore,
 } from './persona';
 
 // -- Cross-platform comparator --
@@ -67,7 +68,15 @@ export {
   type MetricBenchmark,
   type BenchmarkResult,
   compareToBenchmark,
+  compareToBenchmarkByNiche,
 } from './benchmark';
+export {
+  type BenchmarkNiche,
+  BENCHMARK_NICHES,
+  NICHE_BENCHMARKS,
+  generateBenchmarkProfiles,
+} from './benchmark-data';
+export { detectNiche, CATEGORY_TO_NICHE } from './niche-detect';
 
 // -- Content strategy engine --
 export {

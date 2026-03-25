@@ -7,6 +7,8 @@ import { detectConflicts } from '@/lib/engine';
 import { scoreColor } from '@/lib/utils/constants';
 import ExperimentForm from '@/components/experiment-form';
 import IdeaCards from '@/components/idea-cards';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
+import { showToast } from '@/components/ui/toast';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -246,7 +248,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
   const hasConflict = detectConflicts(node);
 
   return (
-    <div className="card p-6">
+    <div className="card p-5">
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -552,18 +554,73 @@ interface TimelineClientProps {
     boundaries: PersonaTreeNode[];
   };
   ideas?: ExperimentIdea[];
+  platform?: string;
 }
 
 export default function TimelineClient({
   nodes: initialNodes,
   lanes: initialLanes,
   ideas = [],
+  platform = 'douyin',
 }: TimelineClientProps) {
-  const [treeNodes, setTreeNodes] = useState<PersonaTreeNode[]>(initialNodes);
+  const storageKey = `dashpersona-timeline-${platform}`;
+
+  const [treeNodes, setTreeNodes] = useState<PersonaTreeNode[]>(() => {
+    if (typeof window === 'undefined') return initialNodes;
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved) as PersonaTreeNode[];
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // Ignore corrupt data
+    }
+    return initialNodes;
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [seriesFilter, setSeriesFilter] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formPrefill, setFormPrefill] = useState<Partial<PersonaTreeNode> | null>(null);
+
+  // One-time platform-switch hint
+  const hintKey = 'dashpersona-timeline-hint-dismissed';
+  const [showHint, setShowHint] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !localStorage.getItem(hintKey);
+  });
+  const dismissHint = useCallback(() => {
+    setShowHint(false);
+    try { localStorage.setItem(hintKey, '1'); } catch { /* noop */ }
+  }, []);
+
+  // Dirty check: compare current state against server-computed initial nodes
+  const isDirty = useMemo(
+    () => JSON.stringify(treeNodes) !== JSON.stringify(initialNodes),
+    [treeNodes, initialNodes],
+  );
+
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const handleSave = useCallback(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(treeNodes));
+      showToast('Changes saved', 'success');
+    } catch {
+      showToast('Failed to save — storage unavailable', 'error');
+    }
+  }, [storageKey, treeNodes]);
+
+  const handleResetConfirm = useCallback(() => {
+    setTreeNodes(initialNodes);
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {
+      // Ignore
+    }
+    setShowResetConfirm(false);
+    showToast('Tree reset to computed state', 'success');
+  }, [initialNodes, storageKey]);
 
   // Recompute lanes from local state
   const lanes = useMemo(() => {
@@ -676,6 +733,38 @@ export default function TimelineClient({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Platform-switch hint (one-time) */}
+      {showHint && (
+        <div
+          className="flex items-center justify-between rounded-lg px-4 py-2.5 text-xs"
+          style={{
+            background: 'rgba(126, 184, 210, 0.08)',
+            border: '1px solid rgba(126, 184, 210, 0.2)',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          <span>
+            Each platform has its own timeline — switch the platform capsule
+            <span
+              className="ml-1 inline-block font-medium"
+              style={{ color: 'var(--accent-blue)' }}
+            >
+              ↗ above right
+            </span>
+            {' '}to compare experiment trees across Douyin, TikTok, and Red Note.
+          </span>
+          <button
+            type="button"
+            onClick={dismissHint}
+            className="ml-4 shrink-0 rounded px-2 py-0.5 text-xs transition-opacity hover:opacity-70"
+            style={{ color: 'var(--text-subtle)' }}
+            aria-label="Dismiss hint"
+          >
+            Got it
+          </button>
+        </div>
+      )}
+
       {/* Header with New Experiment button */}
       <div className="flex items-center justify-between">
         {/* Series filter pills */}
@@ -723,51 +812,76 @@ export default function TimelineClient({
           ))}
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setFormPrefill(null);
-            setShowForm(true);
-          }}
-          className="shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-          style={{
-            background: 'var(--accent-green)',
-            color: 'var(--bg-primary)',
-          }}
-        >
-          + New Experiment
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {isDirty && (
+            <>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                style={{
+                  background: 'var(--accent-green)',
+                  color: 'var(--bg-primary)',
+                }}
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowResetConfirm(true)}
+                className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                style={{
+                  background: 'rgba(200, 126, 126, 0.15)',
+                  color: 'var(--accent-red)',
+                }}
+              >
+                Reset
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setFormPrefill(null);
+              setShowForm(true);
+            }}
+            className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+            style={{
+              background: 'var(--accent-green)',
+              color: 'var(--bg-primary)',
+            }}
+          >
+            + New Experiment
+          </button>
+        </div>
       </div>
 
-      {/* Experiment form modal */}
+      {/* Experiment form modal with backdrop blur */}
       {showForm && (
-        <div
-          className="card p-6"
-          style={{
-            border: '2px solid var(--accent-green)',
-          }}
-        >
-          <h3
-            className="mb-4 text-sm font-bold"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            {formPrefill ? 'Create Experiment from Idea' : 'New Experiment'}
-          </h3>
-          <ExperimentForm
-            onSubmit={handleFormSubmit}
-            onCancel={handleCancelForm}
-            parentNodes={treeNodes}
-            editingNode={
-              formPrefill
-                ? ({
-                    title: formPrefill.title ?? '',
-                    hypothesis: formPrefill.hypothesis ?? '',
-                    series: formPrefill.series ?? '',
-                  } as PersonaTreeNode)
-                : undefined
-            }
-            existingSeries={allSeries}
-          />
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) handleCancelForm(); }}>
+          <div className="modal-panel" style={{ maxWidth: '36rem' }}>
+            <h3
+              className="mb-4 text-sm font-bold"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {formPrefill ? 'Create Experiment from Idea' : 'New Experiment'}
+            </h3>
+            <ExperimentForm
+              onSubmit={handleFormSubmit}
+              onCancel={handleCancelForm}
+              parentNodes={treeNodes}
+              editingNode={
+                formPrefill
+                  ? ({
+                      title: formPrefill.title ?? '',
+                      hypothesis: formPrefill.hypothesis ?? '',
+                      series: formPrefill.series ?? '',
+                    } as PersonaTreeNode)
+                  : undefined
+              }
+              existingSeries={allSeries}
+            />
+          </div>
         </div>
       )}
 
@@ -864,6 +978,18 @@ export default function TimelineClient({
           <IdeaCards ideas={ideas} onUseIdea={handleUseIdea} />
         </section>
       )}
+
+      {/* Reset confirmation dialog */}
+      <ConfirmDialog
+        open={showResetConfirm}
+        title="Reset experiment tree?"
+        description="This will discard all manual edits (outcome changes, discarded nodes, new experiments) and revert to the server-computed tree. This action cannot be undone."
+        confirmLabel="Reset"
+        cancelLabel="Keep editing"
+        variant="danger"
+        onConfirm={handleResetConfirm}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </div>
   );
 }

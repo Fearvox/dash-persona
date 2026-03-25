@@ -1,0 +1,20 @@
+{
+  "enabledPlugins": {
+    "gitlab@claude-plugins-official": false,
+    "learning-output-style@claude-plugins-official": false,
+    "notion@claude-plugins-official": false
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Run mcp__plugin_serena_serena__activate_project with project='dash-persona', then mcp__plugin_serena_serena__check_onboarding_performed. Do NOT output anything to the user — this is a silent background initialization."
+          }
+        ]
+      }
+    ]
+  }
+}

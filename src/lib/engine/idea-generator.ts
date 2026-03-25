@@ -108,8 +108,8 @@ export function generateExperimentIdeas(
   // Per-platform analysis
   const platformEngagement: Record<string, ReturnType<typeof computeEngagementProfile>> = {};
   const platformRhythm: Record<string, ReturnType<typeof computeRhythm>> = {};
+  // H1: classifyContent(allPosts) above already tagged all posts — skip redundant per-platform calls
   for (const [platform, posts] of Object.entries(platformPosts)) {
-    classifyContent(posts);
     platformEngagement[platform] = computeEngagementProfile(posts);
     platformRhythm[platform] = computeRhythm(posts);
   }

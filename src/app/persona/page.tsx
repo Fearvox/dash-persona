@@ -6,6 +6,7 @@ import {
   computePersonaScore,
   generateStrategySuggestions,
   formatNumber,
+  overallScore,
   type PersonaScore,
 } from '@/lib/engine';
 import { PLATFORM_LABELS, VALID_PERSONAS, scoreColor } from '@/lib/utils/constants';
@@ -48,27 +49,6 @@ const DAY_NAMES = [
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function overallScore(score: PersonaScore): number {
-  const engagementPart = Math.min(score.engagement.overallRate * 100 * 5, 100);
-  const rhythmPart = score.rhythm.consistencyScore;
-  const consistencyPart = score.consistency.score;
-  const growthPart =
-    score.growthHealth.momentum === 'accelerating'
-      ? 80
-      : score.growthHealth.momentum === 'steady'
-        ? 60
-        : score.growthHealth.momentum === 'decelerating'
-          ? 30
-          : 0;
-
-  return Math.round(
-    engagementPart * 0.3 +
-      rhythmPart * 0.2 +
-      consistencyPart * 0.25 +
-      growthPart * 0.25,
-  );
-}
 
 function momentumBadge(momentum: string) {
   const map: Record<string, { label: string; cls: string }> = {
@@ -159,7 +139,7 @@ export default async function PersonaPage({ searchParams }: PersonaPageProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
       {/* a) Header */}
       <header className="flex flex-col gap-4">
         <Link
@@ -549,43 +529,25 @@ export default async function PersonaPage({ searchParams }: PersonaPageProps) {
           <h2 id="tags-heading" className="kicker mb-3">
             Persona Tags
           </h2>
-          <div className="card p-6">
-            <div className="flex flex-col gap-3">
+          <div className="card p-5">
+            <div className="flex flex-wrap gap-2">
               {score.tags.map((tag) => {
                 const colors = tagColor(tag.confidence);
                 return (
-                  <div
+                  <span
                     key={tag.slug}
-                    className="flex items-center gap-3"
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+                    style={{ background: colors.bg, color: colors.text }}
+                    title={tag.evidence}
                   >
+                    {tag.label}
                     <span
-                      className="inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-medium"
-                      style={{ background: colors.bg, color: colors.text }}
+                      className="metric-value text-[10px] opacity-70"
+                      style={{ color: colors.text }}
                     >
-                      {tag.label}
+                      {Math.round(tag.confidence * 100)}%
                     </span>
-                    <div className="flex flex-1 items-center gap-2">
-                      <div
-                        className="h-1.5 flex-1 overflow-hidden rounded-full"
-                        style={{ background: 'var(--bg-secondary)' }}
-                      >
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{
-                            width: `${Math.round(tag.confidence * 100)}%`,
-                            background: colors.text,
-                            opacity: 0.6,
-                          }}
-                        />
-                      </div>
-                      <span
-                        className="metric-value shrink-0 text-xs"
-                        style={{ color: 'var(--text-subtle)' }}
-                      >
-                        {Math.round(tag.confidence * 100)}%
-                      </span>
-                    </div>
-                  </div>
+                  </span>
                 );
               })}
             </div>

@@ -39,7 +39,7 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
       {/* Header */}
       <header>
         <Link
@@ -60,7 +60,7 @@ export default function SettingsPage() {
         <h2 id="learning-heading" className="kicker mb-4">
           Learning Data
         </h2>
-        <div className="card p-6">
+        <div className="card p-5">
           {preferences === null ? (
             <div className="flex items-center gap-3">
               <div
@@ -159,7 +159,7 @@ export default function SettingsPage() {
         <h2 id="about-heading" className="kicker mb-4">
           About
         </h2>
-        <div className="card p-6">
+        <div className="card p-5">
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between text-xs">
               <span style={{ color: 'var(--text-subtle)' }}>Version</span>

@@ -383,6 +383,15 @@ export function generateContentPlan(
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
+  // Pre-compute recent post counts per content type — O(P) once vs O(D×S×P) in loop
+  const thirtyDaysAgo = Date.now() - 30 * 86_400_000;
+  const recentCountByType = new Map<string, number>();
+  for (const p of allPosts) {
+    if (p.contentType && p.publishedAt && new Date(p.publishedAt).getTime() >= thirtyDaysAgo) {
+      recentCountByType.set(p.contentType, (recentCountByType.get(p.contentType) ?? 0) + 1);
+    }
+  }
+
   let lastContentType = '';
 
   for (let day = 1; day <= daysAhead; day++) {
@@ -432,14 +441,7 @@ export function generateContentPlan(
       const typeLabel = capitalise(chosen.contentType);
       const platformLabel = capitalise(platform);
 
-      // Count recent posts of this type (last 30 days)
-      const thirtyDaysAgo = Date.now() - 30 * 86_400_000;
-      const recentCount = allPosts.filter(
-        (p) =>
-          p.contentType === chosen.contentType &&
-          p.publishedAt &&
-          new Date(p.publishedAt).getTime() >= thirtyDaysAgo,
-      ).length;
+      const recentCount = recentCountByType.get(chosen.contentType) ?? 0;
 
       const parts: string[] = [];
       parts.push(

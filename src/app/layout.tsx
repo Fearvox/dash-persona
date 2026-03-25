@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import SiteFooter from "@/components/site-footer";
+import ToastContainer from "@/components/ui/toast";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -57,6 +58,7 @@ export default function RootLayout({
         </a>
         <div id="main" className="flex-1">{children}</div>
         <SiteFooter />
+        <ToastContainer />
       </body>
     </html>
   );

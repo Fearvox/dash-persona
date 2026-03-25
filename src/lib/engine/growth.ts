@@ -120,11 +120,17 @@ export function findBaselineEntry(
   });
 
   if (todayEntries.length === 0) {
-    // No today entries -- use oldest available as baseline
-    const sorted = [...history].sort(
-      (a, b) => new Date(a.fetchedAt).getTime() - new Date(b.fetchedAt).getTime(),
-    );
-    return sorted[0] ?? null;
+    // No today entries — single-pass min to find oldest (O(n) vs O(n log n) sort)
+    let oldest = history[0];
+    let oldestTime = new Date(oldest.fetchedAt).getTime();
+    for (let i = 1; i < history.length; i++) {
+      const t = new Date(history[i].fetchedAt).getTime();
+      if (t < oldestTime) {
+        oldest = history[i];
+        oldestTime = t;
+      }
+    }
+    return oldest;
   }
 
   // Among today's entries, find the one closest to targetHour

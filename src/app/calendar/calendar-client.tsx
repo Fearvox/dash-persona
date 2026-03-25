@@ -93,12 +93,10 @@ function SlotCard({
 
   return (
     <div
-      className="relative min-w-[200px] overflow-hidden rounded-lg px-3 py-2.5 transition-all"
+      className="relative min-w-0 w-full overflow-hidden rounded-lg px-3 py-2.5 transition-all"
       style={{
         background: 'var(--bg-card)',
         border: `1px solid ${isDismissed ? 'var(--border-subtle)' : 'var(--border-medium)'}`,
-        borderLeftWidth: '3px',
-        borderLeftColor: PRIORITY_COLORS[slot.priority],
         opacity: isDismissed ? 0.5 : 1,
         textDecoration: isDismissed ? 'line-through' : 'none',
       }}

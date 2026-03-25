@@ -22,12 +22,6 @@ interface PostDrawerProps {
 
 type SortKey = 'views' | 'likes' | 'date';
 
-const PLATFORM_COLORS: Record<string, string> = {
-  douyin: '#fe2c55',
-  tiktok: '#25f4ee',
-  xhs: '#ff2442',
-};
-
 function sortPosts(posts: Post[], key: SortKey): Post[] {
   const sorted = [...posts];
   switch (key) {
@@ -86,7 +80,6 @@ export default function PostDrawer({
     const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
     const focusableElements = panel.querySelectorAll<HTMLElement>(focusableSelector);
     const firstFocusable = focusableElements[0];
-    const lastFocusable = focusableElements[focusableElements.length - 1];
     firstFocusable?.focus();
 
     function handleKeyDown(e: KeyboardEvent) {
@@ -126,64 +119,28 @@ export default function PostDrawer({
     [onClose],
   );
 
-  // Prevent body scroll when open on mobile
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  // No body scroll lock — user can still scroll the page behind the modal
+
+  if (!isOpen) return null;
 
   return (
-    <>
-      {/* Backdrop (mobile overlay + click-outside) */}
-      <div
-        onClick={handleBackdropClick}
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 40,
-          background: 'rgba(0, 0, 0, 0.4)',
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? 'auto' : 'none',
-          transition: 'opacity 0.2s ease',
-        }}
-      />
-
-      {/* Slide-in panel */}
+    <div
+      className="modal-backdrop"
+      onClick={handleBackdropClick}
+    >
+      {/* Centered modal panel */}
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: '400px',
-          maxWidth: '100vw',
-          zIndex: 50,
-          background: 'var(--bg-card)',
-          borderLeft: '1px solid var(--border-medium)',
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s ease',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+        className="relative z-[1] flex w-full max-w-xl h-[70vh] flex-col bg-[var(--bg-card)] border border-[var(--border-medium)] rounded-lg animate-[modal-enter_0.2s_cubic-bezier(0.22,1,0.36,1)]"
       >
         {/* Header */}
-        <div
-          className="flex shrink-0 items-center justify-between px-5 py-4"
-          style={{ borderBottom: '1px solid var(--border-subtle)' }}
-        >
+        <div className="flex shrink-0 items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">
           <h2
             id={headingId}
-            className="text-sm font-semibold"
-            style={{ color: 'var(--text-primary)' }}
+            className="text-sm font-semibold text-[var(--text-primary)]"
           >
             {title} ({sortedPosts.length})
           </h2>
@@ -191,42 +148,26 @@ export default function PostDrawer({
             type="button"
             onClick={onClose}
             aria-label="Close panel"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-sm"
-            style={{
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-subtle)',
-              border: '1px solid var(--border-subtle)',
-              cursor: 'pointer',
-            }}
+            className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--bg-secondary)] text-[var(--text-subtle)] border border-[var(--border-subtle)] cursor-pointer hover:text-[var(--text-primary)] transition-colors"
           >
-            X
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+              <path d="M4 4l8 8M12 4l-8 8" />
+            </svg>
           </button>
         </div>
 
         {/* Sort controls */}
-        <div
-          className="flex shrink-0 gap-2 px-5 py-3"
-          style={{ borderBottom: '1px solid var(--border-subtle)' }}
-        >
+        <div className="flex shrink-0 gap-2 px-5 py-3 border-b border-[var(--border-subtle)]">
           {(['views', 'likes', 'date'] as const).map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => setSortKey(key)}
-              className="rounded-full px-3 py-1 text-xs font-medium"
-              style={{
-                background:
-                  sortKey === key
-                    ? 'var(--accent-green)'
-                    : 'var(--bg-secondary)',
-                color:
-                  sortKey === key
-                    ? 'var(--bg-primary)'
-                    : 'var(--text-secondary)',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'background 0.15s ease, color 0.15s ease',
-              }}
+              className={`rounded-full px-3 py-1 text-xs font-medium border-none cursor-pointer transition-colors ${
+                sortKey === key
+                  ? 'bg-[var(--accent-green)] text-[var(--bg-primary)]'
+                  : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
+              }`}
             >
               {key.charAt(0).toUpperCase() + key.slice(1)}
             </button>
@@ -236,10 +177,7 @@ export default function PostDrawer({
         {/* Post list */}
         <div className="flex-1 overflow-y-auto px-5 py-3">
           {sortedPosts.length === 0 ? (
-            <p
-              className="py-8 text-center text-sm"
-              style={{ color: 'var(--text-subtle)' }}
-            >
+            <p className="py-8 text-center text-sm text-[var(--text-subtle)]">
               No posts to display.
             </p>
           ) : (
@@ -251,7 +189,7 @@ export default function PostDrawer({
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -260,35 +198,16 @@ export default function PostDrawer({
 // ---------------------------------------------------------------------------
 
 function PostCard({ post }: { post: Post }) {
-  const platformBadgeColor = post.contentType
-    ? PLATFORM_COLORS[post.contentType] ?? 'var(--accent-blue)'
-    : 'var(--accent-blue)';
-
   return (
-    <div
-      className="rounded-lg p-3"
-      style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-subtle)',
-      }}
-    >
+    <div className="rounded-lg p-3 bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
       {/* Description */}
-      <p
-        className="text-xs leading-relaxed"
-        style={{ color: 'var(--text-primary)' }}
-      >
+      <p className="text-xs leading-relaxed text-[var(--text-primary)]">
         {truncate(post.desc, 120)}
       </p>
 
-      {/* Platform badge */}
+      {/* Content type badge */}
       {post.contentType && (
-        <span
-          className="mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium"
-          style={{
-            background: `${platformBadgeColor}20`,
-            color: platformBadgeColor,
-          }}
-        >
+        <span className="mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
           {post.contentType}
         </span>
       )}
@@ -307,8 +226,8 @@ function PostCard({ post }: { post: Post }) {
 
 function MetricPill({ label, value }: { label: string; value: number }) {
   return (
-    <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-      <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>
+    <span className="text-xs text-[var(--text-subtle)]">
+      <span className="font-medium text-[var(--text-secondary)]">
         {formatNumber(value)}
       </span>{' '}
       {label.toLowerCase()}

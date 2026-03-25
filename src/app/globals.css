@@ -28,6 +28,13 @@
   --font-mono: 'Geist Mono', 'SF Mono', monospace;
 }
 
+/* ── Z-index scale ──
+   backdrop:  100
+   modal:     101  (relative to backdrop)
+   toast:     110
+   skip-link: 50
+*/
+
 @theme inline {
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
@@ -103,5 +110,134 @@ a:hover > .detail-link {
 }
 .nav-pill:hover {
   background: rgba(240, 245, 69, 0.12);
-  color: #f0f545;
+  color: var(--accent-highlight);
+}
+
+/* ── Button tactile feedback ── */
+button, [role="button"] {
+  transition: transform 0.1s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+button:hover:not(:disabled), [role="button"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled), [role="button"]:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* ── Modal backdrop ── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 15, 13, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: fade-in 0.2s ease;
+  isolation: isolate;
+}
+
+.modal-panel {
+  position: relative;
+  z-index: 101;
+  width: 100%;
+  max-width: 28rem;
+  margin: 1rem;
+  padding: 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  animation: modal-enter 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Toast ── */
+.toast {
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  animation: slide-in-up 0.3s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.3s ease 2.5s forwards;
+  pointer-events: none;
+}
+
+.toast-success {
+  background: rgba(126, 210, 154, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(126, 210, 154, 0.3);
+}
+
+.toast-error {
+  background: rgba(200, 126, 126, 0.15);
+  color: var(--accent-red);
+  border: 1px solid rgba(200, 126, 126, 0.3);
+}
+
+/* ── Keyframes ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modal-enter {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ── Code art drift animation (landing page) ── */
+@keyframes code-drift {
+  0%, 100% { transform: translate(0, 0) rotate(var(--rot)); }
+  25% { transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * -1px)) rotate(calc(var(--rot) + 2deg)); }
+  50% { transform: translate(calc(var(--dx) * -0.5px), calc(var(--dy) * 1px)) rotate(var(--rot)); }
+  75% { transform: translate(calc(var(--dx) * -1px), calc(var(--dy) * 0.5px)) rotate(calc(var(--rot) - 2deg)); }
+}
+
+/* ── Pipeline skeleton pulse ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.15; }
+}
+
+/* ── Staggered fade-in on mount ── */
+.animate-stagger {
+  opacity: 0;
+  animation: slide-in-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-stagger-0 { animation-delay: 0ms; }
+.animate-stagger-1 { animation-delay: 100ms; }
+.animate-stagger-2 { animation-delay: 200ms; }
+.animate-stagger-3 { animation-delay: 300ms; }
+.animate-stagger-4 { animation-delay: 400ms; }
+
+/* ── Reduced motion: pause all code art animations ── */
+@media (prefers-reduced-motion: reduce) {
+  .code-drift-span {
+    animation: none !important;
+  }
+  .scroll-indicator .animate-bounce {
+    animation: none !important;
+  }
+  .animate-stagger {
+    animation: none !important;
+    opacity: 1 !important;
+  }
 }

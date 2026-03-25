@@ -1,0 +1,28 @@
+'use client';
+
+import dynamic from 'next/dynamic';
+import PipelineSkeleton from '@/components/landing/pipeline-skeleton';
+
+const PipelineViewer = dynamic(
+  () => import('@/components/landing/pipeline-viewer'),
+  { ssr: false, loading: () => <PipelineSkeleton /> },
+);
+
+export default function PipelineStandalonePage() {
+  return (
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-10">
+      <header>
+        <h1
+          className="text-xl font-bold tracking-tight sm:text-2xl"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          Algorithm Pipeline
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-subtle)' }}>
+          DashPersona processing architecture — deterministic, AI-free
+        </p>
+      </header>
+      <PipelineViewer standalone />
+    </div>
+  );
+}

@@ -9,6 +9,9 @@
  */
 
 import type { CreatorProfile, BenchmarkProfile, Post } from '../schema/creator-data';
+import { detectNiche } from './niche-detect';
+import { generateBenchmarkProfiles, NICHE_BENCHMARKS, type BenchmarkNiche } from './benchmark-data';
+import type { PersonaScore } from './persona';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -88,11 +91,15 @@ function roughPercentile(userValue: number, sorted: number[]): number {
   if (sorted.length === 0) return 50;
   if (userValue <= sorted[0]) return 0;
   if (userValue >= sorted[sorted.length - 1]) return 100;
-  let below = 0;
-  for (const v of sorted) {
-    if (v <= userValue) below++;
+  // Binary search: count elements <= userValue in O(log n)
+  let lo = 0;
+  let hi = sorted.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (sorted[mid] <= userValue) lo = mid + 1;
+    else hi = mid;
   }
-  return Math.round((below / sorted.length) * 100);
+  return Math.round((lo / sorted.length) * 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -139,46 +146,36 @@ export function compareToBenchmark(
   const userEngRate = meanEngagementRate(user.posts);
   const userPostCount = user.posts.length;
 
+  // Pre-compute means once (replaces 6 redundant reduce calls)
+  const meanFollowers = benchFollowers.reduce((s, v) => s + v, 0) / benchFollowers.length;
+  const meanEngRate = benchEngRates.reduce((s, v) => s + v, 0) / benchEngRates.length;
+  const meanPostCount = benchPostCounts.reduce((s, v) => s + v, 0) / benchPostCounts.length;
+
   // Build metric comparisons
   const followersBench: MetricBenchmark = {
     metric: 'Followers',
     userValue: userFollowers,
-    benchmarkMean:
-      benchFollowers.reduce((s, v) => s + v, 0) / benchFollowers.length,
+    benchmarkMean: meanFollowers,
     benchmarkMedian: median(benchFollowers),
-    rank: rankAgainst(
-      userFollowers,
-      benchFollowers.reduce((s, v) => s + v, 0) / benchFollowers.length,
-    ),
+    rank: rankAgainst(userFollowers, meanFollowers),
     percentile: roughPercentile(userFollowers, benchFollowers),
   };
 
   const engRateBench: MetricBenchmark = {
     metric: 'Engagement Rate',
     userValue: Math.round(userEngRate * 10000) / 10000,
-    benchmarkMean:
-      Math.round(
-        (benchEngRates.reduce((s, v) => s + v, 0) / benchEngRates.length) *
-          10000,
-      ) / 10000,
+    benchmarkMean: Math.round(meanEngRate * 10000) / 10000,
     benchmarkMedian: Math.round(median(benchEngRates) * 10000) / 10000,
-    rank: rankAgainst(
-      userEngRate,
-      benchEngRates.reduce((s, v) => s + v, 0) / benchEngRates.length,
-    ),
+    rank: rankAgainst(userEngRate, meanEngRate),
     percentile: roughPercentile(userEngRate, benchEngRates),
   };
 
   const postCountBench: MetricBenchmark = {
     metric: 'Post Count',
     userValue: userPostCount,
-    benchmarkMean:
-      benchPostCounts.reduce((s, v) => s + v, 0) / benchPostCounts.length,
+    benchmarkMean: meanPostCount,
     benchmarkMedian: median(benchPostCounts),
-    rank: rankAgainst(
-      userPostCount,
-      benchPostCounts.reduce((s, v) => s + v, 0) / benchPostCounts.length,
-    ),
+    rank: rankAgainst(userPostCount, meanPostCount),
     percentile: roughPercentile(userPostCount, benchPostCounts),
   };
 
@@ -204,4 +201,18 @@ export function compareToBenchmark(
     metrics,
     summary,
   };
+}
+
+/**
+ * Niche-aware benchmark comparison. Auto-detects the user's content niche,
+ * generates benchmark profiles for that niche, and runs the comparison.
+ */
+export function compareToBenchmarkByNiche(
+  user: CreatorProfile,
+  userScore?: PersonaScore,
+): BenchmarkResult & { niche: string; nicheLabel: string } {
+  const { niche, label } = detectNiche(user, userScore?.contentDistribution);
+  const benchmarks = generateBenchmarkProfiles(niche as BenchmarkNiche, 20);
+  const result = compareToBenchmark(user, benchmarks);
+  return { ...result, niche, nicheLabel: label };
 }

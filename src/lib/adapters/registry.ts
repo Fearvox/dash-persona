@@ -14,6 +14,7 @@ import type { DataAdapter, AdapterError } from './types';
 import { DemoAdapter } from './demo-adapter';
 import { ManualImportAdapter } from './manual-import-adapter';
 import { HTMLParseAdapter } from './html-parse-adapter';
+import { ExtensionAdapter } from './extension-adapter';
 
 // ---------------------------------------------------------------------------
 // Registry state
@@ -151,3 +152,4 @@ function toAdapterError(adapterName: string, err: unknown): AdapterError {
 registerAdapter(new DemoAdapter());
 registerAdapter(new ManualImportAdapter());
 registerAdapter(new HTMLParseAdapter());
+registerAdapter(new ExtensionAdapter());

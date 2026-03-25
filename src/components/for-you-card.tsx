@@ -152,7 +152,7 @@ export default function ForYouCard({ profiles }: ForYouCardProps) {
       >
         For You
       </h3>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-[1.2fr_1fr_1fr]">
         {insights.map((insight) => (
           <div
             key={insight.label}

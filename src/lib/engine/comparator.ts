@@ -72,13 +72,12 @@ export interface CrossPlatformComparison {
  * Runs content classification and engagement profiling as side effects.
  */
 function buildSummary(profile: CreatorProfile): PlatformSummary {
-  // Clone posts to avoid mutating the original when classifying
-  const postsCopy: Post[] = profile.posts.map((p) => ({ ...p }));
-  const distribution = classifyContent(postsCopy);
-  const engagement = computeEngagementProfile(postsCopy);
+  // Operate directly on posts — classifyContent mutation is the intended side effect
+  const distribution = classifyContent(profile.posts);
+  const engagement = computeEngagementProfile(profile.posts);
 
-  const totalViews = postsCopy.reduce((s, p) => s + p.views, 0);
-  const totalEngagement = postsCopy.reduce(
+  const totalViews = profile.posts.reduce((s, p) => s + p.views, 0);
+  const totalEngagement = profile.posts.reduce(
     (s, p) => s + p.likes + p.comments + p.shares + p.saves,
     0,
   );
@@ -95,7 +94,7 @@ function buildSummary(profile: CreatorProfile): PlatformSummary {
     totalEngagement,
     overallEngagementRate: engagement.overallRate,
     medianEngagementRate: engagement.medianRate,
-    postCount: postsCopy.length,
+    postCount: profile.posts.length,
     contentDistribution: contentDist,
     engagement,
   };

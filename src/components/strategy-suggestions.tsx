@@ -31,66 +31,56 @@ export default function StrategySuggestions({
     );
   }
 
-  // Sort by priority weight (high first), then by relevance within same priority
+  // Sort by priority weight (high first)
   const sorted = [...suggestions].sort(
     (a, b) => PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority],
   );
 
-  // Split into 3 equal-width columns
-  const columns: StrategySuggestion[][] = [[], [], []];
-  sorted.forEach((s, i) => {
-    columns[i % 3].push(s);
-  });
-
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      {columns.map((col, colIdx) => (
-        <div key={colIdx} className="flex flex-col gap-0">
-          {col.map((s, idx) => {
-            const accent = PRIORITY_ACCENT[s.priority];
-            return (
-              <div
-                key={s.ruleId}
-                className="flex gap-3 py-4"
-                style={{
-                  borderBottom:
-                    idx < col.length - 1
-                      ? '1px solid var(--border-subtle)'
-                      : 'none',
-                }}
-              >
-                {/* Priority indicator bar */}
-                <div
-                  className="mt-0.5 h-full w-0.5 shrink-0 rounded-full"
-                  style={{ background: accent, minHeight: '2rem' }}
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3
-                      className="text-sm font-medium leading-snug"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
-                      {s.title}
-                    </h3>
-                    <span
-                      className="shrink-0 text-xs font-medium uppercase"
-                      style={{ color: accent }}
-                    >
-                      {s.priority}
-                    </span>
-                  </div>
-                  <p
-                    className="mt-1 text-xs leading-relaxed"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    {s.description}
-                  </p>
-                </div>
+    <div className="flex flex-col gap-0">
+      {sorted.map((s, idx) => {
+        const accent = PRIORITY_ACCENT[s.priority];
+        return (
+          <div
+            key={s.ruleId}
+            className="flex gap-3 py-3"
+            style={{
+              borderBottom:
+                idx < sorted.length - 1
+                  ? '1px solid var(--border-subtle)'
+                  : 'none',
+            }}
+          >
+            {/* Priority dot */}
+            <div
+              className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+              style={{ background: accent }}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h3
+                  className="truncate text-sm font-medium leading-snug"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {s.title}
+                </h3>
+                <span
+                  className="shrink-0 text-xs font-medium uppercase"
+                  style={{ color: accent }}
+                >
+                  {s.priority}
+                </span>
               </div>
-            );
-          })}
-        </div>
-      ))}
+              <p
+                className="mt-0.5 line-clamp-2 text-xs leading-relaxed"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {s.description}
+              </p>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

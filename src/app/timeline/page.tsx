@@ -62,9 +62,9 @@ export default async function TimelinePage({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
       {/* Header */}
-      <header className="flex flex-col gap-4">
+      <header className="flex flex-col gap-2">
         <Link
           href={`/dashboard?source=${params.source ?? 'demo'}&persona=${personaType}`}
           className="nav-pill"
@@ -160,7 +160,7 @@ export default async function TimelinePage({
       </section>
 
       {/* Tree visualization (interactive client component) */}
-      <TimelineClient nodes={tree.nodes} lanes={lanes} ideas={ideas} />
+      <TimelineClient key={platform} nodes={tree.nodes} lanes={lanes} ideas={ideas} platform={platform} />
     </div>
   );
 }

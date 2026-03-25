@@ -6,6 +6,7 @@ import {
   computePersonaScore,
   comparePlatforms,
   formatNumber,
+  overallScore,
   type PersonaScore,
   type CrossPlatformComparison,
 } from '@/lib/engine';
@@ -35,31 +36,6 @@ const VALID_PERSONAS_SET = new Set<DemoPersonaType>(
 );
 
 const PLATFORMS = ['douyin', 'tiktok', 'xhs'] as const;
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function overallScore(score: PersonaScore): number {
-  const engagementPart = Math.min(score.engagement.overallRate * 100 * 5, 100);
-  const rhythmPart = score.rhythm.consistencyScore;
-  const consistencyPart = score.consistency.score;
-  const growthPart =
-    score.growthHealth.momentum === 'accelerating'
-      ? 80
-      : score.growthHealth.momentum === 'steady'
-        ? 60
-        : score.growthHealth.momentum === 'decelerating'
-          ? 30
-          : 0;
-
-  return Math.round(
-    engagementPart * 0.3 +
-      rhythmPart * 0.2 +
-      consistencyPart * 0.25 +
-      growthPart * 0.25,
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Types for serialized data passed to client component
@@ -127,7 +103,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   const contentOverlap: ContentOverlapEntry[] = buildContentOverlap(comparison);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
       {/* a) Header */}
       <header className="flex flex-col gap-2">
         <Link
@@ -169,21 +145,18 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               <div
                 key={i}
                 className="card px-5 py-4"
-                style={{
-                  borderLeft: '3px solid var(--accent-highlight)',
-                }}
               >
+                <p
+                  className="mb-1 text-[0.6875rem] font-medium uppercase tracking-wider"
+                  style={{ color: 'var(--accent-highlight)' }}
+                >
+                  {insight.type.replace(/_/g, ' ')}
+                </p>
                 <p
                   className="text-sm leading-relaxed"
                   style={{ color: 'var(--text-secondary)' }}
                 >
                   {insight.text}
-                </p>
-                <p
-                  className="mt-1 text-xs uppercase tracking-wider"
-                  style={{ color: 'var(--text-subtle)' }}
-                >
-                  {insight.type.replace(/_/g, ' ')}
                 </p>
               </div>
             ))}
@@ -275,10 +248,14 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             return (
               <div
                 key={entry.platform}
-                className="card p-6"
+                className="card p-5"
                 style={
                   isBest
-                    ? { borderColor: 'var(--accent-green)', borderWidth: '1px' }
+                    ? {
+                        borderColor: 'var(--accent-green)',
+                        borderWidth: '1px',
+                        background: 'rgba(126, 210, 154, 0.06)',
+                      }
                     : undefined
                 }
               >
@@ -289,7 +266,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                   {entry.label}
                 </p>
                 <p
-                  className="metric-value mt-2 text-3xl font-bold sm:text-4xl"
+                  className={`metric-value mt-2 font-bold ${isBest ? 'text-4xl sm:text-5xl' : 'text-3xl sm:text-4xl'}`}
                   style={{ color: scoreColor(entry.overall) }}
                 >
                   {entry.overall}
