@@ -9,6 +9,7 @@
  * @module adapters/file-import-adapter
  */
 
+import * as XLSX from 'xlsx';
 import type { CreatorProfile } from '../schema/creator-data';
 import { validateCreatorProfile } from '../schema/validate';
 import type { DataAdapter } from './types';
@@ -125,11 +126,20 @@ const COLUMN_MAP: Record<string, string> = {
   description: 'desc',
   title: 'desc',
   '视频名称': 'desc',
+  '作品名称': 'desc',
   '发布时间': 'publishedAt',
   '播放量': 'views',
+  '点赞量': 'likes',
+  '分享量': 'shares',
+  '评论量': 'comments',
+  '收藏量': 'saves',
+  '完播率': 'completionRate',
   '5s完播率': 'completionRate',
   '2s跳出率': 'bounceRate',
+  '封面点击率': 'coverClickRate',
   '平均播放时长': 'avgWatchDuration',
+  '粉丝增量': 'followerDelta',
+  '主页访问量': 'profileViews',
   views: 'views',
   plays: 'views',
   likes: 'likes',
@@ -220,12 +230,11 @@ function parseCsv(content: string, fileName: string): CreatorProfile[] {
 }
 
 // ---------------------------------------------------------------------------
-// XLSX parsing (dynamic import to avoid ~1.1 MB bundle when unused)
+// XLSX parsing
 // ---------------------------------------------------------------------------
 
-async function parseXlsx(content: string, fileName: string): Promise<CreatorProfile[]> {
-  const XLSX = await import('xlsx');
-  let wb: ReturnType<typeof XLSX.read>;
+function parseXlsx(content: string, fileName: string): CreatorProfile[] {
+  let wb: XLSX.WorkBook;
   try {
     wb = XLSX.read(content, { type: 'base64' });
   } catch (err) {
@@ -312,7 +321,7 @@ export async function parseFileContent(
       return parseCsv(content, fileName);
     case 'xlsx':
     case 'xls':
-      return await parseXlsx(content, fileName);
+      return parseXlsx(content, fileName);
     default:
       throw new FileImportError(
         'UNSUPPORTED_FORMAT',
