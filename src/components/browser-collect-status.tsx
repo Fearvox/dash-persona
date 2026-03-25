@@ -174,8 +174,8 @@ export default function BrowserCollectStatus() {
 
       {/* Info note */}
       <p className="text-xs leading-5 text-[var(--text-subtle)]">
-        Browser Collect uses bb-browser to access your real browser with existing login sessions.
-        Requires bb-browser CLI installed locally.
+        Collects data through your real browser with existing login sessions.
+        Make sure you are logged in to the target platform before collecting.
       </p>
     </div>
   );

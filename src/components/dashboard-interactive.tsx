@@ -146,6 +146,7 @@ export default function DashboardInteractive({
         scores={personaScores}
         explanations={explanations}
         onViewPosts={openDrawerWithIds}
+        analysisDelta={analysisDelta}
       />
 
       {/* Shared post drawer */}

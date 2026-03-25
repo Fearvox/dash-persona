@@ -292,6 +292,8 @@ export default async function DashboardPage({
               source={sourceParam}
               personaType={personaType}
               benchmarkResult={benchmarkResult}
+              analysisSnapshot={analysisSnapshot}
+              analysisStoreKey={analysisStoreKey}
             />
           </section>
 

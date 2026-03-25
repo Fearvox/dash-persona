@@ -9,7 +9,7 @@
  * @module adapters/browser-adapter
  */
 
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import type { CreatorProfile, Post } from '../schema/creator-data';
 import type { DataAdapter } from './types';
 
@@ -40,7 +40,43 @@ export class BrowserAdapterError extends Error {
 // ---------------------------------------------------------------------------
 
 const CLI_TIMEOUT_MS = 30_000;
-const BB_BROWSER_BIN = 'bb-browser';
+
+/**
+ * Resolve the full path to bb-browser binary.
+ * Node's execFile may not find globally installed npm binaries because the
+ * server process PATH doesn't always include npm global bin directories.
+ */
+function resolveBbBrowserPath(): string {
+  // Try common locations first
+  const candidates = [
+    'bb-browser',  // in PATH
+    '/usr/local/bin/bb-browser',
+    '/opt/homebrew/bin/bb-browser',
+  ];
+
+  // Try to find via npm global bin directory
+  try {
+    const npmBin = execFileSync('npm', ['bin', '-g'], { encoding: 'utf8', timeout: 5000 }).trim();
+    if (npmBin) candidates.push(`${npmBin}/bb-browser`);
+  } catch { /* npm not available — skip */ }
+
+  // Try `which` to find in user's shell PATH
+  try {
+    const whichResult = execFileSync('/usr/bin/which', ['bb-browser'], { encoding: 'utf8', timeout: 5000 }).trim();
+    if (whichResult) return whichResult;
+  } catch { /* not found via which — continue */ }
+
+  // Return first candidate (will produce ENOENT if not found)
+  return candidates[0];
+}
+
+let _resolvedBin: string | null = null;
+function getBbBrowserBin(): string {
+  if (!_resolvedBin) {
+    _resolvedBin = resolveBbBrowserPath();
+  }
+  return _resolvedBin;
+}
 
 /**
  * Execute a bb-browser CLI command and return stdout.
@@ -53,10 +89,11 @@ export function execBrowser(
   timeoutMs: number = CLI_TIMEOUT_MS,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
+    const bin = getBbBrowserBin();
     execFile(
-      BB_BROWSER_BIN,
+      bin,
       args,
-      { timeout: timeoutMs, maxBuffer: 5 * 1024 * 1024 },
+      { timeout: timeoutMs, maxBuffer: 5 * 1024 * 1024, env: { ...process.env, PATH: `${process.env.PATH}:/usr/local/bin:/opt/homebrew/bin` } },
       (error, stdout, stderr) => {
         if (error) {
           const msg = error.message ?? '';

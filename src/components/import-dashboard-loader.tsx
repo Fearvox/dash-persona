@@ -3,17 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
-import {
-  computePersonaScore,
-  comparePlatforms,
-  generateStrategySuggestions,
-  explainPersonaScore,
-  compareToBenchmarkByNiche,
-  detectNiche,
-  type PersonaScore,
-} from '@/lib/engine';
-import type { ScoreExplanation } from '@/lib/engine/explain';
-import type { Post } from '@/lib/schema/creator-data';
+import { runAllEngines, type AllEngineResults } from '@/lib/engine';
 import DashboardInteractive from '@/components/dashboard-interactive';
 import PlatformComparison from '@/components/platform-comparison';
 import StrategySuggestions from '@/components/strategy-suggestions';
@@ -51,33 +41,23 @@ export default function ImportDashboardLoader() {
     );
   }
 
-  // Run analysis engines — same logic as demo mode in dashboard/page.tsx
-  const personaScores: Record<string, PersonaScore> = {};
-  for (const [platform, profile] of Object.entries(profiles)) {
-    personaScores[platform] = computePersonaScore(profile);
+  // Run all engines in parallel
+  const [engineResults, setEngineResults] = useState<AllEngineResults | null>(null);
+
+  useEffect(() => {
+    if (!profiles) return;
+    runAllEngines(profiles).then(setEngineResults);
+  }, [profiles]);
+
+  if (!engineResults) {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
+        <p className="text-sm text-[var(--text-secondary)]">Running analysis engines...</p>
+      </div>
+    );
   }
 
-  const explanations: Record<string, Record<string, ScoreExplanation>> = {};
-  for (const [platform, profile] of Object.entries(profiles)) {
-    explanations[platform] = explainPersonaScore(personaScores[platform], profile.posts);
-  }
-
-  const comparison = comparePlatforms(Object.values(profiles));
-
-  const bestPlatform = comparison.bestEngagementPlatform ?? Object.keys(personaScores)[0];
-  const bestPersonaScore = personaScores[bestPlatform] ?? Object.values(personaScores)[0];
-  const suggestions = generateStrategySuggestions(bestPersonaScore, comparison);
-
-  const benchmarkResult = compareToBenchmarkByNiche(
-    profiles[bestPlatform] ?? Object.values(profiles)[0],
-    bestPersonaScore,
-  );
-
-  const nicheResult = detectNiche(
-    profiles[bestPlatform] ?? Object.values(profiles)[0],
-  );
-
-  const allPosts: Post[] = Object.values(profiles).flatMap((p) => p.posts);
+  const { personaScores, explanations, comparison, suggestions, benchmarkResult, nicheResult, allPosts } = engineResults;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8">

@@ -7,6 +7,7 @@ export {
 } from './store';
 export { extractSnapshot, mergeHistory, profileKeyFromProfile } from './snapshot';
 export { useProfileHistory } from './use-profile-history';
+export { useAnalysisDelta } from './use-analysis-delta';
 export {
   type AnalysisSnapshot,
   type AnalysisDelta,
