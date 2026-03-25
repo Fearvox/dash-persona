@@ -13,6 +13,7 @@
  */
 
 import type { CreatorProfile, Post } from '../schema/creator-data';
+import { memoize } from '../utils/memo-cache';
 
 // ---------------------------------------------------------------------------
 // Content category taxonomy
@@ -903,3 +904,9 @@ export function computePersonaScore(profile: CreatorProfile): PersonaScore {
 
   return partialScore;
 }
+
+/**
+ * Memoized version of computePersonaScore — same input profile
+ * (by content hash) returns cached result without recomputing.
+ */
+export const computePersonaScoreCached = memoize(computePersonaScore);

@@ -48,7 +48,7 @@ class CinematicErrorBoundary extends Component<
 function SimpleFallbackLanding() {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
-      <img src="/logo-icon.svg" alt="" width={40} height={40} />
+      <img src="/logo-icon.svg" alt="DashPersona logo" width={40} height={40} />
       <h1
         className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl"
         style={{ color: 'var(--text-primary)' }}

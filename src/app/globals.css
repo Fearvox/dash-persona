@@ -46,6 +46,11 @@ html {
   color-scheme: dark;
 }
 
+*:focus-visible {
+  outline: 2px solid var(--accent-green);
+  outline-offset: 2px;
+}
+
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -239,5 +244,43 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   .animate-stagger {
     animation: none !important;
     opacity: 1 !important;
+  }
+}
+
+/* ── Print styles for PDF export ── */
+@media print {
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide non-content elements */
+  header,
+  nav,
+  .nav-pill,
+  .no-print,
+  aside {
+    display: none !important;
+  }
+
+  /* Show the dashboard content full-width */
+  #dashboard-content {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Override dark-mode card styles for print */
+  .card {
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure charts/SVGs are visible */
+  svg {
+    color-scheme: light;
   }
 }

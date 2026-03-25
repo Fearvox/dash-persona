@@ -54,7 +54,7 @@ export default async function CalendarPage({
 
   // Load demo profiles and generate content plan
   const profiles = getDemoProfile(personaType);
-  const plan = generateContentPlan(profiles, 14);
+  const plan = generateContentPlan(profiles, 35);
 
   // Cold start: insufficient data
   if (plan.dataPoints < 10) {

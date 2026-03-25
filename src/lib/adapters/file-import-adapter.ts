@@ -347,7 +347,7 @@ function parseTimeseries(rows: Record<string, unknown>[]): { history: CreatorPro
   const cols = Object.keys(rows[0] ?? {}).filter((k) => k !== '日期');
   const metricCol = cols[0];
 
-  const history = rows
+  const history: NonNullable<CreatorProfile['history']> = rows
     .filter((row) => row['日期'])
     .map((row) => {
       const val = parseDouyinNum(row[metricCol]);
@@ -358,13 +358,10 @@ function parseTimeseries(rows: Record<string, unknown>[]): { history: CreatorPro
           likesTotal: metricCol === '作品点赞' ? val : 0,
           videosCount: 0,
         },
-        // Store the raw metric for downstream use
-        _metric: metricCol,
-        _value: val,
       };
     });
 
-  return { history: history as unknown as CreatorProfile['history'] };
+  return { history };
 }
 
 // ---------------------------------------------------------------------------

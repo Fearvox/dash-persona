@@ -12,6 +12,8 @@ import {
 } from '@/lib/engine';
 import { PLATFORM_LABELS, VALID_PERSONAS, scoreColor } from '@/lib/utils/constants';
 import CompareTable from './compare-table';
+import CompareRadarChart from './compare-radar-chart';
+import ImportCompareLoader from './import-compare-loader';
 
 export async function generateMetadata({
   searchParams,
@@ -68,6 +70,12 @@ interface ComparePageProps {
 
 export default async function ComparePage({ searchParams }: ComparePageProps) {
   const params = await searchParams;
+
+  // --- Import mode ---
+  if (params.source === 'import') {
+    return <ImportCompareLoader />;
+  }
+
   const personaParam = params.persona ?? 'tutorial';
   const personaType: DemoPersonaType = VALID_PERSONAS_SET.has(
     personaParam as DemoPersonaType,
@@ -134,7 +142,15 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         />
       </section>
 
-      {/* c) Insight highlights (server-rendered) */}
+      {/* c) Radar chart */}
+      <section aria-labelledby="radar-heading">
+        <h2 id="radar-heading" className="kicker mb-3">
+          Radar Overview
+        </h2>
+        <CompareRadarChart summaries={comparison.summaries} />
+      </section>
+
+      {/* d) Insight highlights (server-rendered) */}
       {comparison.insights.length > 0 && (
         <section aria-labelledby="insights-heading">
           <h2 id="insights-heading" className="kicker mb-3">

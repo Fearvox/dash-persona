@@ -10,6 +10,7 @@
  */
 
 import type { CreatorProfile, Post } from '../schema/creator-data';
+import { memoize } from '../utils/memo-cache';
 import {
   classifyContent,
   computeEngagementProfile,
@@ -258,3 +259,9 @@ export function comparePlatforms(
     largestAudiencePlatform: byAudience[0].platform,
   };
 }
+
+/**
+ * Memoized version of comparePlatforms — same input profiles
+ * (by content hash) returns cached result without recomputing.
+ */
+export const comparePlatformsCached = memoize(comparePlatforms);

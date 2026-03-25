@@ -72,10 +72,9 @@ export default function BootSequence() {
         <div className="flex items-center gap-3 mb-4">
           <Image
             src="/logo-icon.svg"
-            alt=""
+            alt="DashPersona logo"
             width={40}
             height={40}
-            aria-hidden="true"
             priority
           />
           <h1

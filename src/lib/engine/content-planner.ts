@@ -10,6 +10,7 @@
 
 import type { CreatorProfile, Post } from '../schema/creator-data';
 import { classifyContent, computeEngagementProfile } from './persona';
+import { memoize } from '../utils/memo-cache';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -538,3 +539,9 @@ export function exportToICS(slots: ContentSlot[]): string {
   lines.push('END:VCALENDAR');
   return lines.join('\r\n');
 }
+
+/**
+ * Memoized version of generateContentPlan — same input profiles
+ * and daysAhead (by content hash) returns cached result without recomputing.
+ */
+export const generateContentPlanCached = memoize(generateContentPlan);

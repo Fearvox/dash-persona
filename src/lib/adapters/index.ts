@@ -9,8 +9,17 @@ export type { DemoPersonaType } from './demo-adapter';
 export { ManualImportAdapter, ManualImportError } from './manual-import-adapter';
 export type { ManualImportErrorCode } from './manual-import-adapter';
 
-// HTML parse adapter (TikTok)
-export { HTMLParseAdapter, parseTikTokProfile, isTikTokUrl } from './html-parse-adapter';
+// HTML parse adapter (TikTok + XHS)
+export {
+  HTMLParseAdapter,
+  parseTikTokProfile,
+  parseXhsProfile,
+  parseProfileHtml,
+  detectPlatformFromUrl,
+  detectPlatformFromHtml,
+  isTikTokUrl,
+  isXhsUrl,
+} from './html-parse-adapter';
 
 // Registry
 export {

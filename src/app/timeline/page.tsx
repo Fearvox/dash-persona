@@ -3,7 +3,9 @@ import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
 import { generateDemoTree, getTreeLanes, generateExperimentIdeas } from '@/lib/engine';
 import { PLATFORM_LABELS, VALID_PERSONAS } from '@/lib/utils/constants';
+import { profileKey } from '@/lib/history/store';
 import TimelineClient from './timeline-client';
+import GrowthTrendChart from '@/components/growth-trend-chart';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -51,6 +53,9 @@ export default async function TimelinePage({
   const tree = generateDemoTree(profile);
   const lanes = getTreeLanes(tree);
   const ideas = generateExperimentIdeas(profiles, tree);
+
+  // Build store key for history chart
+  const storeKeys = [profileKey(platform, profile.profile.uniqueId)];
 
   // Build search params for platform tabs
   function platformHref(p: string) {
@@ -157,6 +162,14 @@ export default async function TimelinePage({
             {lanes.boundaries.length}
           </p>
         </div>
+      </section>
+
+      {/* Growth History */}
+      <section aria-labelledby="growth-history-heading">
+        <h2 id="growth-history-heading" className="kicker mb-3">
+          Growth History
+        </h2>
+        <GrowthTrendChart storeKeys={storeKeys} />
       </section>
 
       {/* Tree visualization (interactive client component) */}

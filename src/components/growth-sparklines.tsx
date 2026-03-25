@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import {
   AreaChart,
   Area,
@@ -20,36 +20,41 @@ import {
 import { PLATFORM_LABELS } from '@/lib/utils/constants';
 import TimeRangeSelector from './time-range-selector';
 
-// Hardcoded hex values because Recharts SVG elements don't support CSS custom properties.
-// These must stay in sync with --accent-green and --accent-red in globals.css.
-const GREEN = '#7ed29a';
-const RED = '#c87e7e';
+// Resolved from CSS variables at mount for Recharts SVG compatibility.
+function useAccentColors(): { green: string; red: string } {
+  const [colors, setColors] = useState({ green: '#7ed29a', red: '#c87e7e' });
+  useEffect(() => {
+    const style = getComputedStyle(document.documentElement);
+    setColors({
+      green: style.getPropertyValue('--accent-green').trim() || '#7ed29a',
+      red: style.getPropertyValue('--accent-red').trim() || '#c87e7e',
+    });
+  }, []);
+  return colors;
+}
 
 interface GrowthSparklinesProps {
   profiles: Record<string, CreatorProfile>;
   onChartClick?: (platformKey: string, point: SparklinePoint) => void;
 }
 
-function DeltaIndicator({ delta }: { delta: number }) {
+function DeltaIndicator({ delta, green, red }: { delta: number; green: string; red: string }) {
   if (delta > 0) {
     return (
-      <span className="text-xs font-medium" style={{ color: GREEN }}>
+      <span className="text-xs font-medium" style={{ color: green }}>
         &#8593; {formatDelta(delta)}
       </span>
     );
   }
   if (delta < 0) {
     return (
-      <span className="text-xs font-medium" style={{ color: RED }}>
+      <span className="text-xs font-medium" style={{ color: red }}>
         &#8595; {formatDelta(delta)}
       </span>
     );
   }
   return (
-    <span
-      className="text-xs font-medium"
-      style={{ color: 'var(--text-subtle)' }}
-    >
+    <span className="text-xs font-medium text-[var(--text-subtle)]">
       &#8594; 0
     </span>
   );
@@ -66,14 +71,9 @@ function SparklineTooltip({
   const point = payload[0].payload;
   return (
     <div
-      className="rounded-lg px-3 py-2 text-xs shadow-lg"
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-medium)',
-        color: 'var(--text-primary)',
-      }}
+      className="rounded-lg px-3 py-2 text-xs shadow-lg bg-[var(--bg-card)] border border-[var(--border-medium)] text-[var(--text-primary)]"
     >
-      <p style={{ color: 'var(--text-subtle)' }}>{point.time}</p>
+      <p className="text-[var(--text-subtle)]">{point.time}</p>
       <p className="mt-1 font-medium">
         Followers: {formatNumber(point.followers)}
       </p>
@@ -86,8 +86,8 @@ function SparklineTooltip({
  * segment is rising or falling. The gradient runs horizontally (x1->x2)
  * so each data point maps to a percentage along the X axis.
  */
-function buildDirectionStops(data: SparklinePoint[]): React.ReactNode[] {
-  if (data.length < 2) return [<stop key="0" offset="0%" stopColor={GREEN} />];
+function buildDirectionStops(data: SparklinePoint[], green: string, red: string): React.ReactNode[] {
+  if (data.length < 2) return [<stop key="0" offset="0%" stopColor={green} />];
 
   const stops: React.ReactNode[] = [];
   for (let i = 0; i < data.length; i++) {
@@ -101,7 +101,7 @@ function buildDirectionStops(data: SparklinePoint[]): React.ReactNode[] {
       rising = data[i].followers >= data[i - 1].followers;
     }
 
-    const color = rising ? GREEN : RED;
+    const color = rising ? green : red;
 
     // Add a tiny offset pair at each transition to create smooth blending
     if (i > 0) {
@@ -115,7 +115,7 @@ function buildDirectionStops(data: SparklinePoint[]): React.ReactNode[] {
           <stop
             key={`blend-${i}`}
             offset={blendPct}
-            stopColor={rising ? GREEN : RED}
+            stopColor={rising ? green : red}
             stopOpacity={0.6}
           />,
         );
@@ -133,6 +133,7 @@ export default function GrowthSparklines({
   onChartClick,
 }: GrowthSparklinesProps) {
   const [hoursBack, setHoursBack] = useState(168);
+  const accentColors = useAccentColors();
   const platforms = Object.entries(profiles);
 
   return (
@@ -150,6 +151,8 @@ export default function GrowthSparklines({
             profile={profile}
             hoursBack={hoursBack}
             onChartClick={onChartClick}
+            green={accentColors.green}
+            red={accentColors.red}
           />
         ))}
       </div>
@@ -157,16 +160,20 @@ export default function GrowthSparklines({
   );
 }
 
-function SparklineCard({
+const SparklineCard = memo(function SparklineCard({
   platformKey,
   profile,
   hoursBack,
   onChartClick,
+  green,
+  red,
 }: {
   platformKey: string;
   profile: CreatorProfile;
   hoursBack: number;
   onChartClick?: (platformKey: string, point: SparklinePoint) => void;
+  green: string;
+  red: string;
 }) {
   const sparkData = useMemo(
     () => extractSparklineData(profile, hoursBack),
@@ -179,17 +186,16 @@ function SparklineCard({
   const followerDelta = growthDelta?.followers.delta ?? 0;
   const pctChange = growthDelta?.followers.pct ?? 0;
   const label = PLATFORM_LABELS[platformKey] ?? platformKey;
-  const overallColor = followerDelta >= 0 ? GREEN : RED;
+  const overallColor = followerDelta >= 0 ? green : red;
 
   // Build directional gradient stops
   const strokeStops = useMemo(
-    () => buildDirectionStops(sparkData),
-    [sparkData],
+    () => buildDirectionStops(sparkData, green, red),
+    [sparkData, green, red],
   );
   const fillStops = useMemo(() => {
-    // Same color pattern but with vertical fade for fill
-    return buildDirectionStops(sparkData);
-  }, [sparkData]);
+    return buildDirectionStops(sparkData, green, red);
+  }, [sparkData, green, red]);
 
   const strokeGradId = `stroke-${platformKey}`;
   const fillGradId = `fill-${platformKey}`;
@@ -213,22 +219,20 @@ function SparklineCard({
     <div className="card p-5">
       <div className="flex items-center justify-between">
         <p
-          className="text-xs font-medium uppercase tracking-wider"
-          style={{ color: 'var(--text-subtle)' }}
+          className="text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
         >
           {label}
         </p>
-        <DeltaIndicator delta={followerDelta} />
+        <DeltaIndicator delta={followerDelta} green={green} red={red} />
       </div>
 
       <p
-        className="metric-value mt-2 text-2xl font-semibold"
-        style={{ color: 'var(--text-primary)' }}
+        className="metric-value mt-2 text-2xl font-semibold text-[var(--text-primary)]"
       >
         {formatNumber(profile.profile.followers)}
       </p>
       <div className="mt-0.5 flex items-center gap-2">
-        <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+        <p className="text-xs text-[var(--text-subtle)]">
           followers
         </p>
         {pctChange !== 0 && (
@@ -325,4 +329,4 @@ function SparklineCard({
       </div>
     </div>
   );
-}
+});

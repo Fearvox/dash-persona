@@ -8,6 +8,7 @@ import {
   generateStrategySuggestions,
   explainPersonaScore,
   compareToBenchmarkByNiche,
+  detectNiche,
   type PersonaScore,
 } from '@/lib/engine';
 import type { ScoreExplanation } from '@/lib/engine/explain';
@@ -18,7 +19,9 @@ import StrategySuggestions from '@/components/strategy-suggestions';
 import LiveDashboardWrapper from '@/components/live-dashboard-wrapper';
 import ExtensionDataLoader from '@/components/extension-data-loader';
 import ForYouCard from '@/components/for-you-card';
+import NicheDetectCard from '@/components/niche-detect-card';
 import ImportDashboardLoader from '@/components/import-dashboard-loader';
+import ExportButton from '@/components/export-button';
 
 interface DashboardSearchParams {
   source?: string;
@@ -199,15 +202,20 @@ export default async function DashboardPage({
     bestPersonaScore,
   );
 
-  // 7. Collect all posts across platforms for the PostDrawer
+  // 7. Niche detection (use the best platform's profile)
+  const nicheResult = detectNiche(
+    profiles[bestPlatform] ?? Object.values(profiles)[0],
+  );
+
+  // 8. Collect all posts across platforms for the PostDrawer
   const allPosts: Post[] = Object.values(profiles).flatMap((p) => p.posts);
 
   const sourceParam = params.source ?? 'demo';
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8">
+    <div id="dashboard-content" className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8">
       {/* Header — compact */}
-      <header className="animate-stagger animate-stagger-0 flex items-center justify-between">
+      <header className="no-print animate-stagger animate-stagger-0 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
             href="/"
@@ -230,13 +238,16 @@ export default async function DashboardPage({
             {personaType}
           </span>
         </div>
-        <Link
-          href="/settings"
-          className="nav-pill"
-          aria-label="Settings"
-        >
-          Settings
-        </Link>
+        <div className="flex items-center gap-2">
+          <ExportButton />
+          <Link
+            href="/settings"
+            className="nav-pill"
+            aria-label="Settings"
+          >
+            Settings
+          </Link>
+        </div>
       </header>
 
       {/* 2-zone grid: Main (left) + Sidebar (right) */}
@@ -297,9 +308,14 @@ export default async function DashboardPage({
 
         {/* ── Sidebar ── */}
         <aside className="flex flex-col gap-6">
+          {/* Niche Detection */}
+          <section className="animate-stagger animate-stagger-1">
+            <NicheDetectCard result={nicheResult} />
+          </section>
+
           {/* Strategy Suggestions */}
           <section
-            className="animate-stagger animate-stagger-1"
+            className="animate-stagger animate-stagger-2"
             aria-labelledby="strategy-heading"
           >
             <h2 id="strategy-heading" className="kicker mb-3">
@@ -310,7 +326,7 @@ export default async function DashboardPage({
 
           {/* Quick Links */}
           <nav
-            className="animate-stagger animate-stagger-2 flex flex-col gap-3"
+            className="animate-stagger animate-stagger-3 flex flex-col gap-3"
             aria-label="Quick links"
           >
             <h2 className="kicker">Quick Links</h2>
@@ -421,7 +437,7 @@ export default async function DashboardPage({
           </nav>
 
           {/* Settings link */}
-          <div className="animate-stagger animate-stagger-3">
+          <div className="animate-stagger animate-stagger-4">
             <Link
               href="/settings"
               className="card flex items-center gap-3 p-4 transition-colors"

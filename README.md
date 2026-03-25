@@ -28,7 +28,7 @@ Content creators manage multiple platforms but have no unified view of their per
 
 ## How DashPersona Solves It
 
-DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Note**, normalizes it into a unified schema, and runs it through **6 deterministic analysis engines**. Every score, tag, and recommendation is computed with transparent algorithms — no LLM calls, no API keys, no subscription fees. You can trace any number back to the formula that produced it.
+DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Note**, normalizes it into a unified schema, and runs it through **9 deterministic analysis engines**. Every score, tag, and recommendation is computed with transparent algorithms — no LLM calls, no API keys, no subscription fees. You can trace any number back to the formula that produced it.
 
 ---
 
@@ -62,7 +62,7 @@ Session 18–20  Visual overhaul sprint → design system → hackathon polish
 Session 20+    History persistence → benchmarking → production hardening
 ```
 
-> **22 atomic commits. 9 analysis engines. 4 data adapters. 1 Chrome extension. Zero context lost between sessions.**
+> **9 analysis engines. 5 data adapters. 15 E2E tests. 189 unit tests. 1 Chrome extension. Zero context lost between sessions.**
 
 ---
 
@@ -99,11 +99,14 @@ Side-by-side metrics across all your platforms. Automatically surfaces insights 
 | Feature | What it does |
 |---------|-------------|
 | **Persona Score** | Composite 0–100 score across 6 dimensions with explainable formulas |
-| **Niche Benchmarking** | Auto-detects your niche, compares you against 10 category-specific cohorts |
-| **Growth Tracking** | Historical snapshots stored locally — track followers, likes, and videos over time |
+| **Niche Detection** | Auto-detects your content niche from 10 benchmark categories with confidence score and related keywords |
+| **Radar Comparison** | Multi-dimensional radar chart comparing followers, engagement, posts, views, and total interactions across platforms |
+| **Growth Tracking** | Historical snapshots stored locally — track followers, likes, and videos over time with trend charts |
 | **Strategy Engine** | Actionable recommendations based on your actual engagement patterns |
 | **Content Calendar** | AI-free publishing schedule optimized from your best-performing time slots |
 | **Persona Timeline** | Decision tree for tracking strategy experiments and pivots |
+| **File Import** | Drag-and-drop CSV, XLSX, and JSON files — auto-detects 4 Douyin export schemas and merges multi-file uploads |
+| **Report Export** | Export your dashboard as PNG screenshot or PDF print |
 | **Data Passport** | Chrome extension that captures Douyin creator data in one click |
 | **Cross-Platform** | Unified view across Douyin, TikTok, and Red Note |
 
@@ -130,10 +133,12 @@ Open [localhost:3000](http://localhost:3000) and click **Try Demo** to explore w
  Douyin profile ──┐
  TikTok export ───┤           ┌─ Persona Score                  Dashboard
  Red Note data ───┼── Schema ─┼─ Growth Tracker                 Persona Detail
- JSON / CSV ──────┤   Check   ├─ Niche Benchmark                Compare View
- Chrome extension ┘           ├─ Strategy Engine                Content Calendar
-                              ├─ Content Planner                Persona Timeline
-                              └─ Cross-Platform Comparator      Pipeline View
+ JSON / CSV ──────┤   Check   ├─ Niche Detection                Compare View + Radar
+ XLSX (4 schemas) ┤           ├─ Niche Benchmark                Content Calendar
+ Chrome extension ┘           ├─ Strategy Engine                Persona Timeline
+                              ├─ Content Planner                Pipeline View
+                              ├─ Cross-Platform Comparator      Export (PNG/PDF)
+                              └─ Idea Generator
 ```
 
 **All engines are deterministic.** Same input always produces the same output. No randomness, no model weights, no external API calls.
@@ -145,6 +150,8 @@ Open [localhost:3000](http://localhost:3000) and click **Try Demo** to explore w
 - **Persona consistency** — sliding-window cosine similarity between content periods
 - **Niche detection** — maps content distribution to 10 benchmark niches with synthetic cohort comparison
 - **Growth analysis** — delta computation over IndexedDB-persisted historical snapshots
+- **Engine memoization** — FNV-1a content hashing with LRU eviction (maxSize=64) avoids redundant computation
+- **XLSX schema detection** — auto-classifies 4 Douyin export formats (作品列表, 投稿分析, 投稿汇总, 时间序列) and merges multi-file uploads into a single profile
 
 ---
 
@@ -153,8 +160,9 @@ Open [localhost:3000](http://localhost:3000) and click **Try Demo** to explore w
 | Adapter | Platform | How it works | Status |
 |---------|----------|-------------|--------|
 | `DemoAdapter` | Any | Built-in sample profiles for instant exploration | Stable |
-| `HTMLParseAdapter` | TikTok | Parses exported HTML from TikTok | Experimental |
-| `ManualImportAdapter` | Any | Upload your own JSON data | Stable |
+| `HTMLParseAdapter` | TikTok, Douyin, Red Note | Parses exported HTML from platform pages | Stable |
+| `FileImportAdapter` | Any | Drag-and-drop CSV, XLSX, JSON files with auto-schema detection | Stable |
+| `ManualImportAdapter` | Any | Upload your own JSON data with schema validation | Stable |
 | `ExtensionAdapter` | Douyin | Receives live data from Data Passport extension | Beta |
 
 Want to add a new platform? Implement the `DataAdapter` interface and register it:
@@ -174,6 +182,7 @@ registerAdapter(new YourAdapter());
 | Language | TypeScript 5 (strict) |
 | UI | React 19 + Tailwind CSS 4 |
 | Charts | Recharts 3 |
+| Testing | Vitest + Playwright |
 | Client Storage | IndexedDB |
 | Extension | Chrome MV3 + Vite |
 | Deploy | Vercel |
@@ -186,9 +195,14 @@ registerAdapter(new YourAdapter());
 - [x] Browser extension for one-click Douyin data capture
 - [x] Client-side history persistence (IndexedDB)
 - [x] Platform-specific quality signals (completion rate, bounce rate, watch duration)
+- [x] Multi-file import with 4 Douyin XLSX schema auto-detection
+- [x] Radar chart multi-dimensional cross-platform comparison
+- [x] Report export as PNG and PDF
+- [x] Engine memoization with FNV-1a content hashing and LRU eviction
+- [x] E2E test coverage with Playwright (15 test cases across 5 core flows)
+- [x] Accessibility: focus-visible, skip-to-content, semantic landmarks, keyboard navigation
 - [ ] Red Note and TikTok live adapters
 - [ ] Continuous background data collection via extension
-- [ ] Export reports as PDF / shareable link
 - [ ] i18n support (Chinese)
 
 ---

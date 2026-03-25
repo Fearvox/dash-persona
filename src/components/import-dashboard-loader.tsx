@@ -9,6 +9,7 @@ import {
   generateStrategySuggestions,
   explainPersonaScore,
   compareToBenchmarkByNiche,
+  detectNiche,
   type PersonaScore,
 } from '@/lib/engine';
 import type { ScoreExplanation } from '@/lib/engine/explain';
@@ -17,6 +18,7 @@ import DashboardInteractive from '@/components/dashboard-interactive';
 import PlatformComparison from '@/components/platform-comparison';
 import StrategySuggestions from '@/components/strategy-suggestions';
 import ForYouCard from '@/components/for-you-card';
+import NicheDetectCard from '@/components/niche-detect-card';
 import Link from 'next/link';
 
 export default function ImportDashboardLoader() {
@@ -36,7 +38,6 @@ export default function ImportDashboardLoader() {
         if (!p.profileUrl) p.profileUrl = `https://creator.douyin.com`;
       }
       setProfiles(parsed);
-      sessionStorage.removeItem('dashpersona-import-profiles');
     } catch {
       router.replace('/onboarding');
     }
@@ -70,6 +71,10 @@ export default function ImportDashboardLoader() {
   const benchmarkResult = compareToBenchmarkByNiche(
     profiles[bestPlatform] ?? Object.values(profiles)[0],
     bestPersonaScore,
+  );
+
+  const nicheResult = detectNiche(
+    profiles[bestPlatform] ?? Object.values(profiles)[0],
   );
 
   const allPosts: Post[] = Object.values(profiles).flatMap((p) => p.posts);
@@ -120,7 +125,11 @@ export default function ImportDashboardLoader() {
         </div>
 
         <aside className="flex flex-col gap-6">
-          <section className="animate-stagger animate-stagger-1" aria-labelledby="strategy-heading">
+          <section className="animate-stagger animate-stagger-1">
+            <NicheDetectCard result={nicheResult} />
+          </section>
+
+          <section className="animate-stagger animate-stagger-2" aria-labelledby="strategy-heading">
             <h2 id="strategy-heading" className="kicker mb-3">Strategy Suggestions</h2>
             <StrategySuggestions suggestions={suggestions} />
           </section>

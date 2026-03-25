@@ -51,6 +51,7 @@ export {
   computeGrowthHealth,
   generatePersonaTags,
   computePersonaScore,
+  computePersonaScoreCached,
   overallScore,
 } from './persona';
 
@@ -60,6 +61,7 @@ export {
   type ComparisonInsight,
   type CrossPlatformComparison,
   comparePlatforms,
+  comparePlatformsCached,
 } from './comparator';
 
 // -- Benchmark analyser --
@@ -110,6 +112,7 @@ export {
   type ContentSlot,
   type ContentPlan,
   generateContentPlan,
+  generateContentPlanCached,
   exportToICS,
 } from './content-planner';
 

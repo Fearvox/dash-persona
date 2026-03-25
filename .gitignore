@@ -46,8 +46,10 @@ next-env.d.ts
 # Agent / editor config (private, not for distribution)
 .claude/
 .serena/
+.golutra/
 .algo-profile/
 .impeccable.md
+.playwright-mcp/
 CLAUDE.md
 TODOS.md
 docs/superpowers/

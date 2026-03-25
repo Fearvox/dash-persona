@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { Post } from '@/lib/schema/creator-data';
 import type { CreatorProfile } from '@/lib/schema/creator-data';

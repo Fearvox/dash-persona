@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useId } from 'react';
+import { useState, useEffect, useCallback, useRef, useId, useMemo, memo } from 'react';
 import type { Post } from '@/lib/schema/creator-data';
 import { formatNumber } from '@/lib/engine';
 
@@ -21,6 +21,8 @@ interface PostDrawerProps {
 // ---------------------------------------------------------------------------
 
 type SortKey = 'views' | 'likes' | 'date';
+
+const PAGE_SIZE = 20;
 
 function sortPosts(posts: Post[], key: SortKey): Post[] {
   const sorted = [...posts];
@@ -59,15 +61,44 @@ export default function PostDrawer({
   filterPostIds,
 }: PostDrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
   const [sortKey, setSortKey] = useState<SortKey>('views');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  // Filter posts if filterPostIds is provided
-  const filteredPosts = filterPostIds
-    ? posts.filter((p) => filterPostIds.includes(p.postId))
-    : posts;
+  // Memoize filtering + sorting
+  const filteredPosts = useMemo(
+    () => filterPostIds ? posts.filter((p) => filterPostIds.includes(p.postId)) : posts,
+    [posts, filterPostIds],
+  );
 
-  const sortedPosts = sortPosts(filteredPosts, sortKey);
+  const sortedPosts = useMemo(
+    () => sortPosts(filteredPosts, sortKey),
+    [filteredPosts, sortKey],
+  );
+
+  // Slice to visible count for incremental rendering
+  const visiblePosts = useMemo(
+    () => sortedPosts.slice(0, visibleCount),
+    [sortedPosts, visibleCount],
+  );
+
+  const hasMore = visibleCount < sortedPosts.length;
+
+  // Reset visible count when sort changes or drawer opens
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [sortKey, isOpen]);
+
+  // Scroll-to-load-more
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || !hasMore) return;
+    // Load more when within 100px of bottom
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 100) {
+      setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, sortedPosts.length));
+    }
+  }, [hasMore, sortedPosts.length]);
 
   // Close on escape + focus trap
   useEffect(() => {
@@ -118,8 +149,6 @@ export default function PostDrawer({
     },
     [onClose],
   );
-
-  // No body scroll lock — user can still scroll the page behind the modal
 
   if (!isOpen) return null;
 
@@ -174,17 +203,26 @@ export default function PostDrawer({
           ))}
         </div>
 
-        {/* Post list */}
-        <div className="flex-1 overflow-y-auto px-5 py-3">
+        {/* Post list with incremental loading */}
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto px-5 py-3"
+          onScroll={handleScroll}
+        >
           {sortedPosts.length === 0 ? (
             <p className="py-8 text-center text-sm text-[var(--text-subtle)]">
               No posts to display.
             </p>
           ) : (
             <div className="space-y-3">
-              {sortedPosts.map((post) => (
+              {visiblePosts.map((post) => (
                 <PostCard key={post.postId} post={post} />
               ))}
+              {hasMore && (
+                <p className="py-3 text-center text-xs text-[var(--text-subtle)]">
+                  Showing {visibleCount} of {sortedPosts.length} — scroll for more
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -194,10 +232,10 @@ export default function PostDrawer({
 }
 
 // ---------------------------------------------------------------------------
-// Post card sub-component
+// Post card sub-component (memoized)
 // ---------------------------------------------------------------------------
 
-function PostCard({ post }: { post: Post }) {
+const PostCard = memo(function PostCard({ post }: { post: Post }) {
   return (
     <div className="rounded-lg p-3 bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
       {/* Description */}
@@ -222,9 +260,9 @@ function PostCard({ post }: { post: Post }) {
       </div>
     </div>
   );
-}
+});
 
-function MetricPill({ label, value }: { label: string; value: number }) {
+const MetricPill = memo(function MetricPill({ label, value }: { label: string; value: number }) {
   return (
     <span className="text-xs text-[var(--text-subtle)]">
       <span className="font-medium text-[var(--text-secondary)]">
@@ -233,4 +271,4 @@ function MetricPill({ label, value }: { label: string; value: number }) {
       {label.toLowerCase()}
     </span>
   );
-}
+});

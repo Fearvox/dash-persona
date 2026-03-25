@@ -50,13 +50,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <a
-          href="#main"
+          href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-[var(--accent-green)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
           style={{ color: 'var(--bg-primary)' }}
         >
           Skip to main content
         </a>
-        <div id="main" className="flex-1">{children}</div>
+        <main id="main-content" className="flex-1">{children}</main>
         <SiteFooter />
         <ToastContainer />
       </body>

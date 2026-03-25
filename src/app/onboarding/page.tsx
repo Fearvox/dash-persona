@@ -8,6 +8,7 @@ import { parseFileContent, parseXlsxRaw, mergeXlsxResults, type XlsxParseResult 
 import type { CreatorProfile } from "@/lib/schema/creator-data";
 
 type PlatformEntry = {
+  id: string;
   url: string;
   platform: string | null;
 };
@@ -38,10 +39,10 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [mode, setMode] = useState<"import" | "url">("import");
   const [entries, setEntries] = useState<PlatformEntry[]>([
-    { url: "", platform: null },
+    { id: crypto.randomUUID(), url: "", platform: null },
   ]);
   const [benchmarks, setBenchmarks] = useState<PlatformEntry[]>([
-    { url: "", platform: null },
+    { id: crypto.randomUUID(), url: "", platform: null },
   ]);
   const [importResults, setImportResults] = useState<FileParseResult[]>([]);
   const [xlsxResults, setXlsxResults] = useState<XlsxParseResult[]>([]);
@@ -123,7 +124,7 @@ export default function OnboardingPage() {
   ) {
     const updated = list.map((entry, i) =>
       i === index
-        ? { url: value, platform: value.length > 8 ? detectPlatform(value) : null }
+        ? { ...entry, url: value, platform: value.length > 8 ? detectPlatform(value) : null }
         : entry,
     );
     setter(updated);
@@ -133,7 +134,7 @@ export default function OnboardingPage() {
     list: PlatformEntry[],
     setter: (v: PlatformEntry[]) => void,
   ) {
-    setter([...list, { url: "", platform: null }]);
+    setter([...list, { id: crypto.randomUUID(), url: "", platform: null }]);
   }
 
   function removeEntry(
@@ -305,7 +306,7 @@ export default function OnboardingPage() {
             <fieldset className="mt-8 flex flex-col gap-4">
               <legend className="sr-only">Profile URLs</legend>
               {entries.map((entry, index) => (
-                <div key={index} className="flex items-center gap-3">
+                <div key={entry.id} className="flex items-center gap-3">
                   <div className="relative flex-1">
                     <label
                       htmlFor={`url-${index}`}
