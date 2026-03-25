@@ -220,6 +220,75 @@ function parseCsv(content: string, fileName: string): CreatorProfile[] {
 }
 
 // ---------------------------------------------------------------------------
+// XLSX parsing (dynamic import to avoid ~1.1 MB bundle when unused)
+// ---------------------------------------------------------------------------
+
+async function parseXlsx(content: string, fileName: string): Promise<CreatorProfile[]> {
+  const XLSX = await import('xlsx');
+  let wb: ReturnType<typeof XLSX.read>;
+  try {
+    wb = XLSX.read(content, { type: 'base64' });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new FileImportError('PARSE_ERROR', fileName, `Failed to read XLSX: ${msg}`);
+  }
+
+  const sheetName = wb.SheetNames[0];
+  if (!sheetName) {
+    throw new FileImportError('VALIDATION_ERROR', fileName, 'XLSX workbook has no sheets');
+  }
+
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[sheetName]);
+  if (rows.length === 0) {
+    throw new FileImportError('VALIDATION_ERROR', fileName, 'XLSX sheet has no data rows');
+  }
+
+  const posts: CreatorProfile['posts'] = rows.map((row, i) => {
+    const post: Record<string, unknown> = {};
+
+    for (const [rawKey, rawVal] of Object.entries(row)) {
+      const field = resolveColumn(rawKey);
+      if (!field) continue;
+
+      if (NUMERIC_FIELDS.has(field)) {
+        const cleaned = String(rawVal).replace(/%$/, '');
+        const num = Number(cleaned);
+        post[field] = Number.isFinite(num) ? num : 0;
+      } else {
+        post[field] = String(rawVal);
+      }
+    }
+
+    if (!post.postId) post.postId = `xlsx-${i + 1}`;
+    if (post.desc === undefined) post.desc = '';
+    if (post.views === undefined) post.views = 0;
+    if (post.likes === undefined) post.likes = 0;
+    if (post.comments === undefined) post.comments = 0;
+    if (post.shares === undefined) post.shares = 0;
+    if (post.saves === undefined) post.saves = 0;
+
+    return post as unknown as CreatorProfile['posts'][number];
+  });
+
+  const profile: CreatorProfile = {
+    platform: 'unknown',
+    profileUrl: '',
+    fetchedAt: new Date().toISOString(),
+    source: 'manual_import',
+    profile: {
+      nickname: `Imported from ${fileName}`,
+      uniqueId: `xlsx-import-${Date.now()}`,
+      followers: 0,
+      likesTotal: posts.reduce((sum, p) => sum + p.likes, 0),
+      videosCount: posts.length,
+    },
+    posts,
+  };
+
+  return [profile];
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -241,6 +310,9 @@ export async function parseFileContent(
       return parseJson(content, fileName);
     case 'csv':
       return parseCsv(content, fileName);
+    case 'xlsx':
+    case 'xls':
+      return await parseXlsx(content, fileName);
     default:
       throw new FileImportError(
         'UNSUPPORTED_FORMAT',

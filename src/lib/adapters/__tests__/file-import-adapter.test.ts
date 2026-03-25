@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import * as XLSX from 'xlsx';
 import { parseFileContent, FileImportError } from '../file-import-adapter';
 
 const VALID_PROFILE = {
@@ -93,6 +94,45 @@ describe('parseFileContent', () => {
       expect(result[0].source).toBe('manual_import');
       expect(result[0].platform).toBe('unknown');
       expect(result[0].profile.nickname).toBe('Imported from posts.csv');
+    });
+  });
+
+  describe('XLSX parsing', () => {
+    function createXlsxContent(rows: Record<string, unknown>[]): string {
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      return XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }) as string;
+    }
+
+    it('parses XLSX with standard column names', async () => {
+      const content = createXlsxContent([
+        { postId: 'p1', desc: 'Video 1', views: 1000, likes: 100, comments: 10, shares: 5, saves: 20 },
+        { postId: 'p2', desc: 'Video 2', views: 2000, likes: 200, comments: 20, shares: 10, saves: 40 },
+      ]);
+      const result = await parseFileContent(content, 'data.xlsx');
+      expect(result).toHaveLength(1);
+      expect(result[0].posts).toHaveLength(2);
+      expect(result[0].posts[0].views).toBe(1000);
+    });
+
+    it('parses XLSX with Chinese column names (Douyin export)', async () => {
+      const content = createXlsxContent([
+        { '视频名称': '测试视频', '发布时间': '2026-03-01', '播放量': 5000, '5s完播率': '45.2%', '2s跳出率': '12.1%', '平均播放时长': 15.3 },
+      ]);
+      const result = await parseFileContent(content, 'douyin-export.xlsx');
+      expect(result[0].posts).toHaveLength(1);
+      expect(result[0].posts[0].desc).toBe('测试视频');
+      expect(result[0].posts[0].views).toBe(5000);
+      expect(result[0].posts[0].completionRate).toBe(45.2);
+    });
+
+    it('throws for empty XLSX', async () => {
+      const ws = XLSX.utils.aoa_to_sheet([['postId', 'desc']]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      const content = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }) as string;
+      await expect(parseFileContent(content, 'empty.xlsx')).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
     });
   });
 });
