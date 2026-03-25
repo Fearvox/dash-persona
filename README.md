@@ -1,55 +1,72 @@
 # DashPersona
 
-**Data-Agnostic Creator Intelligence Engine**
+**Understand your creator persona across Douyin, TikTok, and Red Note — with zero AI.**
 
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](./LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6.svg)](https://www.typescriptlang.org/)
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg)](https://vercel.com/)
 
-**Live demo:** [dash-persona.vercel.app](https://dash-persona.vercel.app)
+<p align="center">
+  <a href="https://dash-persona.vercel.app"><strong>Try the live demo →</strong></a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/landing-hero.png" alt="DashPersona landing page" width="720" />
+</p>
 
 ---
 
-## What is DashPersona?
+## The Problem
 
-DashPersona is a deterministic creator analytics engine that transforms raw social media data into actionable persona intelligence. It ingests content from platforms like Douyin, TikTok, and Red Note (XHS) through pluggable data adapters, then runs a suite of rule-based analysis engines to produce persona scores, growth metrics, and content strategy recommendations.
+Content creators manage multiple platforms but have no unified view of their performance. Each platform's analytics lives in a silo, metrics aren't comparable, and most "analytics tools" are either expensive SaaS products or black-box AI that can't explain its recommendations.
 
-Unlike AI-powered analytics tools, DashPersona uses zero LLM inference. Every score, tag, and suggestion is computed through deterministic algorithms -- cosine similarity for content classification, weighted formulas for engagement profiling, and rule-based heuristics for strategy generation. The result is a reproducible, transparent, and fast analysis pipeline that gives content creators a unified cross-platform view of their online persona.
+## How DashPersona Solves It
+
+DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Note**, normalizes it into a unified schema, and runs it through **6 deterministic analysis engines**. Every score, tag, and recommendation is computed with transparent algorithms — no LLM calls, no API keys, no subscription fees. You can trace any number back to the formula that produced it.
 
 ---
 
-## Features
+## See It in Action
 
-### PersonaScore Engine
-Classifies creator content across 31 categories using an **inverted-index classifier** — each keyword maps to its categories in O(1), reducing per-post work from O(C×K) to O(T) where T is text length. Engagement scoring uses a **weighted signal formula** (comments ×5, shares ×3, saves ×2, completion rate ×8, bounce-rate penalty ×4) modelled on production ranking systems. Persona consistency is tracked via **sparse sliding-window cosine similarity** that operates in O(P) total time. Produces a composite score (0–100) blending engagement, rhythm, consistency, and growth momentum, plus rule-based persona tags (e.g. "Consistent Publisher", "Engagement Magnet").
+### Dashboard — Your command center
 
-### Cross-Platform Comparison
-Normalizes metrics across Douyin, TikTok, and Red Note into a unified `CreatorProfile` schema. Side-by-side comparison surfaces platform-specific strengths and cross-platform insights.
+Growth sparklines, cross-platform follower deltas, niche benchmarking, and strategy suggestions — all on one screen.
 
-### Niche-Aware Benchmarking
-Auto-detects a creator's content niche from their post distribution, then compares against **synthetic benchmark cohorts** generated from niche-specific statistical profiles. Ships with 10 pre-tuned niches (tutorial, entertainment, lifestyle, tech, food, fitness, fashion, travel, vlog, business) and a seeded PRNG generator that produces deterministic benchmark populations. Percentile ranking uses **binary search** for O(log n) lookups.
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="Dashboard with growth overview, benchmark comparison, and strategy suggestions" width="720" />
+</p>
 
-### Growth Tracking
-Persists historical snapshots in **IndexedDB** via a client-side history store (up to 50 snapshots per profile). Computes deltas for followers, likes, and video count with sparkline charts and directional color coding. Supports configurable baseline windows for trend analysis.
+### Persona Score — Know your strengths
 
-### Strategy Suggestions
-Generates prioritized, actionable content recommendations based on engagement patterns, posting frequency, content distribution gaps, and growth trajectory. Entirely rule-based with no external API calls.
+A composite 0–100 score breaking down your content mix, engagement rate, posting rhythm, persona consistency, growth health, and viral potential. Click any dimension to see the exact formula.
 
-### Data Adapters
-Pluggable adapter architecture for ingesting creator data from multiple sources. Ships with four adapters: demo (built-in sample profiles), TikTok HTML parser (experimental), manual JSON import, and a **browser extension bridge** that receives live data from the Data Passport Chrome extension. New platform adapters can be registered at runtime via the adapter registry.
+<p align="center">
+  <img src="docs/screenshots/persona.png" alt="Persona detail page with dimension breakdown and persona tags" width="720" />
+</p>
 
-### Browser Extension — Data Passport
-Chrome MV3 extension for one-click creator data capture from Douyin's creator dashboard (`creator.douyin.com`). Extracts profile info, post metrics, and platform-specific signals (completion rate, bounce rate, watch duration) directly from the DOM, then bridges the data to DashPersona via the `ExtensionAdapter`.
+### Cross-Platform Comparison — Find your best platform
 
-### Interactive Pipeline Visualization
-A live, auto-layouted flow diagram (powered by ReactFlow + ELK) that maps every module in the analysis pipeline — from data inputs through adapters, schema validation, and engines to the output layer. Adapts element density to device performance tier (high/mid/low) detected at runtime.
+Side-by-side metrics across all your platforms. Automatically surfaces insights like "your audience on Douyin is 4.2× larger than on Red Note" and "your content gets 1.8× more engagement on Red Note than TikTok."
 
-### Cinematic Landing Page
-Boot-sequence animation, code-art generative background, and an output-wall showcase. Performance-adaptive: disables animations on low-end devices and respects `prefers-reduced-motion`.
+<p align="center">
+  <img src="docs/screenshots/compare.png" alt="Cross-platform comparison with key metrics and insight highlights" width="720" />
+</p>
 
-### Dark-Theme-First UI
-Designed for extended use with a dark-first color system. Fully responsive layout built on Tailwind CSS 4.
+---
+
+## Key Features
+
+| Feature | What it does |
+|---------|-------------|
+| **Persona Score** | Composite 0–100 score across 6 dimensions with explainable formulas |
+| **Niche Benchmarking** | Auto-detects your niche, compares you against 10 category-specific cohorts |
+| **Growth Tracking** | Historical snapshots stored locally — track followers, likes, and videos over time |
+| **Strategy Engine** | Actionable recommendations based on your actual engagement patterns |
+| **Content Calendar** | AI-free publishing schedule optimized from your best-performing time slots |
+| **Persona Timeline** | Decision tree for tracking strategy experiments and pivots |
+| **Data Passport** | Chrome extension that captures Douyin creator data in one click |
+| **Cross-Platform** | Unified view across Douyin, TikTok, and Red Note |
 
 ---
 
@@ -62,137 +79,97 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and click **Try Demo** to explore with built-in sample data.
-
-To enable experimental features, copy the environment template:
-
-```bash
-cp .env.example .env.local
-```
+Open [localhost:3000](http://localhost:3000) and click **Try Demo** to explore with built-in sample data — no login, no API keys, no setup.
 
 ---
 
-## Architecture
+## How It Works
 
 ```
-                +-------------------+
-                |    Data Sources   |
-                | Douyin · TikTok   |
-                | Red Note · Manual |
-                +--------+----------+
-                         |
-            +------------+------------+
-            |     Data Adapters       |
-            | Demo | HTML | JSON | Ext|
-            +------------+------------+
-                         |
-            +------------+------------+
-            |   CreatorDataSchema     |
-            | CreatorProfile + Post   |
-            | (completionRate, etc.)  |
-            +------------+------------+
-                         |
-     +--------+----------+----------+---------+
-     |        |          |          |         |
-     v        v          v          v         v
-  Persona  Growth   Benchmark   Niche    Strategy
-  Engine   Engine    Engine    Detect    Engine
-     |        |          |          |         |
-     +--------+----------+----------+---------+
-                         |
-            +------------+------------+
-            |     History Store       |
-            |  IndexedDB snapshots    |
-            +------------+------------+
-                         |
-            +------------+------------+
-            |     Visualization       |
-            | Charts · Pipeline · UI  |
-            +-------------------------+
+  Your Data                    Analysis Engines                  What You See
+ ───────────                  ──────────────────                ──────────────
+ Douyin profile ──┐
+ TikTok export ───┤           ┌─ Persona Score                  Dashboard
+ Red Note data ───┼── Schema ─┼─ Growth Tracker                 Persona Detail
+ JSON / CSV ──────┤   Check   ├─ Niche Benchmark                Compare View
+ Chrome extension ┘           ├─ Strategy Engine                Content Calendar
+                              ├─ Content Planner                Persona Timeline
+                              └─ Cross-Platform Comparator      Pipeline View
 ```
 
-**Data Sources** -- Onboarding entry points: profile URLs, HTML exports, JSON files, or live capture via the Data Passport browser extension.
+**All engines are deterministic.** Same input always produces the same output. No randomness, no model weights, no external API calls.
 
-**Data Adapters** -- Platform-specific modules that normalize raw data into the universal `CreatorProfile` schema. Each adapter implements the `DataAdapter` interface and is registered in a central registry. The `ExtensionAdapter` bridges data from the Chrome extension.
+### Under the Hood
 
-**CreatorDataSchema** -- The canonical TypeScript type system (`CreatorProfile`, `Post`, `ProfileInfo`, `HistorySnapshot`) that serves as the contract between adapters and engines. Includes platform-specific quality signals (`completionRate`, `bounceRate`, `avgWatchDuration`).
-
-**Analysis Engines** -- Six independent engines (persona, comparator, benchmark, niche-detect, growth, strategy) that accept `CreatorProfile` inputs and produce typed analysis results. All engines are pure functions with no side effects.
-
-**History Store** -- Client-side IndexedDB persistence that stores up to 50 snapshots per profile, enabling longitudinal growth tracking across sessions.
-
-**Visualization** -- React components powered by Recharts and ReactFlow that render engine outputs as interactive charts, score cards, sparklines, pipeline diagrams, and recommendation panels.
-
----
-
-## Tech Stack
-
-| Layer          | Technology                                    |
-|----------------|-----------------------------------------------|
-| Framework      | Next.js 16 (App Router, Turbopack)            |
-| UI Library     | React 19                                      |
-| Language       | TypeScript 5                                  |
-| Charts         | Recharts 3                                    |
-| Pipeline Viz   | @xyflow/react + elkjs (auto-layout)           |
-| Styling        | Tailwind CSS 4                                |
-| Client Storage | IndexedDB (history snapshots)                 |
-| Extension      | Chrome MV3 + Vite (Data Passport)             |
-| Deployment     | Vercel                                        |
+- **Content classification** — inverted-index keyword matching across 31 categories
+- **Engagement scoring** — weighted formula (comments ×5, shares ×3, saves ×2) modelled on production ranking systems
+- **Persona consistency** — sliding-window cosine similarity between content periods
+- **Niche detection** — maps content distribution to 10 benchmark niches with synthetic cohort comparison
+- **Growth analysis** — delta computation over IndexedDB-persisted historical snapshots
 
 ---
 
 ## Data Adapters
 
-| Adapter                | Platform | Source                  | Status        |
-|------------------------|----------|-------------------------|---------------|
-| `DemoAdapter`          | Any      | Built-in data           | Stable        |
-| `HTMLParseAdapter`     | TikTok   | HTML export             | Experimental  |
-| `ManualImportAdapter`  | Any      | JSON file               | Stable        |
-| `ExtensionAdapter`     | Douyin   | Browser extension data  | Beta          |
+| Adapter | Platform | How it works | Status |
+|---------|----------|-------------|--------|
+| `DemoAdapter` | Any | Built-in sample profiles for instant exploration | Stable |
+| `HTMLParseAdapter` | TikTok | Parses exported HTML from TikTok | Experimental |
+| `ManualImportAdapter` | Any | Upload your own JSON data | Stable |
+| `ExtensionAdapter` | Douyin | Receives live data from Data Passport extension | Beta |
 
-All adapters implement the `DataAdapter` interface and can be registered dynamically:
+Want to add a new platform? Implement the `DataAdapter` interface and register it:
 
 ```ts
-import { registerAdapter, getAdapter } from '@/lib/adapters';
+import { registerAdapter } from '@/lib/adapters';
+registerAdapter(new YourAdapter());
 ```
+
+---
+
+## Tech Stack
+
+| | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript 5 (strict) |
+| UI | React 19 + Tailwind CSS 4 |
+| Charts | Recharts 3 |
+| Client Storage | IndexedDB |
+| Extension | Chrome MV3 + Vite |
+| Deploy | Vercel |
 
 ---
 
 ## Roadmap
 
-- [x] Benchmark comparison against niche-specific averages (10 niches, seeded cohort generation)
-- [x] Browser extension for one-click Douyin data capture (Data Passport, Chrome MV3)
-- [x] IndexedDB client-side persistence for growth history (up to 50 snapshots)
+- [x] Niche-aware benchmarking (10 niches, synthetic cohort comparison)
+- [x] Browser extension for one-click Douyin data capture
+- [x] Client-side history persistence (IndexedDB)
 - [x] Platform-specific quality signals (completion rate, bounce rate, watch duration)
-- [x] Interactive pipeline visualization (ReactFlow + ELK auto-layout)
 - [ ] Red Note and TikTok live adapters
 - [ ] Continuous background data collection via extension
-- [ ] i18n support (Chinese)
 - [ ] Export reports as PDF / shareable link
+- [ ] i18n support (Chinese)
 
 ---
 
 ## Contributing
 
-Contributions are welcome. To get started:
-
-1. Fork the repository and create a feature branch from `main`.
-2. Install dependencies with `npm install`.
-3. Run the dev server with `npm run dev` and verify your changes.
-4. Ensure `npm run build` and `npm run lint` pass without errors.
-5. Open a pull request with a clear description of the change and its motivation.
-
-For bug reports and feature requests, please open an issue on GitHub.
+1. Fork the repo and create a feature branch from `main`
+2. `npm install` → `npm run dev`
+3. Make your changes, ensure `npm run build` passes
+4. Open a PR with a clear description
 
 ---
 
 ## License
 
-DashPersona is licensed under the **Business Source License 1.1 (BSL 1.1)**.
+**Business Source License 1.1 (BSL 1.1)**
 
-- **Source available** -- you may read, fork, and modify the code.
-- **Non-production use** is permitted without a license.
-- **Production use** requires a separate commercial license from [Fearvox](mailto:nolan@openclaw.dev).
-- On **2030-03-24**, the license automatically converts to **Apache License 2.0**.
+- Source available — read, fork, and modify freely
+- Non-production use permitted without a license
+- Production use requires a commercial license from [Fearvox](mailto:nolan@openclaw.dev)
+- Converts to **Apache 2.0** on 2030-03-24
 
-See [LICENSE](./LICENSE) for the full license text.
+See [LICENSE](./LICENSE) for the full text.
