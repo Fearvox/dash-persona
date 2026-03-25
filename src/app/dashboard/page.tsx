@@ -18,6 +18,7 @@ import StrategySuggestions from '@/components/strategy-suggestions';
 import LiveDashboardWrapper from '@/components/live-dashboard-wrapper';
 import ExtensionDataLoader from '@/components/extension-data-loader';
 import ForYouCard from '@/components/for-you-card';
+import ImportDashboardLoader from '@/components/import-dashboard-loader';
 
 interface DashboardSearchParams {
   source?: string;
@@ -64,6 +65,7 @@ export default async function DashboardPage({
   const params = await searchParams;
   const isLive = params.source === 'live';
   const isExtension = params.source === 'extension';
+  const isImport = params.source === 'import';
   const isDemo = params.source === 'demo';
   const liveUrl = params.url ?? '';
   const personaParam = params.persona ?? 'tutorial';
@@ -72,6 +74,11 @@ export default async function DashboardPage({
   )
     ? (personaParam as DemoPersonaType)
     : 'tutorial';
+
+  // --- Import mode (file upload workaround) ---
+  if (isImport) {
+    return <ImportDashboardLoader />;
+  }
 
   // --- Live data collection mode ---
   if (isLive) {
