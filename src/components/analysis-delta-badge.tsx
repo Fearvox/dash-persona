@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createHistoryStore, profileKey } from '@/lib/history/store';
+import { useState, useEffect, type ReactNode } from 'react';
+import { createHistoryStore } from '@/lib/history/store';
 import {
   type AnalysisSnapshot,
   type AnalysisDelta,
@@ -17,6 +17,8 @@ interface AnalysisDeltaBadgeProps {
   current: AnalysisSnapshot;
   /** Storage key (platform:uniqueId). */
   storeKey: string;
+  /** Optional render prop for exposing full delta to children. */
+  children?: (delta: AnalysisDelta | null) => ReactNode;
 }
 
 // ---------------------------------------------------------------------------
@@ -28,11 +30,12 @@ interface AnalysisDeltaBadgeProps {
  * 1. On mount, loads the last analysis snapshot from IndexedDB
  * 2. Computes the delta with the current analysis
  * 3. Saves the current analysis to IndexedDB
- * 4. Displays score change badge
+ * 4. Displays score change badge + optional children via render prop
  */
 export default function AnalysisDeltaBadge({
   current,
   storeKey,
+  children,
 }: AnalysisDeltaBadgeProps) {
   const [delta, setDelta] = useState<AnalysisDelta | null>(null);
 
@@ -43,18 +46,13 @@ export default function AnalysisDeltaBadge({
 
     async function run() {
       const store = createHistoryStore();
-
-      // Load previous analysis
       const previous = await store.getLastAnalysis(storeKey);
-
-      // Compute delta
       const d = computeAnalysisDelta(current, previous);
 
       if (!cancelled) {
         setDelta(d);
       }
 
-      // Save current analysis (after reading previous)
       await store.saveAnalysisSnapshot(storeKey, current);
     }
 
@@ -62,22 +60,29 @@ export default function AnalysisDeltaBadge({
     return () => { cancelled = true; };
   }, [current, storeKey]);
 
-  if (!delta || !delta.hasPrevious) return null;
-
-  const sign = delta.scoreChange >= 0 ? '+' : '';
-  const color = delta.scoreChange > 0
-    ? 'var(--accent-green)'
-    : delta.scoreChange < 0
-      ? 'var(--accent-red)'
-      : 'var(--text-subtle)';
-
   return (
-    <span
-      className="ml-2 font-mono text-sm font-medium"
-      style={{ color }}
-      title={`vs ${delta.previousTimestamp ? new Date(delta.previousTimestamp).toLocaleDateString() : 'previous'}`}
-    >
-      {sign}{delta.scoreChange}
-    </span>
+    <>
+      {/* Inline score badge (only if has previous) */}
+      {delta?.hasPrevious && (
+        <span
+          className="ml-2 font-mono text-sm font-medium"
+          style={{
+            color: delta.scoreChange > 0
+              ? 'var(--accent-green)'
+              : delta.scoreChange < 0
+                ? 'var(--accent-red)'
+                : 'var(--text-subtle)',
+          }}
+          title={`vs ${delta.previousTimestamp ? new Date(delta.previousTimestamp).toLocaleDateString() : 'previous'}`}
+        >
+          {delta.scoreChange >= 0 ? '+' : ''}{delta.scoreChange}
+        </span>
+      )}
+      {/* Render prop for children that need the delta */}
+      {children?.(delta)}
+    </>
   );
 }
+
+// Re-export delta type for consumers
+export type { AnalysisDelta };

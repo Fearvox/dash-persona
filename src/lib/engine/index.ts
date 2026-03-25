@@ -121,3 +121,86 @@ export {
   type ExperimentIdea,
   generateExperimentIdeas,
 } from './idea-generator';
+
+// ---------------------------------------------------------------------------
+// Parallel engine runner
+// ---------------------------------------------------------------------------
+
+import type { CreatorProfile, Post } from '../schema/creator-data';
+import { computePersonaScore, type PersonaScore } from './persona';
+import { comparePlatforms, type CrossPlatformComparison } from './comparator';
+import { explainPersonaScore, type ScoreExplanation } from './explain';
+import { generateStrategySuggestions, type StrategySuggestion } from './strategy';
+import { compareToBenchmarkByNiche, type BenchmarkResult } from './benchmark';
+import { detectNiche } from './niche-detect';
+import type { NicheDetectionResult } from './niche-detect';
+
+export interface AllEngineResults {
+  personaScores: Record<string, PersonaScore>;
+  explanations: Record<string, Record<string, ScoreExplanation>>;
+  comparison: CrossPlatformComparison;
+  suggestions: StrategySuggestion[];
+  benchmarkResult: BenchmarkResult & { niche: string; nicheLabel: string };
+  nicheResult: NicheDetectionResult;
+  allPosts: Post[];
+  bestPlatform: string;
+}
+
+/**
+ * Run all 9 analysis engines in parallel via Promise.all.
+ *
+ * Each engine is pure and side-effect-free with no shared mutable state,
+ * so parallel execution is safe and deterministic.
+ */
+export async function runAllEngines(
+  profiles: Record<string, CreatorProfile>,
+): Promise<AllEngineResults> {
+  const platformEntries = Object.entries(profiles);
+
+  // Phase 1: Persona scores (per-platform, independent) — parallel
+  const scoreEntries = await Promise.all(
+    platformEntries.map(async ([platform, profile]) => {
+      const score = computePersonaScore(profile);
+      return [platform, score] as const;
+    }),
+  );
+  const personaScores: Record<string, PersonaScore> = Object.fromEntries(scoreEntries);
+
+  // Phase 2: All remaining engines — parallel (they depend on personaScores)
+  const comparison = comparePlatforms(Object.values(profiles));
+  const bestPlatform = comparison.bestEngagementPlatform ?? platformEntries[0][0];
+  const bestPersonaScore = personaScores[bestPlatform] ?? Object.values(personaScores)[0];
+  const bestProfile = profiles[bestPlatform] ?? Object.values(profiles)[0];
+
+  const [explanationEntries, suggestions, benchmarkResult, nicheResult] = await Promise.all([
+    // Explanations (per-platform, parallel)
+    Promise.all(
+      platformEntries.map(async ([platform, profile]) => {
+        const expl = explainPersonaScore(personaScores[platform], profile.posts);
+        return [platform, expl] as const;
+      }),
+    ),
+    // Strategy suggestions
+    Promise.resolve(generateStrategySuggestions(bestPersonaScore, comparison)),
+    // Benchmark
+    Promise.resolve(compareToBenchmarkByNiche(bestProfile, bestPersonaScore)),
+    // Niche detection
+    Promise.resolve(detectNiche(bestProfile)),
+  ]);
+
+  const explanations: Record<string, Record<string, ScoreExplanation>> =
+    Object.fromEntries(explanationEntries);
+
+  const allPosts: Post[] = Object.values(profiles).flatMap((p) => p.posts);
+
+  return {
+    personaScores,
+    explanations,
+    comparison,
+    suggestions,
+    benchmarkResult,
+    nicheResult,
+    allPosts,
+    bestPlatform,
+  };
+}

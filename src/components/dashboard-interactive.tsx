@@ -6,8 +6,10 @@ import type { Post } from '@/lib/schema/creator-data';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import type { PersonaScore, SparklinePoint, BenchmarkResult } from '@/lib/engine';
 import type { ScoreExplanation } from '@/lib/engine/explain';
+import type { AnalysisSnapshot } from '@/lib/history/analysis-types';
 import BenchmarkCard from './benchmark-card';
 import { useProfileHistory } from '@/lib/history';
+import { useAnalysisDelta } from '@/lib/history/use-analysis-delta';
 import PersonaOverview from './persona-overview';
 import GrowthSparklines from './growth-sparklines';
 import PostDrawer from './post-drawer';
@@ -24,6 +26,10 @@ interface DashboardInteractiveProps {
   source: string;
   personaType: string;
   benchmarkResult?: BenchmarkResult & { niche: string; nicheLabel: string };
+  /** Analysis snapshot for delta computation. */
+  analysisSnapshot?: AnalysisSnapshot;
+  /** Store key for analysis delta lookup. */
+  analysisStoreKey?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,8 +49,11 @@ export default function DashboardInteractive({
   source,
   personaType,
   benchmarkResult,
+  analysisSnapshot,
+  analysisStoreKey,
 }: DashboardInteractiveProps) {
   const { enrichedProfiles, isLoading: historyLoading, collectNow } = useProfileHistory(profiles);
+  const analysisDelta = useAnalysisDelta(analysisStoreKey ?? null, analysisSnapshot ?? null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerTitle, setDrawerTitle] = useState('Posts');

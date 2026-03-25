@@ -2,12 +2,16 @@
 
 import { overallScore, type PersonaScore } from '@/lib/engine';
 import type { ScoreExplanation } from '@/lib/engine/explain';
+import type { AnalysisDelta } from '@/lib/history/analysis-types';
 import ExplainableScore from './explainable-score';
+import MiniDelta from './mini-delta';
 
 interface PersonaOverviewProps {
   scores: Record<string, PersonaScore>;
   explanations?: Record<string, Record<string, ScoreExplanation>>;
   onViewPosts?: (postIds: string[]) => void;
+  /** Optional analysis delta for showing trend changes. */
+  analysisDelta?: AnalysisDelta | null;
 }
 
 function tagColor(confidence: number): {
@@ -52,6 +56,7 @@ export default function PersonaOverview({
   scores,
   explanations,
   onViewPosts,
+  analysisDelta,
 }: PersonaOverviewProps) {
   // Find the best overall score across platforms
   const entries = Object.entries(scores);
@@ -152,12 +157,17 @@ export default function PersonaOverview({
           >
             {bestOverall}
           </p>
-          <p
-            className="text-xs font-medium"
-            style={{ color: 'var(--text-subtle)' }}
-          >
-            Overall Score
-          </p>
+          <div className="flex items-center gap-1.5">
+            <p
+              className="text-xs font-medium"
+              style={{ color: 'var(--text-subtle)' }}
+            >
+              Overall Score
+            </p>
+            {analysisDelta?.hasPrevious && (
+              <MiniDelta value={analysisDelta.scoreChange} />
+            )}
+          </div>
           <p
             className="text-xs"
             style={{ color: 'var(--text-subtle)' }}

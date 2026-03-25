@@ -3,17 +3,10 @@ import Link from 'next/link';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
 import {
-  computePersonaScore,
-  comparePlatforms,
-  generateStrategySuggestions,
-  explainPersonaScore,
-  compareToBenchmarkByNiche,
-  detectNiche,
+  runAllEngines,
   overallScore,
-  type PersonaScore,
 } from '@/lib/engine';
-import type { ScoreExplanation } from '@/lib/engine/explain';
-import type { Post } from '@/lib/schema/creator-data';
+// Post type used via runAllEngines result
 import DashboardInteractive from '@/components/dashboard-interactive';
 import PlatformComparison from '@/components/platform-comparison';
 import StrategySuggestions from '@/components/strategy-suggestions';
@@ -197,51 +190,26 @@ export default async function DashboardPage({
   // 1. Get demo profiles (one per platform)
   const profiles = getDemoProfile(personaType);
 
-  // 2. Compute persona score for each platform
-  const personaScores: Record<string, PersonaScore> = {};
-  for (const [platform, profile] of Object.entries(profiles)) {
-    personaScores[platform] = computePersonaScore(profile);
-  }
+  // 2-7. Run all engines in parallel
+  const {
+    personaScores,
+    explanations,
+    comparison,
+    suggestions,
+    benchmarkResult,
+    nicheResult,
+    allPosts,
+    bestPlatform,
+  } = await runAllEngines(profiles);
 
-  // 3. Compute explanations for each platform
-  const explanations: Record<string, Record<string, ScoreExplanation>> = {};
-  for (const [platform, profile] of Object.entries(profiles)) {
-    explanations[platform] = explainPersonaScore(
-      personaScores[platform],
-      profile.posts,
-    );
-  }
-
-  // 4. Cross-platform comparison
-  const comparison = comparePlatforms(Object.values(profiles));
-
-  // 5. Strategy suggestions (use the best-scoring platform's PersonaScore)
-  const bestPlatform =
-    comparison.bestEngagementPlatform ?? Object.keys(personaScores)[0];
-  const bestPersonaScore = personaScores[bestPlatform] ?? Object.values(personaScores)[0];
-  const suggestions = generateStrategySuggestions(bestPersonaScore, comparison);
-
-  // 6. Benchmark comparison (niche-aware)
-  const benchmarkResult = compareToBenchmarkByNiche(
-    profiles[bestPlatform] ?? Object.values(profiles)[0],
-    bestPersonaScore,
-  );
-
-  // 7. Niche detection (use the best platform's profile)
-  const nicheResult = detectNiche(
-    profiles[bestPlatform] ?? Object.values(profiles)[0],
-  );
-
-  // 8. Collect all posts across platforms for the PostDrawer
-  const allPosts: Post[] = Object.values(profiles).flatMap((p) => p.posts);
-
-  // 9. Build analysis snapshot for history tracking
+  // 8. Build analysis snapshot for history tracking
   const bestProfile = profiles[bestPlatform] ?? Object.values(profiles)[0];
-  const bestOverall = overallScore(bestPersonaScore);
+  const bestScore = personaScores[bestPlatform] ?? Object.values(personaScores)[0];
+  const bestOverall = overallScore(bestScore);
   const analysisSnapshot = extractAnalysisSnapshot(
     bestPlatform,
     bestOverall,
-    bestPersonaScore,
+    bestScore,
     nicheResult,
   );
   // Fill profile-level fields that extractAnalysisSnapshot can't access
