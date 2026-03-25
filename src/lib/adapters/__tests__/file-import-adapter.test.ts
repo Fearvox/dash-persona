@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as XLSX from 'xlsx';
-import { parseFileContent, FileImportError } from '../file-import-adapter';
+import { parseFileContent, FileImportError, parseXlsxRaw, mergeXlsxResults } from '../file-import-adapter';
 
 const VALID_PROFILE = {
   platform: 'douyin',
@@ -133,6 +133,113 @@ describe('parseFileContent', () => {
       XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
       const content = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }) as string;
       await expect(parseFileContent(content, 'empty.xlsx')).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
+    });
+  });
+
+  describe('Douyin schema detection', () => {
+    function toBase64(rows: Record<string, unknown>[]): string {
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      return XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }) as string;
+    }
+
+    it('detects 作品列表 (post_list) schema', () => {
+      const content = toBase64([
+        { '作品名称': '视频1', '播放量': '9334', '点赞量': '1000', '评论量': '10', '分享量': '73', '收藏量': '33', '完播率': '0.058', '5s完播率': '0.327', '2s跳出率': '0.326', '平均播放时长': '5.11' },
+      ]);
+      const result = parseXlsxRaw(content, '作品列表.xlsx');
+      expect(result.schema).toBe('post_list');
+      expect(result.posts).toHaveLength(1);
+      expect(result.posts![0].desc).toBe('视频1');
+      expect(result.posts![0].views).toBe(9334);
+      expect(result.posts![0].likes).toBe(1000);
+    });
+
+    it('detects 投稿分析 (post_analysis) schema', () => {
+      const content = toBase64([
+        { '视频名称': '跨年视频', '发布时间': '2025-12-31', '播放量': '5242', '5s完播率': '0.073', '2s跳出率': '0.740', '平均播放时长': '2.24' },
+      ]);
+      const result = parseXlsxRaw(content, 'data1.xlsx');
+      expect(result.schema).toBe('post_analysis');
+      expect(result.posts![0].likes).toBe(0); // no interaction data
+    });
+
+    it('detects 投稿汇总 (aggregate) schema', () => {
+      const content = toBase64([
+        { '发布时间': '2025-12-25 ~ 2026-03-25', '体裁': '1min-视频', '垂类': '动物,体育', '周期内投稿量': '8', '条均点击率': '0.0168', '条均5s完播率': '0.196', '条均2s跳出率': '0.531', '条均播放时长': '3.92', '播放量中位数': '9133', '条均点赞数': '200', '条均评论量': '10', '条均分享量': '30' },
+      ]);
+      const result = parseXlsxRaw(content, 'data.xlsx');
+      expect(result.schema).toBe('aggregate');
+      expect(result.aggregate).toBeDefined();
+      expect(result.aggregate!.postCount).toBe(8);
+      expect(result.aggregate!.medianViews).toBe(9133);
+    });
+
+    it('detects 时间序列 (timeseries) schema', () => {
+      const content = toBase64([
+        { '日期': '2026-02-22', '播放量': 444 },
+        { '日期': '2026-02-23', '播放量': 800 },
+        { '日期': '2026-02-24', '播放量': 1200 },
+      ]);
+      const result = parseXlsxRaw(content, '数据表现_播放量数据.xlsx');
+      expect(result.schema).toBe('timeseries');
+      expect(result.history).toHaveLength(3);
+    });
+
+    it('handles "-" values as 0', () => {
+      const content = toBase64([
+        { '作品名称': '视频', '播放量': '-', '点赞量': '0', '评论量': '-', '分享量': '0', '收藏量': '-', '封面点击率': '-' },
+      ]);
+      const result = parseXlsxRaw(content, 'test.xlsx');
+      expect(result.posts![0].views).toBe(0);
+      expect(result.posts![0].comments).toBe(0);
+    });
+  });
+
+  describe('Multi-file merge', () => {
+    function toBase64(rows: Record<string, unknown>[]): string {
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      return XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }) as string;
+    }
+
+    it('merges post_list + timeseries + aggregate into one profile', () => {
+      const postList = parseXlsxRaw(
+        toBase64([{ '作品名称': 'V1', '播放量': '100', '点赞量': '10', '评论量': '1', '分享量': '2', '收藏量': '3' }]),
+        '作品列表.xlsx',
+      );
+      const timeseries = parseXlsxRaw(
+        toBase64([{ '日期': '2026-03-01', '播放量': 500 }, { '日期': '2026-03-02', '播放量': 600 }]),
+        '播放量.xlsx',
+      );
+      const aggregate = parseXlsxRaw(
+        toBase64([{ '条均点击率': '0.02', '条均5s完播率': '0.2', '周期内投稿量': '5', '播放量中位数': '300', '条均点赞数': '20', '条均评论量': '5', '条均分享量': '8', '条均2s跳出率': '0.5', '条均播放时长': '4' }]),
+        'data.xlsx',
+      );
+
+      const merged = mergeXlsxResults([postList, timeseries, aggregate]);
+      expect(merged.posts).toHaveLength(1);
+      expect(merged.posts[0].desc).toBe('V1');
+      expect(merged.history).toHaveLength(2);
+      expect(merged.platform).toBe('douyin');
+    });
+
+    it('prefers post_list over post_analysis', () => {
+      const postList = parseXlsxRaw(
+        toBase64([{ '作品名称': 'Full', '播放量': '100', '点赞量': '10', '评论量': '1', '分享量': '2', '收藏量': '3' }]),
+        '作品列表.xlsx',
+      );
+      const analysis = parseXlsxRaw(
+        toBase64([{ '视频名称': 'Partial', '播放量': '200', '5s完播率': '0.1', '2s跳出率': '0.5', '平均播放时长': '3' }]),
+        'data1.xlsx',
+      );
+
+      const merged = mergeXlsxResults([analysis, postList]);
+      expect(merged.posts).toHaveLength(1);
+      expect(merged.posts[0].desc).toBe('Full');
+      expect(merged.posts[0].likes).toBe(10);
     });
   });
 });

@@ -121,7 +121,7 @@ export default function FileDropZone({ onFilesSelected, results, isProcessing }:
               <span className="font-mono">{r.fileName}</span>
               <span className="ml-auto">
                 {r.status === 'success'
-                  ? `${r.profileCount} profile${(r.profileCount ?? 0) > 1 ? 's' : ''} loaded`
+                  ? `${r.profileCount} ${r.error ?? 'item'}${(r.profileCount ?? 0) > 1 ? 's' : ''}`
                   : r.error}
               </span>
             </div>

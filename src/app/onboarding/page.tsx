@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import FileDropZone, { type FileParseResult } from "@/components/file-drop-zone";
-import { parseFileContent } from "@/lib/adapters/file-import-adapter";
+import { parseFileContent, parseXlsxRaw, mergeXlsxResults, type XlsxParseResult } from "@/lib/adapters/file-import-adapter";
 import type { CreatorProfile } from "@/lib/schema/creator-data";
 
 type PlatformEntry = {
@@ -44,32 +44,49 @@ export default function OnboardingPage() {
     { url: "", platform: null },
   ]);
   const [importResults, setImportResults] = useState<FileParseResult[]>([]);
-  const [importedProfiles, setImportedProfiles] = useState<CreatorProfile[]>([]);
+  const [xlsxResults, setXlsxResults] = useState<XlsxParseResult[]>([]);
+  const [jsonProfiles, setJsonProfiles] = useState<CreatorProfile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Compute merged profile from all uploaded files
+  const mergedProfile = xlsxResults.length > 0 ? mergeXlsxResults(xlsxResults) : null;
+  const hasData = mergedProfile !== null || jsonProfiles.length > 0;
+  const totalPosts = (mergedProfile?.posts.length ?? 0) + jsonProfiles.reduce((s, p) => s + p.posts.length, 0);
+  const totalHistory = mergedProfile?.history?.length ?? 0;
+  const schemaTypes = [...new Set(xlsxResults.map((r) => r.schema))];
 
   async function handleFilesSelected(files: File[]) {
     setIsProcessing(true);
     const newResults: FileParseResult[] = [];
-    const newProfiles: CreatorProfile[] = [];
+    const newXlsx: XlsxParseResult[] = [];
+    const newJson: CreatorProfile[] = [];
 
     for (const file of files) {
       try {
         const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
-        let content: string;
 
         if (ext === ".xlsx" || ext === ".xls") {
           const buffer = await file.arrayBuffer();
           const bytes = new Uint8Array(buffer);
           let binary = "";
           for (let j = 0; j < bytes.length; j++) binary += String.fromCharCode(bytes[j]);
-          content = btoa(binary);
-        } else {
-          content = await file.text();
-        }
+          const base64 = btoa(binary);
+          const result = parseXlsxRaw(base64, file.name);
+          newXlsx.push(result);
 
-        const profiles = await parseFileContent(content, file.name);
-        newProfiles.push(...profiles);
-        newResults.push({ fileName: file.name, status: "success", profileCount: profiles.length });
+          const label = result.schema === "post_list" ? "作品列表"
+            : result.schema === "post_analysis" ? "投稿分析"
+            : result.schema === "aggregate" ? "投稿汇总"
+            : result.schema === "timeseries" ? "时间序列"
+            : "通用数据";
+          const count = result.posts?.length ?? result.history?.length ?? 1;
+          newResults.push({ fileName: file.name, status: "success", profileCount: count, error: label });
+        } else {
+          const content = await file.text();
+          const profiles = await parseFileContent(content, file.name);
+          newJson.push(...profiles);
+          newResults.push({ fileName: file.name, status: "success", profileCount: profiles.length });
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         newResults.push({ fileName: file.name, status: "error", error: message });
@@ -77,17 +94,23 @@ export default function OnboardingPage() {
     }
 
     setImportResults((prev) => [...prev, ...newResults]);
-    setImportedProfiles((prev) => [...prev, ...newProfiles]);
+    setXlsxResults((prev) => [...prev, ...newXlsx]);
+    setJsonProfiles((prev) => [...prev, ...newJson]);
     setIsProcessing(false);
   }
 
   function handleLaunchImport() {
-    if (importedProfiles.length === 0) return;
+    if (!hasData) return;
+
     const profilesMap: Record<string, CreatorProfile> = {};
-    for (const p of importedProfiles) {
+    if (mergedProfile) {
+      profilesMap["douyin"] = mergedProfile;
+    }
+    for (const p of jsonProfiles) {
       const key = p.platform === "unknown" ? `import-${Object.keys(profilesMap).length}` : p.platform;
       profilesMap[key] = p;
     }
+
     sessionStorage.setItem("dashpersona-import-profiles", JSON.stringify(profilesMap));
     router.push("/dashboard?source=import");
   }
@@ -226,10 +249,25 @@ export default function OnboardingPage() {
                   results={importResults}
                   isProcessing={isProcessing}
                 />
-                {importedProfiles.length > 0 && (
-                  <div className="mt-6 flex items-center justify-between">
+                {hasData && (
+                  <div className="mt-6 flex flex-col gap-3">
+                    <div className="rounded-lg bg-[var(--bg-card)] px-4 py-3">
+                      <p className="text-xs font-medium text-[var(--text-primary)]">
+                        Merge preview
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)]">
+                        {totalPosts > 0 && <span>{totalPosts} posts</span>}
+                        {totalHistory > 0 && <span>{totalHistory} daily snapshots</span>}
+                        {schemaTypes.map((t) => (
+                          <span key={t} className="rounded bg-[rgba(126,210,154,0.1)] px-1.5 py-0.5 text-[var(--accent-green)]">
+                            {t === "post_list" ? "作品列表" : t === "post_analysis" ? "投稿分析" : t === "aggregate" ? "投稿汇总" : t === "timeseries" ? "时间序列" : t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
                     <p className="text-sm text-[var(--text-secondary)]">
-                      {importedProfiles.length} profile{importedProfiles.length > 1 ? "s" : ""} ready
+                      Ready to analyze
                     </p>
                     <button
                       type="button"
@@ -242,6 +280,7 @@ export default function OnboardingPage() {
                     >
                       Launch Dashboard
                     </button>
+                  </div>
                   </div>
                 )}
               </div>

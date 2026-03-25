@@ -230,10 +230,157 @@ function parseCsv(content: string, fileName: string): CreatorProfile[] {
 }
 
 // ---------------------------------------------------------------------------
-// XLSX parsing
+// XLSX schema detection — Douyin exports have 4 distinct formats
 // ---------------------------------------------------------------------------
 
-function parseXlsx(content: string, fileName: string): CreatorProfile[] {
+/**
+ * Douyin export schema types:
+ * A) 作品列表 — per-post full metrics (作品名称, 播放量, 点赞量, 分享量, 评论量, 收藏量...)
+ * B) 投稿分析 — per-post partial metrics (视频名称, 播放量, 5s完播率, but no likes/comments)
+ * C) 投稿汇总 — single-row aggregate stats (条均点击率, 条均5s完播率, 播放量中位数...)
+ * D) 时间序列 — daily metrics (日期 + 播放量 or 作品点赞)
+ */
+type DouyinSchemaType = 'post_list' | 'post_analysis' | 'aggregate' | 'timeseries' | 'unknown';
+
+function detectDouyinSchema(columns: string[]): DouyinSchemaType {
+  const colSet = new Set(columns);
+
+  // Type A: 作品列表 — has 作品名称 + interaction metrics
+  if (colSet.has('作品名称') && (colSet.has('点赞量') || colSet.has('收藏量'))) {
+    return 'post_list';
+  }
+
+  // Type C: 投稿汇总 — has 条均 (per-post average) columns
+  if (columns.some((c) => c.startsWith('条均'))) {
+    return 'aggregate';
+  }
+
+  // Type D: 时间序列 — has 日期 column + exactly 2 columns
+  if (colSet.has('日期') && columns.length === 2) {
+    return 'timeseries';
+  }
+
+  // Type B: 投稿分析 — has 视频名称 or just 播放量 with per-row data
+  if (colSet.has('视频名称') || (colSet.has('播放量') && colSet.has('5s完播率'))) {
+    return 'post_analysis';
+  }
+
+  return 'unknown';
+}
+
+// ---------------------------------------------------------------------------
+// Parse helpers for each Douyin schema type
+// ---------------------------------------------------------------------------
+
+/** Parse a numeric value from Douyin export — handles strings, "-", percentages */
+function parseDouyinNum(val: unknown): number {
+  if (typeof val === 'number') return Number.isFinite(val) ? val : 0;
+  const str = String(val).trim();
+  if (str === '-' || str === '' || str === 'null') return 0;
+  const cleaned = str.replace(/%$/, '').replace(/,/g, '');
+  const num = Number(cleaned);
+  return Number.isFinite(num) ? num : 0;
+}
+
+/** Type A: 作品列表 — full post data with interaction metrics */
+function parsePostList(rows: Record<string, unknown>[], fileName: string): { posts: CreatorProfile['posts'] } {
+  const posts = rows.map((row, i) => ({
+    postId: `post-${i + 1}`,
+    desc: String(row['作品名称'] ?? ''),
+    publishedAt: row['发布时间'] ? String(row['发布时间']) : undefined,
+    views: parseDouyinNum(row['播放量']),
+    likes: parseDouyinNum(row['点赞量']),
+    comments: parseDouyinNum(row['评论量']),
+    shares: parseDouyinNum(row['分享量']),
+    saves: parseDouyinNum(row['收藏量']),
+    completionRate: parseDouyinNum(row['完播率'] ?? row['5s完播率']),
+    bounceRate: parseDouyinNum(row['2s跳出率']),
+    avgWatchDuration: parseDouyinNum(row['平均播放时长']),
+  }));
+
+  return { posts: posts as CreatorProfile['posts'] };
+}
+
+/** Type B: 投稿分析 — partial post data (no interaction metrics) */
+function parsePostAnalysis(rows: Record<string, unknown>[]): { posts: CreatorProfile['posts'] } {
+  const posts = rows.map((row, i) => ({
+    postId: `analysis-${i + 1}`,
+    desc: String(row['视频名称'] ?? row['作品名称'] ?? ''),
+    publishedAt: row['发布时间'] ? String(row['发布时间']) : undefined,
+    views: parseDouyinNum(row['播放量']),
+    likes: 0,
+    comments: 0,
+    shares: 0,
+    saves: 0,
+    completionRate: parseDouyinNum(row['5s完播率']),
+    bounceRate: parseDouyinNum(row['2s跳出率']),
+    avgWatchDuration: parseDouyinNum(row['平均播放时长']),
+  }));
+
+  return { posts: posts as CreatorProfile['posts'] };
+}
+
+/** Type C: 投稿汇总 — single-row aggregate stats → stored as profile-level metadata */
+function parseAggregate(rows: Record<string, unknown>[]): { aggregate: Record<string, unknown> } {
+  const row = rows[0];
+  return {
+    aggregate: {
+      period: row['发布时间'] ? String(row['发布时间']) : undefined,
+      genres: row['体裁'] ? String(row['体裁']) : undefined,
+      verticals: row['垂类'] ? String(row['垂类']) : undefined,
+      postCount: parseDouyinNum(row['周期内投稿量']),
+      avgClickRate: parseDouyinNum(row['条均点击率']),
+      avg5sCompletionRate: parseDouyinNum(row['条均5s完播率']),
+      avg2sBounceRate: parseDouyinNum(row['条均2s跳出率']),
+      avgWatchDuration: parseDouyinNum(row['条均播放时长']),
+      medianViews: parseDouyinNum(row['播放量中位数']),
+      avgLikes: parseDouyinNum(row['条均点赞数']),
+      avgComments: parseDouyinNum(row['条均评论量']),
+      avgShares: parseDouyinNum(row['条均分享量']),
+    },
+  };
+}
+
+/** Type D: 时间序列 — daily snapshots → HistorySnapshot[] */
+function parseTimeseries(rows: Record<string, unknown>[]): { history: CreatorProfile['history'] } {
+  // Detect which metric column exists (播放量, 作品点赞, etc.)
+  const cols = Object.keys(rows[0] ?? {}).filter((k) => k !== '日期');
+  const metricCol = cols[0];
+
+  const history = rows
+    .filter((row) => row['日期'])
+    .map((row) => {
+      const val = parseDouyinNum(row[metricCol]);
+      return {
+        fetchedAt: String(row['日期']),
+        profile: {
+          followers: 0,
+          likesTotal: metricCol === '作品点赞' ? val : 0,
+          videosCount: 0,
+        },
+        // Store the raw metric for downstream use
+        _metric: metricCol,
+        _value: val,
+      };
+    });
+
+  return { history: history as unknown as CreatorProfile['history'] };
+}
+
+// ---------------------------------------------------------------------------
+// XLSX parsing — schema-aware
+// ---------------------------------------------------------------------------
+
+/** Result from parsing a single XLSX file — may contain posts, history, or aggregate data */
+export interface XlsxParseResult {
+  schema: DouyinSchemaType;
+  fileName: string;
+  posts?: CreatorProfile['posts'];
+  history?: CreatorProfile['history'];
+  aggregate?: Record<string, unknown>;
+}
+
+export function parseXlsxRaw(content: string, fileName: string): XlsxParseResult {
   let wb: XLSX.WorkBook;
   try {
     wb = XLSX.read(content, { type: 'base64' });
@@ -252,49 +399,129 @@ function parseXlsx(content: string, fileName: string): CreatorProfile[] {
     throw new FileImportError('VALIDATION_ERROR', fileName, 'XLSX sheet has no data rows');
   }
 
-  const posts: CreatorProfile['posts'] = rows.map((row, i) => {
-    const post: Record<string, unknown> = {};
+  const columns = Object.keys(rows[0]);
+  const schema = detectDouyinSchema(columns);
 
-    for (const [rawKey, rawVal] of Object.entries(row)) {
-      const field = resolveColumn(rawKey);
-      if (!field) continue;
-
-      if (NUMERIC_FIELDS.has(field)) {
-        const cleaned = String(rawVal).replace(/%$/, '');
-        const num = Number(cleaned);
-        post[field] = Number.isFinite(num) ? num : 0;
-      } else {
-        post[field] = String(rawVal);
-      }
+  switch (schema) {
+    case 'post_list':
+      return { schema, fileName, ...parsePostList(rows, fileName) };
+    case 'post_analysis':
+      return { schema, fileName, ...parsePostAnalysis(rows) };
+    case 'aggregate':
+      return { schema, fileName, ...parseAggregate(rows) };
+    case 'timeseries':
+      return { schema, fileName, ...parseTimeseries(rows) };
+    default: {
+      // Fallback: treat rows as generic post data using COLUMN_MAP
+      const posts = rows.map((row, i) => {
+        const post: Record<string, unknown> = {};
+        for (const [rawKey, rawVal] of Object.entries(row)) {
+          const field = resolveColumn(rawKey);
+          if (!field) continue;
+          post[field] = NUMERIC_FIELDS.has(field) ? parseDouyinNum(rawVal) : String(rawVal);
+        }
+        if (!post.postId) post.postId = `xlsx-${i + 1}`;
+        if (post.desc === undefined) post.desc = '';
+        if (post.views === undefined) post.views = 0;
+        if (post.likes === undefined) post.likes = 0;
+        if (post.comments === undefined) post.comments = 0;
+        if (post.shares === undefined) post.shares = 0;
+        if (post.saves === undefined) post.saves = 0;
+        return post as unknown as CreatorProfile['posts'][number];
+      });
+      return { schema: 'unknown', fileName, posts };
     }
+  }
+}
 
-    if (!post.postId) post.postId = `xlsx-${i + 1}`;
-    if (post.desc === undefined) post.desc = '';
-    if (post.views === undefined) post.views = 0;
-    if (post.likes === undefined) post.likes = 0;
-    if (post.comments === undefined) post.comments = 0;
-    if (post.shares === undefined) post.shares = 0;
-    if (post.saves === undefined) post.saves = 0;
-
-    return post as unknown as CreatorProfile['posts'][number];
-  });
+function parseXlsx(content: string, fileName: string): CreatorProfile[] {
+  const result = parseXlsxRaw(content, fileName);
 
   const profile: CreatorProfile = {
-    platform: 'unknown',
+    platform: 'douyin',
     profileUrl: '',
     fetchedAt: new Date().toISOString(),
     source: 'manual_import',
     profile: {
-      nickname: `Imported from ${fileName}`,
-      uniqueId: `xlsx-import-${Date.now()}`,
+      nickname: 'Douyin Creator',
+      uniqueId: `import-${Date.now()}`,
       followers: 0,
-      likesTotal: posts.reduce((sum, p) => sum + p.likes, 0),
-      videosCount: posts.length,
+      likesTotal: (result.posts ?? []).reduce((sum, p) => sum + p.likes, 0),
+      videosCount: (result.posts ?? []).length,
     },
-    posts,
+    posts: result.posts ?? [],
+    history: result.history,
   };
 
   return [profile];
+}
+
+// ---------------------------------------------------------------------------
+// Multi-file merge — combines multiple XLSX results into one CreatorProfile
+// ---------------------------------------------------------------------------
+
+/**
+ * Merge multiple parsed XLSX results into a single CreatorProfile.
+ * Posts from post_list take priority over post_analysis (more fields).
+ * Timeseries data becomes history snapshots.
+ * Aggregate data is stored in the profile for reference.
+ */
+export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
+  let posts: CreatorProfile['posts'] = [];
+  let history: CreatorProfile['history'] = [];
+  let aggregate: Record<string, unknown> | undefined;
+  let hasPostList = false;
+
+  for (const r of results) {
+    if (r.schema === 'post_list' && r.posts) {
+      // Post list has the most complete data — use it as primary
+      if (!hasPostList) {
+        posts = r.posts;
+        hasPostList = true;
+      } else {
+        // Merge additional posts (dedup by desc)
+        const existing = new Set(posts.map((p) => p.desc));
+        for (const p of r.posts) {
+          if (!existing.has(p.desc)) posts.push(p);
+        }
+      }
+    } else if (r.schema === 'post_analysis' && r.posts && !hasPostList) {
+      // Only use post_analysis if we don't have post_list yet
+      posts = r.posts;
+    }
+
+    if (r.schema === 'timeseries' && r.history) {
+      history = [...(history ?? []), ...r.history];
+    }
+
+    if (r.schema === 'aggregate' && r.aggregate) {
+      aggregate = r.aggregate;
+    }
+  }
+
+  // Sort history by date
+  if (history && history.length > 1) {
+    history.sort((a, b) => a.fetchedAt.localeCompare(b.fetchedAt));
+  }
+
+  const profile: CreatorProfile = {
+    platform: 'douyin',
+    profileUrl: '',
+    fetchedAt: new Date().toISOString(),
+    source: 'manual_import',
+    profile: {
+      nickname: 'Douyin Creator',
+      uniqueId: `import-${Date.now()}`,
+      followers: 0,
+      likesTotal: posts.reduce((sum, p) => sum + p.likes, 0),
+      videosCount: posts.length,
+      ...(aggregate ? { bio: `投稿汇总: ${(aggregate.period as string) ?? ''}` } : {}),
+    },
+    posts,
+    ...(history && history.length > 0 ? { history } : {}),
+  };
+
+  return profile;
 }
 
 // ---------------------------------------------------------------------------
