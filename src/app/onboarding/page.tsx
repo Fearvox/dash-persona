@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import FileDropZone, { type FileParseResult } from "@/components/file-drop-zone";
+import BrowserCollectStatus from "@/components/browser-collect-status";
 import { parseFileContent, parseXlsxRaw, mergeXlsxResults, type XlsxParseResult } from "@/lib/adapters/file-import-adapter";
 import type { CreatorProfile } from "@/lib/schema/creator-data";
 
@@ -37,7 +38,7 @@ const platformBadgeColor: Record<string, string> = {
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
-  const [mode, setMode] = useState<"import" | "url">("import");
+  const [mode, setMode] = useState<"import" | "url" | "browser">("import");
   const [entries, setEntries] = useState<PlatformEntry[]>([
     { id: crypto.randomUUID(), url: "", platform: null },
   ]);
@@ -240,6 +241,19 @@ export default function OnboardingPage() {
               >
                 Paste URL
               </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "browser"}
+                onClick={() => setMode("browser")}
+                className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
+                  mode === "browser"
+                    ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
+                    : "bg-transparent text-[var(--text-secondary)]"
+                }`}
+              >
+                Browser Collect
+              </button>
             </div>
 
             {/* File import mode */}
@@ -420,6 +434,11 @@ export default function OnboardingPage() {
               </button>
             </div>
               </>
+            )}
+
+            {/* Browser collect mode */}
+            {mode === "browser" && (
+              <BrowserCollectStatus />
             )}
           </div>
         )}

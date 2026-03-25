@@ -21,6 +21,10 @@ export {
   isXhsUrl,
 } from './html-parse-adapter';
 
+// Browser adapter (bb-browser CLI)
+export { BrowserAdapter, BrowserAdapterError, execBrowser, parseBrowserOutput } from './browser-adapter';
+export type { BrowserAdapterErrorCode } from './browser-adapter';
+
 // Registry
 export {
   registerAdapter,

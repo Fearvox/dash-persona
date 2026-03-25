@@ -16,6 +16,7 @@ import { ManualImportAdapter } from './manual-import-adapter';
 import { HTMLParseAdapter } from './html-parse-adapter';
 import { ExtensionAdapter } from './extension-adapter';
 import { FileImportAdapter } from './file-import-adapter';
+import { BrowserAdapter } from './browser-adapter';
 
 // ---------------------------------------------------------------------------
 // Registry state
@@ -155,3 +156,4 @@ registerAdapter(new ManualImportAdapter());
 registerAdapter(new HTMLParseAdapter());
 registerAdapter(new ExtensionAdapter());
 registerAdapter(new FileImportAdapter());
+registerAdapter(new BrowserAdapter());
