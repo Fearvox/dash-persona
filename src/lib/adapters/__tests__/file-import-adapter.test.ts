@@ -54,4 +54,45 @@ describe('parseFileContent', () => {
       await expect(parseFileContent(JSON.stringify(invalid), 'bad.json')).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
     });
   });
+
+  describe('CSV parsing', () => {
+    const CSV_HEADER = 'postId,desc,views,likes,comments,shares,saves,publishedAt';
+    const CSV_ROW1 = 'p1,First post,1000,100,10,5,20,2026-03-01';
+    const CSV_ROW2 = 'p2,Second post,2000,200,20,10,40,2026-03-02';
+
+    it('parses CSV with header row into a CreatorProfile', async () => {
+      const csv = [CSV_HEADER, CSV_ROW1, CSV_ROW2].join('\n');
+      const result = await parseFileContent(csv, 'posts.csv');
+      expect(result).toHaveLength(1);
+      expect(result[0].posts).toHaveLength(2);
+      expect(result[0].posts[0].postId).toBe('p1');
+      expect(result[0].posts[0].views).toBe(1000);
+      expect(result[0].posts[1].desc).toBe('Second post');
+    });
+
+    it('handles quoted fields with commas', async () => {
+      const csv = [CSV_HEADER, '"p1","Hello, world",500,50,5,2,10,2026-03-01'].join('\n');
+      const result = await parseFileContent(csv, 'quoted.csv');
+      expect(result[0].posts[0].desc).toBe('Hello, world');
+    });
+
+    it('skips empty rows', async () => {
+      const csv = [CSV_HEADER, CSV_ROW1, '', '  ', CSV_ROW2].join('\n');
+      const result = await parseFileContent(csv, 'gaps.csv');
+      expect(result[0].posts).toHaveLength(2);
+    });
+
+    it('throws for CSV with no data rows', async () => {
+      await expect(parseFileContent(CSV_HEADER, 'empty.csv')).rejects.toThrow(FileImportError);
+      await expect(parseFileContent(CSV_HEADER, 'empty.csv')).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
+    });
+
+    it('generates a placeholder CreatorProfile with manual_import source', async () => {
+      const csv = [CSV_HEADER, CSV_ROW1].join('\n');
+      const result = await parseFileContent(csv, 'posts.csv');
+      expect(result[0].source).toBe('manual_import');
+      expect(result[0].platform).toBe('unknown');
+      expect(result[0].profile.nickname).toBe('Imported from posts.csv');
+    });
+  });
 });

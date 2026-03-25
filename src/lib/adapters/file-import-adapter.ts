@@ -87,6 +87,139 @@ function parseJson(content: string, fileName: string): CreatorProfile[] {
 }
 
 // ---------------------------------------------------------------------------
+// CSV parsing
+// ---------------------------------------------------------------------------
+
+/** Minimal CSV line parser that handles quoted fields. */
+function parseCsvLine(line: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      fields.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  fields.push(current.trim());
+  return fields;
+}
+
+/** Map of recognized CSV/XLSX column names → Post field names. */
+const COLUMN_MAP: Record<string, string> = {
+  postid: 'postId',
+  post_id: 'postId',
+  id: 'postId',
+  desc: 'desc',
+  description: 'desc',
+  title: 'desc',
+  '视频名称': 'desc',
+  '发布时间': 'publishedAt',
+  '播放量': 'views',
+  '5s完播率': 'completionRate',
+  '2s跳出率': 'bounceRate',
+  '平均播放时长': 'avgWatchDuration',
+  views: 'views',
+  plays: 'views',
+  likes: 'likes',
+  comments: 'comments',
+  shares: 'shares',
+  saves: 'saves',
+  bookmarks: 'saves',
+  publishedat: 'publishedAt',
+  published_at: 'publishedAt',
+  date: 'publishedAt',
+  completionrate: 'completionRate',
+  completion_rate: 'completionRate',
+  bouncerate: 'bounceRate',
+  bounce_rate: 'bounceRate',
+  avgwatchduration: 'avgWatchDuration',
+  avg_watch_duration: 'avgWatchDuration',
+};
+
+const NUMERIC_FIELDS = new Set([
+  'views', 'likes', 'comments', 'shares', 'saves',
+  'completionRate', 'bounceRate', 'avgWatchDuration',
+]);
+
+function resolveColumn(rawKey: string): string | null {
+  const lower = rawKey.toLowerCase().trim();
+  return COLUMN_MAP[lower] ?? COLUMN_MAP[rawKey.trim()] ?? null;
+}
+
+function parseCsv(content: string, fileName: string): CreatorProfile[] {
+  const lines = content.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) {
+    throw new FileImportError('VALIDATION_ERROR', fileName, 'CSV must have a header row and at least one data row');
+  }
+
+  const headers = parseCsvLine(lines[0]);
+  const fieldMap = headers.map((h) => resolveColumn(h));
+
+  const posts: CreatorProfile['posts'] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCsvLine(lines[i]);
+    const row: Record<string, unknown> = {};
+
+    for (let j = 0; j < fieldMap.length; j++) {
+      const field = fieldMap[j];
+      if (!field) continue;
+      const val = values[j] ?? '';
+      if (NUMERIC_FIELDS.has(field)) {
+        const cleaned = val.replace(/%$/, '');
+        const num = Number(cleaned);
+        row[field] = Number.isFinite(num) ? num : 0;
+      } else {
+        row[field] = val;
+      }
+    }
+
+    if (!row.postId) row.postId = `csv-${i}`;
+    if (row.desc === undefined) row.desc = '';
+    if (row.views === undefined) row.views = 0;
+    if (row.likes === undefined) row.likes = 0;
+    if (row.comments === undefined) row.comments = 0;
+    if (row.shares === undefined) row.shares = 0;
+    if (row.saves === undefined) row.saves = 0;
+
+    posts.push(row as unknown as CreatorProfile['posts'][number]);
+  }
+
+  if (posts.length === 0) {
+    throw new FileImportError('VALIDATION_ERROR', fileName, 'No valid data rows found in CSV');
+  }
+
+  const profile: CreatorProfile = {
+    platform: 'unknown',
+    profileUrl: '',
+    fetchedAt: new Date().toISOString(),
+    source: 'manual_import',
+    profile: {
+      nickname: `Imported from ${fileName}`,
+      uniqueId: `csv-import-${Date.now()}`,
+      followers: 0,
+      likesTotal: posts.reduce((sum, p) => sum + p.likes, 0),
+      videosCount: posts.length,
+    },
+    posts,
+  };
+
+  return [profile];
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -106,6 +239,8 @@ export async function parseFileContent(
   switch (ext) {
     case 'json':
       return parseJson(content, fileName);
+    case 'csv':
+      return parseCsv(content, fileName);
     default:
       throw new FileImportError(
         'UNSUPPORTED_FORMAT',
