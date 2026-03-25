@@ -39,6 +39,7 @@ export interface CreatorProfile {
     fetchedAt: string;
     profile: { followers: number; likesTotal: number; videosCount: number };
   }>;
+  fanPortrait?: FanPortrait;
 }
 
 // Fan portrait data (not in core schema — extension-specific enrichment)

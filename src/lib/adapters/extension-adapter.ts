@@ -1,4 +1,4 @@
-import type { CreatorProfile } from '../schema/creator-data';
+import type { CreatorProfile, FanPortrait } from '../schema/creator-data';
 import type { DataAdapter } from './types';
 
 // ---------------------------------------------------------------------------
@@ -91,6 +91,7 @@ export class ExtensionAdapter implements DataAdapter {
         tags: p.tags as string[] | undefined,
       })),
       history: data.history as CreatorProfile['history'],
+      fanPortrait: data.fanPortrait as FanPortrait | undefined,
     };
   }
 }

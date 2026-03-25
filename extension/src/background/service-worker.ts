@@ -74,7 +74,7 @@ async function runCollection(tabId: number): Promise<void> {
   const finalProfile = collectedProfile as CreatorProfile;
 
   updateState({ step: 'sending', stepLabel: 'Sending to DashPersona...' });
-  await transferToDashPersona(finalProfile);
+  await transferToDashPersona(finalProfile, state.fanPortrait);
 
   updateState({
     step: 'done', stepLabel: 'Complete',

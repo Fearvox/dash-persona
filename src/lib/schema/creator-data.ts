@@ -132,6 +132,20 @@ export interface HistorySnapshot {
 }
 
 // ---------------------------------------------------------------------------
+// FanPortrait
+// ---------------------------------------------------------------------------
+
+/** Audience demographic breakdown from platform analytics. */
+export interface FanPortrait {
+  gender?: { male: number; female: number };
+  interests?: { name: string; percentage: number }[];
+  provinces?: { name: string; percentage: number }[];
+  ageGroups?: { range: string; percentage: number }[];
+  devices?: { name: string; percentage: number }[];
+  activityLevels?: { level: string; percentage: number }[];
+}
+
+// ---------------------------------------------------------------------------
 // CreatorProfile
 // ---------------------------------------------------------------------------
 
@@ -164,6 +178,9 @@ export interface CreatorProfile {
    * Oldest first by convention.
    */
   history?: HistorySnapshot[];
+
+  /** Optional audience demographic data from platform analytics. */
+  fanPortrait?: FanPortrait;
 }
 
 // ---------------------------------------------------------------------------
