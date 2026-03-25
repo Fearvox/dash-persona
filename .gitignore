@@ -42,3 +42,9 @@ yarn-error.log*
 next-env.d.ts
 .vercel
 .gstack/
+
+# Agent / editor config (private, not for distribution)
+.claude/
+.serena/
+.algo-profile/
+.impeccable.md
