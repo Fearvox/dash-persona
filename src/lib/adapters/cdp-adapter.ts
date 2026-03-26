@@ -20,7 +20,7 @@ import type { DataAdapter } from './types';
 const CDP_BASE = 'http://127.0.0.1:3458';
 const REQUEST_TIMEOUT_MS = 15_000;
 const COLLECT_TIMEOUT_MS = 300_000; // 5 min — Douyin needs 15s init + 50x3s scroll
-const MAX_POSTS = 50;
+const MAX_POSTS = 200; // Allow collecting all posts (most creators have < 200)
 
 // ---------------------------------------------------------------------------
 // Error types
