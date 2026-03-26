@@ -8,7 +8,7 @@ import type { CreatorProfile } from '@/lib/schema/creator-data';
 // Types
 // ---------------------------------------------------------------------------
 
-type SetupPhase = 'checking' | 'setup' | 'login-check' | 'ready' | 'collecting' | 'done' | 'error';
+type SetupPhase = 'checking' | 'setup' | 'login-check' | 'ready' | 'done';
 
 type LoginStatus = 'unknown' | 'checking' | 'logged_in' | 'not_logged_in';
 
@@ -29,10 +29,14 @@ type SupportedPlatform = {
   loginLabel: string;
 };
 
-type DoneResult = {
-  postsCount: number;
-  platform: string;
-};
+type PlatformCollectStatus = 'idle' | 'collecting' | 'done' | 'error';
+
+interface PlatformCollectState {
+  status: PlatformCollectStatus;
+  postsCount?: number;
+  error?: string;
+  errorCode?: string;
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -74,18 +78,9 @@ const PLATFORMS: SupportedPlatform[] = [
   },
 ];
 
-const COLLECTING_MESSAGES = [
-  'Connecting to Chrome...',
-  'Opening page...',
-  'Extracting data...',
-  'Processing...',
-] as const;
-
 const SETUP_COMMAND = 'bash ~/.claude/skills/web-access/scripts/check-deps.sh';
 
 const HEALTH_POLL_INTERVAL_MS = 5_000;
-const COLLECTING_MESSAGE_INTERVAL_MS = 3_000;
-const REDIRECT_DELAY_MS = 900;
 
 // Error recovery map
 const ERROR_RECOVERY: Record<string, { title: string; steps: string[] }> = {
@@ -124,19 +119,16 @@ const ERROR_RECOVERY: Record<string, { title: string; steps: string[] }> = {
   },
 };
 
-// Step index mapping
 const PHASE_STEP: Record<SetupPhase, number> = {
   checking: 0,
   setup: 0,
   'login-check': 1,
-  ready: 1,
-  collecting: 2,
+  ready: 2,
   done: 3,
-  error: 2,
 };
 
 // ---------------------------------------------------------------------------
-// Sub-components
+// Utility sub-components (kept unchanged)
 // ---------------------------------------------------------------------------
 
 function Spinner() {
@@ -220,7 +212,7 @@ function CopyButton({ text }: { text: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Step indicator
+// Step indicator (kept unchanged)
 // ---------------------------------------------------------------------------
 
 function StepIndicator({ currentStep }: { currentStep: number }) {
@@ -256,7 +248,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 }
 
 // ---------------------------------------------------------------------------
-// Troubleshoot section
+// Troubleshoot section (kept unchanged)
 // ---------------------------------------------------------------------------
 
 function TroubleshootSection({ title, items }: { title: string; items: string[] }) {
@@ -284,7 +276,7 @@ function TroubleshootSection({ title, items }: { title: string; items: string[] 
 }
 
 // ---------------------------------------------------------------------------
-// Setup instructions panel
+// Setup instructions panel (kept unchanged)
 // ---------------------------------------------------------------------------
 
 function SetupInstructions({ onRecheck, isChecking }: { onRecheck: () => void; isChecking: boolean }) {
@@ -364,7 +356,7 @@ function SetupInstructions({ onRecheck, isChecking }: { onRecheck: () => void; i
 }
 
 // ---------------------------------------------------------------------------
-// Login check panel
+// Login check panel (kept unchanged)
 // ---------------------------------------------------------------------------
 
 function LoginCheckPanel({
@@ -503,263 +495,260 @@ function LoginDot({ status }: { status: LoginStatus }) {
 }
 
 // ---------------------------------------------------------------------------
-// Login guidance (shown in ready state before collect panel)
+// PlatformStatusDot — colored dot for collection status
 // ---------------------------------------------------------------------------
 
-function LoginGuidance() {
+function PlatformStatusDot({ status }: { status: PlatformCollectStatus }) {
+  const colorMap: Record<PlatformCollectStatus, string> = {
+    idle: 'var(--border-medium)',
+    collecting: 'var(--accent-yellow)',
+    done: 'var(--accent-green)',
+    error: 'var(--accent-red)',
+  };
+  const labelMap: Record<PlatformCollectStatus, string> = {
+    idle: 'Idle',
+    collecting: 'Collecting',
+    done: 'Done',
+    error: 'Error',
+  };
   return (
-    <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-subtle)] mb-2">
-        Before collecting, make sure you are logged in
-      </p>
-      <ul className="flex flex-col gap-1.5">
-        <li className="text-xs text-[var(--text-secondary)]">
-          <strong className="text-[var(--text-primary)]">Douyin</strong> — Open{' '}
-          <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.7rem] text-[var(--text-primary)]">
-            creator.douyin.com
-          </code>{' '}
-          in Chrome and log in
-        </li>
-        <li className="text-xs text-[var(--text-secondary)]">
-          <strong className="text-[var(--text-primary)]">TikTok</strong> — Open{' '}
-          <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.7rem] text-[var(--text-primary)]">
-            tiktok.com/tiktokstudio
-          </code>{' '}
-          in Chrome and log in
-        </li>
-        <li className="text-xs text-[var(--text-secondary)]">
-          <strong className="text-[var(--text-primary)]">Red Note</strong> — Open{' '}
-          <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.7rem] text-[var(--text-primary)]">
-            xiaohongshu.com
-          </code>{' '}
-          in Chrome and log in
-        </li>
-      </ul>
-    </div>
+    <span
+      className="inline-block h-2 w-2 rounded-full shrink-0"
+      style={{ background: colorMap[status] }}
+      aria-label={labelMap[status]}
+    />
   );
 }
 
 // ---------------------------------------------------------------------------
-// Platform selector + collect panel
+// MultiCollectPanel — all 3 platforms as independent cards
 // ---------------------------------------------------------------------------
 
-function CollectPanel({
-  platform,
-  input,
-  isCollecting,
-  onPlatformChange,
-  onInputChange,
-  onCollect,
+function MultiCollectPanel({
+  collectStates,
+  loginStates,
+  xhsInput,
+  onXhsInputChange,
+  onCollectPlatform,
+  onCollectAll,
 }: {
-  platform: SupportedPlatform;
-  input: string;
-  isCollecting: boolean;
-  onPlatformChange: (id: 'douyin' | 'xhs' | 'tiktok') => void;
-  onInputChange: (value: string) => void;
-  onCollect: () => void;
+  collectStates: Record<string, PlatformCollectState>;
+  loginStates: Record<string, PlatformLoginState>;
+  xhsInput: string;
+  onXhsInputChange: (value: string) => void;
+  onCollectPlatform: (platformId: 'douyin' | 'xhs' | 'tiktok') => void;
+  onCollectAll: () => void;
 }) {
-  const canSubmit = !isCollecting && (!platform.needsInput || input.trim().length > 0);
+  const hasAnyVerifiedIdle = PLATFORMS.some((p) => {
+    const login = loginStates[p.id]?.status;
+    const collect = collectStates[p.id]?.status;
+    const isVerified = login === 'logged_in';
+    const isIdle = collect === 'idle';
+    if (!isVerified || !isIdle) return false;
+    if (p.needsInput) return xhsInput.trim().length > 0;
+    return true;
+  });
 
-  return (
-    <div className="flex flex-col gap-4">
-      {/* Platform pills */}
-      <div className="flex gap-2" role="group" aria-label="Select platform">
-        {PLATFORMS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            disabled={!p.available}
-            onClick={() => onPlatformChange(p.id)}
-            aria-pressed={platform.id === p.id}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 ${
-              platform.id === p.id
-                ? 'bg-[var(--accent-green)] text-[var(--bg-primary)]'
-                : 'bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            {p.label}
-            {!p.available && (
-              <span className="ml-1.5 text-[0.65rem] opacity-60">soon</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Hint */}
-      <p className="text-xs text-[var(--text-subtle)]">{platform.hint}</p>
-
-      {/* Input (only when needed) */}
-      {platform.needsInput && (
-        <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="cdp-collect-input"
-            className="text-xs text-[var(--text-subtle)]"
-          >
-            {platform.inputHint}
-          </label>
-          <input
-            id="cdp-collect-input"
-            type="text"
-            value={input}
-            onChange={(e) => onInputChange(e.target.value)}
-            placeholder={platform.inputPlaceholder}
-            disabled={isCollecting}
-            className="h-10 rounded-lg border border-[var(--border-subtle)] bg-transparent px-3 text-sm text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent-green)] disabled:opacity-50"
-          />
-        </div>
-      )}
-
-      {/* Collect button */}
-      <button
-        type="button"
-        onClick={onCollect}
-        disabled={!canSubmit}
-        className="flex h-10 items-center justify-center gap-2 rounded-lg px-5 text-sm font-medium transition-colors disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
-      >
-        {isCollecting && <Spinner />}
-        {isCollecting ? 'Collecting...' : 'Collect'}
-      </button>
-
-      <p className="text-xs leading-5 text-[var(--text-subtle)]">
-        Collects data through your real browser with existing login sessions.
-        Make sure you are logged in to the target platform before collecting.
-      </p>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Collecting progress panel
-// ---------------------------------------------------------------------------
-
-function CollectingProgress({ messageIndex }: { messageIndex: number }) {
-  const message = COLLECTING_MESSAGES[Math.min(messageIndex, COLLECTING_MESSAGES.length - 1)];
+  const anyCollecting = PLATFORMS.some((p) => collectStates[p.id]?.status === 'collecting');
 
   return (
     <div className="flex flex-col gap-3">
-      <StatusBar
-        icon={<Spinner />}
-        label={message}
-        accent="neutral"
-      />
-      <div className="flex gap-1.5" aria-hidden="true">
-        {COLLECTING_MESSAGES.map((msg, i) => (
+      {PLATFORMS.map((p) => {
+        const loginState = loginStates[p.id] ?? { status: 'unknown' };
+        const collectState = collectStates[p.id] ?? { status: 'idle' };
+        const isVerified = loginState.status === 'logged_in';
+        const { status } = collectState;
+
+        const canCollect =
+          isVerified &&
+          status === 'idle' &&
+          (!p.needsInput || xhsInput.trim().length > 0);
+
+        let statusText: string;
+        if (!isVerified) {
+          statusText = 'Not verified';
+        } else if (status === 'collecting') {
+          statusText = 'Collecting...';
+        } else if (status === 'done') {
+          statusText = `${collectState.postsCount ?? 0} post${(collectState.postsCount ?? 0) !== 1 ? 's' : ''}`;
+        } else if (status === 'error') {
+          statusText = 'Failed';
+        } else {
+          statusText = p.hint;
+        }
+
+        return (
           <div
-            key={msg}
-            className="h-0.5 flex-1 rounded-full transition-colors duration-500"
-            style={{
-              background:
-                i <= messageIndex
-                  ? 'var(--accent-green)'
-                  : 'var(--border-subtle)',
-            }}
-          />
-        ))}
-      </div>
+            key={p.id}
+            className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-3 flex flex-col gap-2.5"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <PlatformStatusDot status={isVerified ? status : 'idle'} />
+                <span className="text-xs font-medium text-[var(--text-primary)]">
+                  {p.label}
+                </span>
+                {status === 'collecting' && <Spinner />}
+                {status === 'done' && <CheckIcon />}
+                {status === 'error' && <CrossIcon />}
+              </div>
+              <button
+                type="button"
+                onClick={() => onCollectPlatform(p.id)}
+                disabled={!canCollect}
+                className="shrink-0 flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
+              >
+                {status === 'collecting' ? 'Collecting...' : status === 'done' ? 'Recollect' : 'Collect'}
+              </button>
+            </div>
+
+            {/* Status / hint line */}
+            <p
+              className="text-xs"
+              style={{
+                color:
+                  status === 'error'
+                    ? 'var(--accent-red)'
+                    : status === 'done'
+                      ? 'var(--accent-green)'
+                      : 'var(--text-subtle)',
+              }}
+            >
+              {statusText}
+            </p>
+
+            {/* Error detail with recovery hint */}
+            {status === 'error' && collectState.errorCode && ERROR_RECOVERY[collectState.errorCode] && (
+              <TroubleshootSection
+                title="How to fix"
+                items={ERROR_RECOVERY[collectState.errorCode].steps}
+              />
+            )}
+
+            {/* XHS URL input — shown when idle and verified */}
+            {p.needsInput && isVerified && (status === 'idle' || status === 'error') && (
+              <input
+                type="text"
+                value={xhsInput}
+                onChange={(e) => onXhsInputChange(e.target.value)}
+                placeholder={p.inputPlaceholder}
+                disabled={false}
+                className="h-9 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-primary)] px-3 text-xs text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent-green)] disabled:opacity-50"
+              />
+            )}
+          </div>
+        );
+      })}
+
+      {/* Collect All button */}
+      <button
+        type="button"
+        onClick={onCollectAll}
+        disabled={!hasAnyVerifiedIdle || anyCollecting}
+        className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-medium)] text-sm font-medium transition-colors disabled:opacity-40 hover:border-[var(--accent-green)] hover:text-[var(--accent-green)]"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {anyCollecting && <Spinner />}
+        {anyCollecting ? 'Collecting...' : 'Collect All Verified Platforms'}
+      </button>
+
+      <p className="text-xs leading-5 text-[var(--text-subtle)]">
+        Collection reads from your existing Chrome browser sessions. Make sure
+        you are logged in to each platform before collecting.
+      </p>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Done panel
+// MultiDonePanel — combined results after collection
 // ---------------------------------------------------------------------------
 
-function DonePanel({
-  result,
+function MultiDonePanel({
+  collectStates,
   onLaunch,
+  onRetryFailed,
 }: {
-  result: DoneResult;
+  collectStates: Record<string, PlatformCollectState>;
   onLaunch: () => void;
+  onRetryFailed: () => void;
 }) {
-  const platformLabel =
-    PLATFORMS.find((p) => p.id === result.platform)?.label ?? result.platform;
+  const results = PLATFORMS.map((p) => ({
+    platform: p,
+    state: collectStates[p.id] ?? { status: 'idle' as PlatformCollectStatus },
+  }));
+
+  const totalPosts = results.reduce(
+    (sum, { state }) => sum + (state.status === 'done' ? (state.postsCount ?? 0) : 0),
+    0,
+  );
+  const doneCount = results.filter(({ state }) => state.status === 'done').length;
+  const hasErrors = results.some(({ state }) => state.status === 'error');
+  const canLaunch = totalPosts > 0;
 
   return (
     <div className="flex flex-col gap-4">
       <StatusBar
         icon={<CheckIcon />}
         label="Collection complete"
-        sub={`${result.postsCount} post${result.postsCount !== 1 ? 's' : ''} collected from ${platformLabel}`}
+        sub={`${totalPosts} post${totalPosts !== 1 ? 's' : ''} across ${doneCount} platform${doneCount !== 1 ? 's' : ''}`}
         accent="green"
       />
-      <button
-        type="button"
-        onClick={onLaunch}
-        className="flex h-10 items-center justify-center rounded-lg px-5 text-sm font-medium transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
-      >
-        Launch Dashboard
-      </button>
-    </div>
-  );
-}
 
-// ---------------------------------------------------------------------------
-// Error panel (enhanced with recovery steps)
-// ---------------------------------------------------------------------------
+      {/* Per-platform summary */}
+      <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-3 flex flex-col gap-2">
+        {results.map(({ platform, state }) => {
+          if (state.status === 'idle') return null;
+          return (
+            <div key={platform.id} className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                {state.status === 'done' ? <CheckIcon /> : <CrossIcon />}
+                <span className="text-xs text-[var(--text-secondary)]">{platform.label}</span>
+              </div>
+              <span
+                className="text-xs font-mono"
+                style={{
+                  color:
+                    state.status === 'done'
+                      ? 'var(--accent-green)'
+                      : 'var(--accent-red)',
+                }}
+              >
+                {state.status === 'done'
+                  ? `${state.postsCount ?? 0} posts`
+                  : state.error ?? 'Failed'}
+              </span>
+            </div>
+          );
+        })}
+      </div>
 
-function ErrorPanel({
-  code,
-  message,
-  onRetry,
-}: {
-  code?: string;
-  message: string;
-  onRetry: () => void;
-}) {
-  const recovery = code ? ERROR_RECOVERY[code] : undefined;
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onLaunch}
+          disabled={!canLaunch}
+          className="flex h-10 flex-1 items-center justify-center rounded-lg px-5 text-sm font-medium transition-colors disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
+        >
+          Launch Dashboard
+        </button>
+        {hasErrors && (
+          <button
+            type="button"
+            onClick={onRetryFailed}
+            className="flex h-10 items-center justify-center rounded-lg border border-[var(--border-medium)] px-4 text-sm font-medium transition-colors hover:border-[var(--accent-yellow)] hover:text-[var(--accent-yellow)]"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            Retry Failed
+          </button>
+        )}
+      </div>
 
-  return (
-    <div className="flex flex-col gap-4">
-      <StatusBar
-        icon={<CrossIcon />}
-        label={recovery?.title ?? 'Collection failed'}
-        sub={message}
-        accent="red"
-      />
-      {recovery && (
-        <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-subtle)]">
-            How to fix
-          </p>
-          <ol className="mt-2 flex flex-col gap-1.5">
-            {recovery.steps.map((step, i) => (
-              <li key={i} className="flex gap-2 text-xs text-[var(--text-secondary)]">
-                <span className="shrink-0 text-[var(--text-subtle)]">{i + 1}.</span>
-                {step}
-              </li>
-            ))}
-          </ol>
-        </div>
+      {!canLaunch && (
+        <p className="text-xs text-[var(--text-subtle)]">
+          At least one successful collection is required to launch the dashboard.
+        </p>
       )}
-      {!recovery && code === 'NOT_LOGGED_IN' && (
-        <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-subtle)]">
-            How to fix
-          </p>
-          <ol className="mt-2 flex flex-col gap-1.5">
-            <li className="flex gap-2 text-xs text-[var(--text-secondary)]">
-              <span className="shrink-0 text-[var(--text-subtle)]">1.</span>
-              Open the platform website in your Chrome browser
-            </li>
-            <li className="flex gap-2 text-xs text-[var(--text-secondary)]">
-              <span className="shrink-0 text-[var(--text-subtle)]">2.</span>
-              Log in with your account credentials
-            </li>
-            <li className="flex gap-2 text-xs text-[var(--text-secondary)]">
-              <span className="shrink-0 text-[var(--text-subtle)]">3.</span>
-              Come back here and click Collect again
-            </li>
-          </ol>
-        </div>
-      )}
-      <button
-        type="button"
-        onClick={onRetry}
-        className="flex h-10 items-center justify-center rounded-lg border border-[var(--border-medium)] px-5 text-sm font-medium transition-colors hover:border-[var(--accent-red)] hover:text-[var(--accent-red)]"
-        style={{ color: 'var(--text-secondary)' }}
-      >
-        Retry
-      </button>
     </div>
   );
 }
@@ -772,22 +761,21 @@ export default function CdpSetupGuide() {
   const router = useRouter();
 
   const [phase, setPhase] = useState<SetupPhase>('checking');
-  const [selectedPlatformId, setSelectedPlatformId] = useState<'douyin' | 'xhs' | 'tiktok'>('douyin');
-  const [input, setInput] = useState('');
-  const [errorMsg, setErrorMsg] = useState<string>('');
-  const [errorCode, setErrorCode] = useState<string | undefined>(undefined);
-  const [doneResult, setDoneResult] = useState<DoneResult | null>(null);
-  const [collectingMessageIndex, setCollectingMessageIndex] = useState(0);
   const [loginStates, setLoginStates] = useState<Record<string, PlatformLoginState>>({
     douyin: { status: 'unknown' },
     xhs: { status: 'unknown' },
     tiktok: { status: 'unknown' },
   });
+  const [collectStates, setCollectStates] = useState<Record<string, PlatformCollectState>>({
+    douyin: { status: 'idle' },
+    xhs: { status: 'idle' },
+    tiktok: { status: 'idle' },
+  });
+  const [xhsInput, setXhsInput] = useState('');
+  const [collectedProfiles, setCollectedProfiles] = useState<Record<string, CreatorProfile>>({});
 
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const messageTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const selectedPlatform = PLATFORMS.find((p) => p.id === selectedPlatformId) ?? PLATFORMS[0];
   const currentStep = PHASE_STEP[phase];
 
   // ── Health check ──────────────────────────────────────────────────────────
@@ -829,15 +817,6 @@ export default function CdpSetupGuide() {
     }, HEALTH_POLL_INTERVAL_MS);
   }, [checkHealth, stopPoll]);
 
-  // ── Collecting progress messages ──────────────────────────────────────────
-
-  const stopMessageTimer = useCallback(() => {
-    if (messageTimerRef.current !== null) {
-      clearInterval(messageTimerRef.current);
-      messageTimerRef.current = null;
-    }
-  }, []);
-
   // ── Effects ───────────────────────────────────────────────────────────────
 
   // Initial health check on mount
@@ -845,9 +824,8 @@ export default function CdpSetupGuide() {
     runHealthCheck();
     return () => {
       stopPoll();
-      stopMessageTimer();
     };
-  }, [runHealthCheck, stopPoll, stopMessageTimer]);
+  }, [runHealthCheck, stopPoll]);
 
   // Start/stop auto-poll based on phase
   useEffect(() => {
@@ -858,28 +836,22 @@ export default function CdpSetupGuide() {
     }
   }, [phase, startPoll, stopPoll]);
 
-  // Advance progress messages during collecting
+  // Auto-transition to done when no platform is collecting and at least one is done
   useEffect(() => {
-    if (phase === 'collecting') {
-      setCollectingMessageIndex(0);
-      messageTimerRef.current = setInterval(() => {
-        setCollectingMessageIndex((prev) =>
-          prev < COLLECTING_MESSAGES.length - 1 ? prev + 1 : prev,
-        );
-      }, COLLECTING_MESSAGE_INTERVAL_MS);
-    } else {
-      stopMessageTimer();
+    const states = Object.values(collectStates);
+    const anyCollecting = states.some((s) => s.status === 'collecting');
+    const anyDone = states.some((s) => s.status === 'done');
+
+    if (phase === 'ready' && !anyCollecting && anyDone) {
+      sessionStorage.setItem(
+        'dashpersona-import-profiles',
+        JSON.stringify(collectedProfiles),
+      );
+      setPhase('done');
     }
-  }, [phase, stopMessageTimer]);
+  }, [collectStates, collectedProfiles, phase]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-
-  const handlePlatformChange = useCallback((id: 'douyin' | 'xhs' | 'tiktok') => {
-    setSelectedPlatformId(id);
-    setInput('');
-    setErrorMsg('');
-    setErrorCode(undefined);
-  }, []);
 
   const handleCheckLogin = useCallback(async (platformId: 'douyin' | 'xhs' | 'tiktok') => {
     setLoginStates((prev) => ({
@@ -887,17 +859,9 @@ export default function CdpSetupGuide() {
       [platformId]: { status: 'checking' },
     }));
 
-    // Attempt a health check first to confirm proxy is still up, then mark
-    // the platform as requiring user confirmation (we do not burn a full CDP
-    // collect for login verification — the user opens the platform URL and
-    // confirms via the "Check Login" flow).
     try {
       const res = await fetch('/api/cdp-collect');
       if (!res.ok) throw new Error('proxy_unreachable');
-      // Proxy is alive — we trust the user to open the URL and log in.
-      // After a short delay, mark as logged_in to indicate "proxy is ready,
-      // browser session assumed present." A real login failure surfaces on
-      // the actual collect call with NOT_LOGGED_IN.
       await new Promise<void>((resolve) => setTimeout(resolve, 800));
       setLoginStates((prev) => ({
         ...prev,
@@ -919,18 +883,25 @@ export default function CdpSetupGuide() {
     setPhase('ready');
   }, []);
 
-  const handleCollect = useCallback(async () => {
-    setPhase('collecting');
-    setErrorMsg('');
-    setErrorCode(undefined);
+  const collectPlatform = useCallback(async (platformId: 'douyin' | 'xhs' | 'tiktok') => {
+    const platform = PLATFORMS.find((p) => p.id === platformId);
+    if (!platform) return;
+
+    // XHS requires a URL input
+    if (platform.needsInput && xhsInput.trim().length === 0) return;
+
+    setCollectStates((prev) => ({
+      ...prev,
+      [platformId]: { status: 'collecting' },
+    }));
 
     try {
       const res = await fetch('/api/cdp-collect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          platform: selectedPlatformId,
-          input: input.trim() || undefined,
+          platform: platformId,
+          input: platform.needsInput ? xhsInput.trim() : undefined,
         }),
       });
 
@@ -941,37 +912,55 @@ export default function CdpSetupGuide() {
         };
         const code = data.code;
         const msg = data.error ?? `Collection failed: ${res.status}`;
-        setErrorCode(code);
-        throw new Error(msg);
+        setCollectStates((prev) => ({
+          ...prev,
+          [platformId]: { status: 'error', error: msg, errorCode: code },
+        }));
+        return;
       }
 
       const { profile } = await res.json() as { profile: CreatorProfile };
 
-      sessionStorage.setItem(
-        'dashpersona-import-profiles',
-        JSON.stringify({ [profile.platform]: profile }),
-      );
-
-      setDoneResult({
-        postsCount: profile.posts.length,
-        platform: profile.platform,
-      });
-      setPhase('done');
+      setCollectedProfiles((prev) => ({ ...prev, [platformId]: profile }));
+      setCollectStates((prev) => ({
+        ...prev,
+        [platformId]: { status: 'done', postsCount: profile.posts.length },
+      }));
     } catch (err) {
-      setPhase('error');
-      setErrorMsg(err instanceof Error ? err.message : 'Unknown error');
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setCollectStates((prev) => ({
+        ...prev,
+        [platformId]: { status: 'error', error: msg },
+      }));
     }
-  }, [selectedPlatformId, input]);
+  }, [xhsInput]);
+
+  const collectAll = useCallback(() => {
+    PLATFORMS.forEach((p) => {
+      const loginStatus = loginStates[p.id]?.status;
+      const collectStatus = collectStates[p.id]?.status;
+      const isVerified = loginStatus === 'logged_in';
+      const isIdle = collectStatus === 'idle';
+      if (!isVerified || !isIdle) return;
+      if (p.needsInput && xhsInput.trim().length === 0) return;
+      void collectPlatform(p.id);
+    });
+  }, [loginStates, collectStates, xhsInput, collectPlatform]);
 
   const handleLaunchDashboard = useCallback(() => {
-    setTimeout(() => {
-      router.push('/dashboard?source=import');
-    }, REDIRECT_DELAY_MS);
+    router.push('/dashboard?source=import');
   }, [router]);
 
-  const handleRetry = useCallback(() => {
-    setErrorMsg('');
-    setErrorCode(undefined);
+  const handleRetryFailed = useCallback(() => {
+    setCollectStates((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(next)) {
+        if (next[key].status === 'error') {
+          next[key] = { status: 'idle' };
+        }
+      }
+      return next;
+    });
     setPhase('ready');
   }, []);
 
@@ -1027,43 +1016,32 @@ export default function CdpSetupGuide() {
         </>
       )}
 
-      {/* Ready state */}
+      {/* Ready state — multi-platform parallel collection */}
       {phase === 'ready' && (
         <>
           <StatusBar
             icon={<CheckIcon />}
             label="CDP proxy connected"
-            sub="Ready to collect creator data from your browser."
+            sub="Select platforms and collect data."
             accent="green"
           />
-          <LoginGuidance />
-          <CollectPanel
-            platform={selectedPlatform}
-            input={input}
-            isCollecting={false}
-            onPlatformChange={handlePlatformChange}
-            onInputChange={setInput}
-            onCollect={handleCollect}
+          <MultiCollectPanel
+            collectStates={collectStates}
+            loginStates={loginStates}
+            xhsInput={xhsInput}
+            onXhsInputChange={setXhsInput}
+            onCollectPlatform={collectPlatform}
+            onCollectAll={collectAll}
           />
         </>
       )}
 
-      {/* Collecting state */}
-      {phase === 'collecting' && (
-        <CollectingProgress messageIndex={collectingMessageIndex} />
-      )}
-
-      {/* Done state */}
-      {phase === 'done' && doneResult !== null && (
-        <DonePanel result={doneResult} onLaunch={handleLaunchDashboard} />
-      )}
-
-      {/* Error state */}
-      {phase === 'error' && (
-        <ErrorPanel
-          code={errorCode}
-          message={errorMsg}
-          onRetry={handleRetry}
+      {/* Done state — combined results */}
+      {phase === 'done' && (
+        <MultiDonePanel
+          collectStates={collectStates}
+          onLaunch={handleLaunchDashboard}
+          onRetryFailed={handleRetryFailed}
         />
       )}
     </div>
