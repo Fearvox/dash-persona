@@ -628,6 +628,244 @@ async function collectXhs(profileUrl: string): Promise<CreatorProfile> {
 }
 
 // ---------------------------------------------------------------------------
+// XHS Creator Center collection
+// ---------------------------------------------------------------------------
+
+/**
+ * Collect XHS data from the creator center (requires login to creator.xiaohongshu.com).
+ * Extracts real view counts, engagement metrics, and per-note data from the authenticated
+ * creator dashboard — far more accurate than the public profile estimate.
+ */
+async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
+  const target = await cdpNew('https://creator.xiaohongshu.com/statistics/account/v2');
+
+  try {
+    // Wait for account analytics page to load
+    const loaded = await waitForElement(target, `document.body.innerText.includes('账号诊断')`, 20_000);
+    if (!loaded) {
+      // Check if redirected to login
+      const currentUrl = await cdpEval(target, 'window.location.href') as string;
+      if (typeof currentUrl === 'string' && (currentUrl.includes('login') || currentUrl.includes('signin'))) {
+        throw new CDPAdapterError(
+          'NOT_LOGGED_IN',
+          'XHS Creator Center requires login. Please log in to creator.xiaohongshu.com in Chrome first.',
+        );
+      }
+      throw new CDPAdapterError('TIMEOUT', 'XHS Creator Center statistics page did not load (账号诊断 not found)');
+    }
+
+    // Extract account-level diagnostics from innerText
+    const diagJson = await cdpEval(target, `
+      (function() {
+        const text = document.body.innerText;
+
+        // 账号诊断 block: "观看数为 5283", "涨粉数为 108", "主页访客数为 592"
+        const viewsMatch = text.match(/观看数为\\s*([\\d,.万亿]+)/);
+        const followerDeltaMatch = text.match(/涨粉数为\\s*([\\d,.万亿]+)/);
+        const profileVisitsMatch = text.match(/主页访客数为\\s*([\\d,.万亿]+)/);
+
+        // 观看数据 tab (default view): 曝光数, 观看数, 封面点击率, 平均观看时长, 完播率
+        const impressionsMatch = text.match(/曝光数[\\s\\n]*([\\d,.万亿]+)/);
+        const watchCountMatch = text.match(/观看数[\\s\\n]*([\\d,.万亿]+)/);
+        const coverClickMatch = text.match(/封面点击率[\\s\\n]*([\\d.]+%)/);
+        const avgWatchMatch = text.match(/平均观看时长[\\s\\n]*([\\d]+秒|[\\d]+分[\\d]+秒)/);
+        const completionMatch = text.match(/完播率[\\s\\n]*([\\d.]+%)/);
+
+        // Sidebar username
+        const usernameEl = document.querySelector('[class*="username"], [class*="nickname"], [class*="user-name"]');
+        const username = usernameEl?.textContent?.trim() || '';
+
+        return JSON.stringify({
+          username,
+          rawViews: viewsMatch ? viewsMatch[1] : (watchCountMatch ? watchCountMatch[1] : '0'),
+          rawFollowerDelta: followerDeltaMatch ? followerDeltaMatch[1] : '0',
+          rawProfileVisits: profileVisitsMatch ? profileVisitsMatch[1] : '0',
+          rawImpressions: impressionsMatch ? impressionsMatch[1] : '0',
+          rawCoverClickRate: coverClickMatch ? coverClickMatch[1] : '0%',
+          rawAvgWatch: avgWatchMatch ? avgWatchMatch[1] : '0秒',
+          rawCompletion: completionMatch ? completionMatch[1] : '0%',
+        });
+      })()
+    `) as string;
+
+    let diagData: {
+      username: string;
+      rawViews: string;
+      rawFollowerDelta: string;
+      rawProfileVisits: string;
+      rawImpressions: string;
+      rawCoverClickRate: string;
+      rawAvgWatch: string;
+      rawCompletion: string;
+    };
+    try {
+      diagData = JSON.parse(diagJson);
+    } catch {
+      throw new CDPAdapterError('PARSE_ERROR', 'Failed to parse XHS Creator Center diagnostics data');
+    }
+
+    // Click 互动数据 tab to get likes/comments/saves/shares
+    await cdpEval(target, `
+      (function() {
+        const els = Array.from(document.querySelectorAll('span, div, button, a'));
+        const tab = els.find(e => e.textContent.trim() === '互动数据' && e.offsetParent !== null);
+        if (tab) tab.click();
+      })()
+    `);
+    await sleep(2000);
+
+    const engJson = await cdpEval(target, `
+      (function() {
+        const text = document.body.innerText;
+        const likesMatch = text.match(/点赞数[\\s\\n]*([\\d,.万亿]+)/);
+        const commentsMatch = text.match(/评论数[\\s\\n]*([\\d,.万亿]+)/);
+        const savesMatch = text.match(/收藏数[\\s\\n]*([\\d,.万亿]+)/);
+        const sharesMatch = text.match(/分享数[\\s\\n]*([\\d,.万亿]+)/);
+        return JSON.stringify({
+          rawLikes: likesMatch ? likesMatch[1] : '0',
+          rawComments: commentsMatch ? commentsMatch[1] : '0',
+          rawSaves: savesMatch ? savesMatch[1] : '0',
+          rawShares: sharesMatch ? sharesMatch[1] : '0',
+        });
+      })()
+    `) as string;
+
+    let engData: { rawLikes: string; rawComments: string; rawSaves: string; rawShares: string };
+    try {
+      engData = JSON.parse(engJson);
+    } catch {
+      engData = { rawLikes: '0', rawComments: '0', rawSaves: '0', rawShares: '0' };
+    }
+
+    const totalLikes = parseChineseNumber(engData.rawLikes);
+
+    // Navigate to note manager for per-note data
+    await cdpNavigate(target, 'https://creator.xiaohongshu.com/new/note-manager');
+    await waitForElement(target, `document.body.innerText.includes('全部笔记')`, 20_000);
+
+    // Scroll to load more notes
+    await cdpScroll(target, 'bottom');
+    await sleep(2000);
+
+    // Extract per-note data from innerText
+    // Format per note:
+    //   [title]
+    //   发布于 2026年03月15日 18:49
+    //   [views]
+    //   [comments]
+    //   [likes]
+    //   [saves]
+    //   [shares]
+    //   权限设置
+    const notesJson = await cdpEval(target, `
+      (function() {
+        const text = document.body.innerText;
+        const lines = text.split('\\n').map(l => l.trim()).filter(l => l.length > 0);
+        const datePattern = /^发布于\\s*(\\d{4}年\\d{2}月\\d{2}日(?:\\s+\\d{2}:\\d{2})?)/;
+        const numPattern = /^[\\d,]+$/;
+        const posts = [];
+
+        for (let i = 0; i < lines.length; i++) {
+          const dateMatch = lines[i].match(datePattern);
+          if (!dateMatch) continue;
+
+          // Look backwards for title (non-empty line before the date)
+          let title = '';
+          for (let j = i - 1; j >= Math.max(0, i - 5); j--) {
+            const prev = lines[j].trim();
+            if (prev && prev.length > 2 && !datePattern.test(prev) && !/^(权限设置|全部笔记|笔记管理)$/.test(prev)) {
+              title = prev;
+              break;
+            }
+          }
+
+          // Collect up to 5 numbers after date line
+          const nums = [];
+          let j = i + 1;
+          while (j < lines.length && nums.length < 5) {
+            const line = lines[j].trim();
+            if (/^[\\d,]+$/.test(line)) {
+              nums.push(parseInt(line.replace(/,/g, ''), 10));
+            } else if (/^[\\d.]+[万亿]$/.test(line)) {
+              // parseChineseNumber equivalent inline
+              const cn = line.endsWith('亿')
+                ? Math.round(parseFloat(line) * 100000000)
+                : Math.round(parseFloat(line) * 10000);
+              nums.push(cn);
+            } else if (line === '权限设置' || line === '删除' || datePattern.test(line)) {
+              break;
+            }
+            j++;
+          }
+
+          if (nums.length >= 1) {
+            posts.push({
+              title: title || '未命名笔记',
+              date: dateMatch[1],
+              views: nums[0] ?? 0,
+              comments: nums[1] ?? 0,
+              likes: nums[2] ?? 0,
+              saves: nums[3] ?? 0,
+              shares: nums[4] ?? 0,
+            });
+          }
+        }
+        return JSON.stringify(posts);
+      })()
+    `) as string;
+
+    let rawNotes: Array<{
+      title: string;
+      date: string;
+      views: number;
+      comments: number;
+      likes: number;
+      saves: number;
+      shares: number;
+    }> = [];
+    try {
+      rawNotes = JSON.parse(notesJson);
+    } catch {
+      rawNotes = [];
+    }
+
+    const posts: Post[] = rawNotes.slice(0, MAX_POSTS).map((note, i) => ({
+      postId: `xhs-cc-${i + 1}`,
+      desc: note.title,
+      publishedAt: note.date,
+      views: note.views,
+      comments: note.comments,
+      likes: note.likes,
+      saves: note.saves,
+      shares: note.shares,
+    }));
+
+    // Derive follower count: use profile visits as a proxy if followers not found,
+    // but the diagnostics block gives us followerDelta — we don't have total followers
+    // from creator center alone; leave it as 0 if not extractable.
+    const profileVisits = parseChineseNumber(diagData.rawProfileVisits);
+    const username = diagData.username || 'XHS Creator';
+
+    return {
+      platform: 'xhs',
+      profileUrl: 'https://creator.xiaohongshu.com',
+      fetchedAt: new Date().toISOString(),
+      source: 'cdp',
+      profile: {
+        nickname: username,
+        uniqueId: username,
+        followers: profileVisits, // best proxy available from creator center
+        likesTotal: totalLikes,
+        videosCount: posts.length,
+      },
+      posts,
+    };
+  } finally {
+    await cdpClose(target).catch(() => { /* best-effort close */ });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // TikTok collection
 // ---------------------------------------------------------------------------
 
@@ -749,7 +987,7 @@ async function collectTiktok(): Promise<CreatorProfile> {
   const target = await cdpNew('https://www.tiktok.com/tiktokstudio');
 
   try {
-    await sleep(4000);
+    await waitForElement(target, `document.body.innerText.includes('粉丝') || window.location.href.includes('login')`, 20_000);
 
     const currentUrl = await cdpEval(target, 'window.location.href') as string;
     if (typeof currentUrl === 'string' && currentUrl.includes('login')) {
@@ -806,7 +1044,7 @@ async function collectTiktok(): Promise<CreatorProfile> {
 
     // Navigate to content analytics for full post list
     await cdpNavigate(target, 'https://www.tiktok.com/tiktokstudio/analytics/content');
-    await sleep(3000);
+    await waitForElement(target, `document.body.innerText.includes('总播放量') || document.body.innerText.includes('查看数据')`, 20_000);
 
     const contentJson = await cdpEval(target, TIKTOK_CONTENT_JS) as string;
     let contentPosts: Array<{ title: string; views7d: string; viewsTotal: string; timeStr: string }> = [];
@@ -903,17 +1141,23 @@ export class CDPAdapter implements DataAdapter {
 
     const { platform, input: platformInput } = params;
 
-    const task = (): Promise<CreatorProfile> => {
+    const task = async (): Promise<CreatorProfile> => {
       switch (platform) {
         case 'douyin':
           return collectDouyin();
         case 'tiktok':
           return collectTiktok();
         case 'xhs': {
-          if (!platformInput) {
-            throw new CDPAdapterError('PARSE_ERROR', 'XHS collection requires input.input = profile URL');
+          // Try creator center first (logged-in account, real data)
+          try {
+            return await collectXhsCreatorCenter();
+          } catch {
+            // Fall back to public profile if creator center fails
+            if (!platformInput) {
+              throw new CDPAdapterError('PARSE_ERROR', 'XHS collection failed. Provide a profile URL or log in to creator.xiaohongshu.com');
+            }
+            return collectXhs(platformInput);
           }
-          return collectXhs(platformInput);
         }
         default:
           throw new CDPAdapterError(
