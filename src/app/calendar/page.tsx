@@ -4,6 +4,7 @@ import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
 import { generateContentPlan } from '@/lib/engine';
 import CalendarClient from './calendar-client';
+import ImportCalendarLoader from './import-calendar-loader';
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -45,6 +46,11 @@ export default async function CalendarPage({
   searchParams,
 }: CalendarPageProps) {
   const params = await searchParams;
+
+  if (params.source === 'import') {
+    return <ImportCalendarLoader />;
+  }
+
   const personaParam = params.persona ?? 'tutorial';
   const personaType: DemoPersonaType = VALID_PERSONAS.has(
     personaParam as DemoPersonaType,
