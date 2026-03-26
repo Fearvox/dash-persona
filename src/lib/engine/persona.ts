@@ -14,6 +14,7 @@
 
 import type { CreatorProfile, Post } from '../schema/creator-data';
 import { memoize } from '../utils/memo-cache';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Content category taxonomy
@@ -656,7 +657,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
     score.consistency.dominantCategoryPct >= 40
   ) {
     tags.push({
-      label: `${capitalise(score.consistency.dominantCategory)} Specialist`,
+      label: t('engine.tags.specialist', { category: t(`engine.category.${score.consistency.dominantCategory}`) }),
       slug: `${score.consistency.dominantCategory}-specialist`,
       confidence: Math.min(score.consistency.dominantCategoryPct / 100, 0.95),
       evidence: `${score.consistency.dominantCategoryPct}% of posts are ${score.consistency.dominantCategory} content`,
@@ -666,7 +667,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- High engagement ---
   if (score.engagement.overallRate >= 0.08) {
     tags.push({
-      label: 'High Engagement',
+      label: t('engine.tags.highEngagement'),
       slug: 'high-engagement',
       confidence: Math.min(0.5 + score.engagement.overallRate * 3, 0.95),
       evidence: `Overall engagement rate of ${(score.engagement.overallRate * 100).toFixed(1)}% is well above average`,
@@ -676,7 +677,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- Engagement rising ---
   if (score.engagement.trend > 0.005) {
     tags.push({
-      label: 'Engagement Rising',
+      label: t('engine.tags.engagementRising'),
       slug: 'engagement-rising',
       confidence: Math.min(0.5 + score.engagement.trend * 20, 0.9),
       evidence: `Engagement trend is +${(score.engagement.trend * 100).toFixed(2)}pp (newer vs older posts)`,
@@ -686,7 +687,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- Engagement declining ---
   if (score.engagement.trend < -0.005) {
     tags.push({
-      label: 'Engagement Declining',
+      label: t('engine.tags.engagementDeclining'),
       slug: 'engagement-declining',
       confidence: Math.min(0.5 + Math.abs(score.engagement.trend) * 20, 0.9),
       evidence: `Engagement trend is ${(score.engagement.trend * 100).toFixed(2)}pp (newer vs older posts)`,
@@ -696,7 +697,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- Consistent identity ---
   if (score.consistency.isConsistent && score.consistency.score >= 70) {
     tags.push({
-      label: 'Consistent Identity',
+      label: t('engine.tags.consistentIdentity'),
       slug: 'consistent-identity',
       confidence: score.consistency.score / 100,
       evidence: `Persona consistency score of ${score.consistency.score}/100 indicates stable topical focus`,
@@ -706,7 +707,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- Content explorer (low consistency) ---
   if (!score.consistency.isConsistent && score.consistency.score < 40 && score.postsAnalysed >= 10) {
     tags.push({
-      label: 'Content Explorer',
+      label: t('engine.tags.contentExplorer'),
       slug: 'content-explorer',
       confidence: Math.min(0.9 - score.consistency.score / 100, 0.85),
       evidence: `Consistency score of ${score.consistency.score}/100 shows diverse topic coverage`,
@@ -716,7 +717,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- Prolific publisher ---
   if (score.rhythm.postsPerWeek >= 5) {
     tags.push({
-      label: 'Prolific Publisher',
+      label: t('engine.tags.prolificPublisher'),
       slug: 'prolific-publisher',
       confidence: Math.min(score.rhythm.postsPerWeek / 10, 0.9),
       evidence: `Publishing ${score.rhythm.postsPerWeek} posts per week`,
@@ -726,7 +727,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- Clockwork rhythm ---
   if (score.rhythm.consistencyScore >= 75) {
     tags.push({
-      label: 'Clockwork Rhythm',
+      label: t('engine.tags.clockworkRhythm'),
       slug: 'clockwork-rhythm',
       confidence: score.rhythm.consistencyScore / 100,
       evidence: `Publishing consistency score of ${score.rhythm.consistencyScore}/100`,
@@ -736,7 +737,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- Growth rocket ---
   if (score.growthHealth.momentum === 'accelerating') {
     tags.push({
-      label: 'Growth Rocket',
+      label: t('engine.tags.growthRocket'),
       slug: 'growth-rocket',
       confidence: 0.75,
       evidence: `Follower growth is accelerating (${score.growthHealth.followerGrowthRate}% over the tracked window)`,
@@ -746,7 +747,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
   // --- Plateau alert ---
   if (score.growthHealth.momentum === 'decelerating' && score.growthHealth.followerGrowthRate < 5) {
     tags.push({
-      label: 'Plateau Alert',
+      label: t('engine.tags.plateauAlert'),
       slug: 'plateau-alert',
       confidence: 0.7,
       evidence: `Growth is decelerating with only ${score.growthHealth.followerGrowthRate}% follower change`,
@@ -758,7 +759,7 @@ export function generatePersonaTags(score: PersonaScore): PersonaTag[] {
     const bestCat = score.engagement.byCategory[0];
     if (bestCat.meanEngagementRate >= 0.15 && bestCat.postCount >= 2) {
       tags.push({
-        label: 'Viral Potential',
+        label: t('engine.tags.viralPotential'),
         slug: 'viral-potential',
         confidence: Math.min(bestCat.meanEngagementRate * 3, 0.85),
         evidence: `${capitalise(bestCat.category)} content achieves ${(bestCat.meanEngagementRate * 100).toFixed(1)}% engagement`,

@@ -12,6 +12,7 @@ import type { CreatorProfile, BenchmarkProfile, Post } from '../schema/creator-d
 import { detectNiche } from './niche-detect';
 import { generateBenchmarkProfiles, NICHE_BENCHMARKS, type BenchmarkNiche } from './benchmark-data';
 import type { PersonaScore } from './persona';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -126,7 +127,7 @@ export function compareToBenchmark(
     return {
       benchmarkCount: 0,
       metrics: [],
-      summary: 'No benchmark profiles available for comparison.',
+      summary: t('engine.benchmark.noBenchmarks'),
     };
   }
 
@@ -153,7 +154,7 @@ export function compareToBenchmark(
 
   // Build metric comparisons
   const followersBench: MetricBenchmark = {
-    metric: 'Followers',
+    metric: t('engine.benchmark.followers'),
     userValue: userFollowers,
     benchmarkMean: meanFollowers,
     benchmarkMedian: median(benchFollowers),
@@ -162,7 +163,7 @@ export function compareToBenchmark(
   };
 
   const engRateBench: MetricBenchmark = {
-    metric: 'Engagement Rate',
+    metric: t('engine.benchmark.engagementRate'),
     userValue: Math.round(userEngRate * 10000) / 10000,
     benchmarkMean: Math.round(meanEngRate * 10000) / 10000,
     benchmarkMedian: Math.round(median(benchEngRates) * 10000) / 10000,
@@ -171,7 +172,7 @@ export function compareToBenchmark(
   };
 
   const postCountBench: MetricBenchmark = {
-    metric: 'Post Count',
+    metric: t('engine.benchmark.postCount'),
     userValue: userPostCount,
     benchmarkMean: meanPostCount,
     benchmarkMedian: median(benchPostCounts),
@@ -187,13 +188,13 @@ export function compareToBenchmark(
 
   let summary: string;
   if (above.length === metrics.length) {
-    summary = `Outperforming benchmarks across all metrics (${above.join(', ')}).`;
+    summary = t('engine.benchmark.outperforming', { metrics: above.join(', ') });
   } else if (below.length === metrics.length) {
-    summary = `Below benchmark averages on all metrics (${below.join(', ')}). Focus on the highest-gap area first.`;
+    summary = t('engine.benchmark.belowAll', { metrics: below.join(', ') });
   } else if (above.length > 0 && below.length > 0) {
-    summary = `Above benchmarks in ${above.join(', ')}; below in ${below.join(', ')}.`;
+    summary = t('engine.benchmark.mixed', { above: above.join(', '), below: below.join(', ') });
   } else {
-    summary = `Performing at benchmark average levels across all compared metrics.`;
+    summary = t('engine.benchmark.atAverage');
   }
 
   return {

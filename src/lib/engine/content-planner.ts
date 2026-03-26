@@ -11,6 +11,7 @@
 import type { CreatorProfile, Post } from '../schema/creator-data';
 import { classifyContent, computeEngagementProfile } from './persona';
 import { memoize } from '../utils/memo-cache';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -76,15 +77,9 @@ function pct(value: number): string {
 }
 
 /** Day-of-week label. */
-const DAY_NAMES = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-];
+function getDayName(dayIndex: number): string {
+  return t(`engine.planner.dayNames.${dayIndex}`);
+}
 
 // ---------------------------------------------------------------------------
 // Core analysis helpers
@@ -399,7 +394,7 @@ export function generateContentPlan(
     const date = new Date(today.getTime() + day * 86_400_000);
     const dateStr = date.toISOString().slice(0, 10);
     const dayOfWeek = date.getUTCDay();
-    const dayName = DAY_NAMES[dayOfWeek];
+    const dayName = getDayName(dayOfWeek);
 
     // Generate 1-2 slots per day
     const slotsPerDay = day % 3 === 0 ? 1 : 2; // Every 3rd day gets 1 slot
@@ -439,21 +434,26 @@ export function generateContentPlan(
       }
 
       // Build reasoning
-      const typeLabel = capitalise(chosen.contentType);
-      const platformLabel = capitalise(platform);
-
       const recentCount = recentCountByType.get(chosen.contentType) ?? 0;
+      const timeSlotLabel = t(`engine.planner.timeSlot.${timeSlot}`);
 
       const parts: string[] = [];
       parts.push(
-        `${typeLabel} content gets ${pct(chosen.engagementRate)} engagement on ${platformLabel} (vs ${pct(avgEngRate)} average).`,
-      );
-      parts.push(
-        `${dayName} ${timeSlot} is your peak time.`,
+        t('engine.planner.reasoning', {
+          type: t(`engine.category.${chosen.contentType}`),
+          platform: capitalise(platform),
+          engRate: pct(chosen.engagementRate),
+          avgRate: pct(avgEngRate),
+          day: dayName,
+          timeSlot: timeSlotLabel,
+        }),
       );
       if (chosen.frequencyGap > 0) {
         parts.push(
-          `You've only posted ${recentCount} ${typeLabel.toLowerCase()} posts in the last 30 days \u2014 room to grow.`,
+          t('engine.planner.reasoningGap', {
+            count: recentCount,
+            type: t(`engine.category.${chosen.contentType}`),
+          }),
         );
       }
 

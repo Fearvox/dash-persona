@@ -10,6 +10,7 @@
  */
 
 import type { BenchmarkProfile, Post, Platform } from '../schema/creator-data';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Seeded PRNG (copied from demo-adapter.ts — simple 32-bit xorshift)
@@ -79,7 +80,7 @@ export interface NicheBenchmark {
 export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   tutorial: {
     niche: 'tutorial',
-    label: 'Tutorial & Education',
+    label: t('engine.niche.tutorial'),
     avgFollowers: 180_000,
     avgEngagementRate: 0.045,
     avgPostsPerWeek: 3.5,
@@ -88,7 +89,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   entertainment: {
     niche: 'entertainment',
-    label: 'Entertainment',
+    label: t('engine.niche.entertainment'),
     avgFollowers: 650_000,
     avgEngagementRate: 0.065,
     avgPostsPerWeek: 5,
@@ -97,7 +98,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   food: {
     niche: 'food',
-    label: 'Food & Cooking',
+    label: t('engine.niche.food'),
     avgFollowers: 280_000,
     avgEngagementRate: 0.055,
     avgPostsPerWeek: 4,
@@ -106,7 +107,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   fitness: {
     niche: 'fitness',
-    label: 'Fitness & Health',
+    label: t('engine.niche.fitness'),
     avgFollowers: 220_000,
     avgEngagementRate: 0.05,
     avgPostsPerWeek: 4.5,
@@ -115,7 +116,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   beauty: {
     niche: 'beauty',
-    label: 'Beauty & Skincare',
+    label: t('engine.niche.beauty'),
     avgFollowers: 350_000,
     avgEngagementRate: 0.06,
     avgPostsPerWeek: 3.5,
@@ -124,7 +125,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   tech: {
     niche: 'tech',
-    label: 'Tech & Gadgets',
+    label: t('engine.niche.tech'),
     avgFollowers: 200_000,
     avgEngagementRate: 0.04,
     avgPostsPerWeek: 3,
@@ -133,7 +134,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   travel: {
     niche: 'travel',
-    label: 'Travel & Outdoor',
+    label: t('engine.niche.travel'),
     avgFollowers: 310_000,
     avgEngagementRate: 0.058,
     avgPostsPerWeek: 2.5,
@@ -142,7 +143,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   fashion: {
     niche: 'fashion',
-    label: 'Fashion & Style',
+    label: t('engine.niche.fashion'),
     avgFollowers: 400_000,
     avgEngagementRate: 0.055,
     avgPostsPerWeek: 4,
@@ -151,7 +152,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   lifestyle: {
     niche: 'lifestyle',
-    label: 'Lifestyle',
+    label: t('engine.niche.lifestyle'),
     avgFollowers: 250_000,
     avgEngagementRate: 0.05,
     avgPostsPerWeek: 3.5,
@@ -160,7 +161,7 @@ export const NICHE_BENCHMARKS: Record<BenchmarkNiche, NicheBenchmark> = {
   },
   gaming: {
     niche: 'gaming',
-    label: 'Gaming',
+    label: t('engine.niche.gaming'),
     avgFollowers: 380_000,
     avgEngagementRate: 0.07,
     avgPostsPerWeek: 5.5,
