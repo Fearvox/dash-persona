@@ -28,7 +28,7 @@ Content creators manage multiple platforms but have no unified view of their per
 
 ## How DashPersona Solves It
 
-DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Note**, normalizes it into a unified schema, and runs it through **9 deterministic analysis engines**. Every score, tag, and recommendation is computed with transparent algorithms — no LLM calls, no API keys, no subscription fees. You can trace any number back to the formula that produced it.
+DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Note**, normalizes it into a unified schema, and runs it through **11 deterministic analysis engines**. Every score, tag, and recommendation is computed with transparent algorithms — no LLM calls, no API keys, no subscription fees. You can trace any number back to the formula that produced it.
 
 ---
 
@@ -46,7 +46,7 @@ DashPersona was built across **20+ sessions** spanning multiple weeks using [Eve
 
 **Precise memory recall across agents** — Four isolated memory spaces (Claude Code, OpenClaw, Codex CLI, Gemini CLI) operated on the same codebase without cross-contamination. When Codex reviewed a PR, it accessed only its scoped memory. When Claude Code resumed a sprint, it recalled the exact plan state, DOM selectors, and unfinished tasks from prior sessions.
 
-**Architecture coherence at scale** — The 9 deterministic engines, 4 data adapters, and Chrome extension were designed across separate sessions but maintain consistent interfaces. EverMem preserved the `CreatorDataSchema` contract, adapter registration pattern, and engagement scoring formula (comments ×5, shares ×3, saves ×2) across every session that touched these boundaries.
+**Architecture coherence at scale** — The 11 deterministic engines, 7 data adapters, and Chrome extension were designed across separate sessions but maintain consistent interfaces. EverMem preserved the `CreatorDataSchema` contract, adapter registration pattern, and engagement scoring formula (comments ×5, shares ×3, saves ×2) across every session that touched these boundaries.
 
 **Decision archaeology** — Every non-obvious choice is traceable: why BSL 1.1 over MIT, why inverted-index over embedding search for content classification, why IndexedDB over server-side storage, why CSS semantic prefix matching for Douyin DOM selectors. These decisions survive context windows and model switches because they live in structured memory, not chat history.
 
@@ -62,7 +62,7 @@ Session 18–20  Visual overhaul sprint → design system → hackathon polish
 Session 20+    History persistence → benchmarking → production hardening
 ```
 
-> **9 analysis engines. 5 data adapters. 15 E2E tests. 189 unit tests. 1 Chrome extension. Zero context lost between sessions.**
+> **11 analysis engines. 7 data adapters. 15 E2E tests. 189 unit tests. 1 Chrome extension. Zero context lost between sessions.**
 
 ---
 
@@ -107,7 +107,13 @@ Side-by-side metrics across all your platforms. Automatically surfaces insights 
 | **Persona Timeline** | Decision tree for tracking strategy experiments and pivots |
 | **File Import** | Drag-and-drop CSV, XLSX, and JSON files — auto-detects 4 Douyin export schemas and merges multi-file uploads |
 | **Report Export** | Export your dashboard as PNG screenshot or PDF print |
+| **CDP Data Collection** | Direct Chrome DevTools Protocol integration via web-access proxy. Supports Douyin (creator center), TikTok (Studio), and XHS (profile pages). Uses your existing Chrome login sessions |
+| **Trending Analysis** | Real-time search and hot topic collection from XHS and TikTok. Analyzes copy patterns, hashtag strategies, and engagement signals |
+| **Content Structure** | Video segment screenshots (5-10 frames) for visual content structure analysis |
+| **Next Content Engine** | 7 deterministic rules combining your persona data with trending analysis to generate specific content suggestions (topic, angle, hooks, hashtags, timing) |
+| **Enhanced Onboarding** | 4-step wizard with Chrome debugging setup, CDP proxy verification, platform login checks, and troubleshooting guidance |
 | **Data Passport** | Chrome extension that captures Douyin creator data in one click |
+| **Temp Data Management** | Automatic 15-day expiry for trending data and screenshots with 500MB storage cap |
 | **Cross-Platform** | Unified view across Douyin, TikTok, and Red Note |
 
 ---
@@ -130,15 +136,16 @@ Open [localhost:3000](http://localhost:3000) and click **Try Demo** to explore w
 ```
   Your Data                    Analysis Engines                  What You See
  ───────────                  ──────────────────                ──────────────
- Douyin profile ──┐
- TikTok export ───┤           ┌─ Persona Score                  Dashboard
- Red Note data ───┼── Schema ─┼─ Growth Tracker                 Persona Detail
- JSON / CSV ──────┤   Check   ├─ Niche Detection                Compare View + Radar
- XLSX (4 schemas) ┤           ├─ Niche Benchmark                Content Calendar
- Chrome extension ┘           ├─ Strategy Engine                Persona Timeline
-                              ├─ Content Planner                Pipeline View
-                              ├─ Cross-Platform Comparator      Export (PNG/PDF)
-                              └─ Idea Generator
+ CDP proxy (Douyin,           ┌─ Persona Score                  Dashboard
+   TikTok, XHS) ──┐          ├─ Growth Tracker                 Persona Detail
+ JSON / CSV ───────┤          ├─ Niche Detection                Compare View + Radar
+ XLSX (4 schemas) ─┼─ Schema ─┼─ Niche Benchmark                Content Calendar
+ Chrome extension ─┤  Check   ├─ Strategy Engine                Persona Timeline
+ Manual import ────┘          ├─ Content Planner                Pipeline View
+                              ├─ Cross-Platform Comparator      Export (PNG/PDF/CSV)
+                              ├─ Idea Generator
+                              ├─ Content Analyzer
+                              └─ Next Content Engine
 ```
 
 **All engines are deterministic.** Same input always produces the same output. No randomness, no model weights, no external API calls.
@@ -152,6 +159,20 @@ Open [localhost:3000](http://localhost:3000) and click **Try Demo** to explore w
 - **Growth analysis** — delta computation over IndexedDB-persisted historical snapshots
 - **Engine memoization** — FNV-1a content hashing with LRU eviction (maxSize=64) avoids redundant computation
 - **XLSX schema detection** — auto-classifies 4 Douyin export formats (作品列表, 投稿分析, 投稿汇总, 时间序列) and merges multi-file uploads into a single profile
+- **Trending collection** — real-time search and hot topic ingestion from XHS and TikTok with copy pattern, hashtag, and engagement signal analysis
+- **Next content generation** — 7 deterministic rules that combine persona data with trending analysis to produce specific content creation suggestions
+- **Temp data management** — automatic 15-day expiry for trending data and screenshots with a 500MB storage cap
+
+### Architecture
+
+```
+src/lib/collectors/     — CDP client, trending collector, video analyzer, temp storage
+src/lib/engine/         — 11 analysis engines (9 original + content-analyzer + next-content)
+src/lib/adapters/       — 7 data adapters (CDP, Demo, FileImport, Manual, Extension, HTMLParse, Browser)
+src/app/api/cdp-collect — CDP data collection endpoint
+src/app/api/trending    — Trending data collection + storage management
+src/app/onboarding/     — 4-step setup wizard with CDP proxy verification
+```
 
 ---
 
@@ -159,11 +180,15 @@ Open [localhost:3000](http://localhost:3000) and click **Try Demo** to explore w
 
 | Adapter | Platform | How it works | Status |
 |---------|----------|-------------|--------|
+| `CDPAdapter` | Douyin, TikTok, XHS | Collects data via Chrome DevTools Protocol through web-access proxy using existing login sessions | Stable |
 | `DemoAdapter` | Any | Built-in sample profiles for instant exploration | Stable |
-| `HTMLParseAdapter` | TikTok, Douyin, Red Note | Parses exported HTML from platform pages | Stable |
 | `FileImportAdapter` | Any | Drag-and-drop CSV, XLSX, JSON files with auto-schema detection | Stable |
 | `ManualImportAdapter` | Any | Upload your own JSON data with schema validation | Stable |
 | `ExtensionAdapter` | Douyin | Receives live data from Data Passport extension | Beta |
+| `HTMLParseAdapter` | TikTok, Douyin, Red Note | Parses exported HTML from platform pages | Fallback |
+| `BrowserAdapter` | Douyin, TikTok, XHS | Collects data via headless browser automation | Fallback |
+
+> **Fallback adapters:** `HTMLParseAdapter` and `BrowserAdapter` are retained as fallback options. Their functionality is unstable and they may be removed in a future version. Use `CDPAdapter` for reliable platform data collection.
 
 Want to add a new platform? Implement the `DataAdapter` interface and register it:
 
@@ -201,8 +226,14 @@ registerAdapter(new YourAdapter());
 - [x] Engine memoization with FNV-1a content hashing and LRU eviction
 - [x] E2E test coverage with Playwright (15 test cases across 5 core flows)
 - [x] Accessibility: focus-visible, skip-to-content, semantic landmarks, keyboard navigation
-- [ ] Red Note and TikTok live adapters
-- [ ] Continuous background data collection via extension
+- [x] CDP-based data collection for Douyin, TikTok, and XHS
+- [x] Trending analysis with real-time topic collection
+- [x] Next Content Engine with 7 deterministic suggestion rules
+- [x] Content structure analysis with video frame extraction
+- [x] Enhanced onboarding wizard with CDP proxy setup and platform login verification
+- [x] Temp data management with automatic 15-day expiry and 500MB cap
+- [x] CSV export for dashboard data
+- [x] Analysis delta tracking (change detection between analysis runs)
 - [ ] i18n support (Chinese)
 
 ---
