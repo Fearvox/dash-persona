@@ -15,6 +15,7 @@ import type {
   PersonaTree,
 } from '../schema/persona-tree';
 import { classifyContent } from './persona';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // TreeView (hierarchical representation)
@@ -242,26 +243,24 @@ export function generateDemoTree(profile: CreatorProfile): PersonaTree {
   const rootNode: PersonaTreeNode = {
     id: 'PE-001',
     parentId: null,
-    title: 'Baseline Strategy',
+    title: t('engine.tree.baselineStrategy'),
     series: 'content-mix',
     status: 'adopted',
     outcome: 'mainline',
-    hypothesis:
-      'Current content mix is the optimal starting point for audience growth.',
+    hypothesis: t('engine.tree.baselineHypothesis'),
     startedAt: earliestDate,
     decidedAt: interpolateDate(0.3),
     variants: [
       {
         id: 'PE-001-A',
-        label: 'Variant A',
-        description: 'Original content mix across all categories',
+        label: t('engine.tree.variantA'),
+        description: t('engine.tree.originalMixDesc'),
         postIds: posts.slice(0, Math.min(10, posts.length)).map((p) => p.postId),
       },
     ],
     decision: {
-      verdict: 'Adopted as baseline',
-      reason:
-        'Establishes the control group for all subsequent content experiments.',
+      verdict: t('engine.tree.adoptedBaseline'),
+      reason: t('engine.tree.adoptedBaselineReason'),
     },
   };
   nodes.push(rootNode);
@@ -282,29 +281,30 @@ export function generateDemoTree(profile: CreatorProfile): PersonaTree {
     const isAdopted = i === 0; // Best category gets adopted
     const isRunning = i === 1 && branchCount >= 2;
 
+    const catLabel = t('engine.category.' + category);
     const branchNode: PersonaTreeNode = {
       id: nodeId,
       parentId: 'PE-001',
-      title: `${capitalise(category)} Focus Experiment`,
+      title: t('engine.tree.focusExperiment', { category: catLabel }),
       series: seriesNames[i] ?? 'content-mix',
       status: isAdopted ? 'adopted' : isRunning ? 'running' : 'planned',
       outcome: 'branch',
-      hypothesis: `Doubling down on ${category} content will improve engagement and retention.`,
+      hypothesis: t('engine.tree.focusHypothesis', { category: catLabel }),
       startedAt: interpolateDate(0.2 + i * 0.2),
       decidedAt: isAdopted ? interpolateDate(0.7 + i * 0.1) : null,
       variants: [
         {
           id: `${nodeId}-A`,
-          label: 'Variant A',
-          description: `High-frequency ${category} posts`,
+          label: t('engine.tree.variantA'),
+          description: t('engine.tree.highFrequencyDesc', { category: catLabel }),
           postIds: variantAPosts.map((p) => p.postId),
         },
         ...(variantBPosts.length > 0
           ? [
               {
                 id: `${nodeId}-B`,
-                label: 'Variant B',
-                description: `${capitalise(category)} mixed with other topics`,
+                label: t('engine.tree.variantB'),
+                description: t('engine.tree.mixedDesc', { category: catLabel }),
                 postIds: variantBPosts.map((p) => p.postId),
               },
             ]
@@ -313,8 +313,8 @@ export function generateDemoTree(profile: CreatorProfile): PersonaTree {
       ...(isAdopted
         ? {
             decision: {
-              verdict: 'Adopted',
-              reason: `${capitalise(category)} content shows strongest audience resonance.`,
+              verdict: t('engine.tree.adopted'),
+              reason: t('engine.tree.adoptedReason', { category: catLabel }),
               mergedBack: 'PE-001',
             },
           }
@@ -329,28 +329,29 @@ export function generateDemoTree(profile: CreatorProfile): PersonaTree {
       sortedCategories[sortedCategories.length - 1];
     const boundaryId = `PE-${String(branchCount + 2).padStart(3, '0')}`;
 
+    const weakCatLabel = t('engine.category.' + weakCategory);
     const boundaryNode: PersonaTreeNode = {
       id: boundaryId,
       parentId: 'PE-001',
-      title: `${capitalise(weakCategory)} Pivot Test`,
+      title: t('engine.tree.pivotTest', { category: weakCatLabel }),
       series: 'content-mix',
       status: 'discarded',
       outcome: 'boundary',
-      hypothesis: `Pivoting to ${weakCategory} content could open a new audience segment.`,
+      hypothesis: t('engine.tree.pivotHypothesis', { category: weakCatLabel }),
       startedAt: interpolateDate(0.4),
       decidedAt: interpolateDate(0.8),
       variants: [
         {
           id: `${boundaryId}-A`,
-          label: 'Variant A',
-          description: `Pure ${weakCategory} content approach`,
+          label: t('engine.tree.variantA'),
+          description: t('engine.tree.pureDesc', { category: weakCatLabel }),
           postIds: weakPosts.map((p) => p.postId),
         },
       ],
       decision: {
-        verdict: 'Discarded',
-        reason: `${capitalise(weakCategory)} content underperforms relative to core content mix. Metrics below threshold.`,
-        rejected: 'Low engagement and retention scores.',
+        verdict: t('engine.tree.discarded'),
+        reason: t('engine.tree.discardedReason', { category: weakCatLabel }),
+        rejected: t('engine.tree.discardedDetail'),
       },
     };
     nodes.push(boundaryNode);

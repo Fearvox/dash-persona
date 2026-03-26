@@ -19,6 +19,7 @@ import type {
   TrendingTopic,
 } from '../collectors/trending-collector';
 import type { ContentAnalysisResult } from './content-analyzer';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -134,10 +135,9 @@ const PLATFORM_PEAK_HOURS: Record<string, number[]> = {
   xhs: [12, 19, 22],
 };
 
-const DAY_NAMES = [
-  'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-  'Thursday', 'Friday', 'Saturday',
-];
+function dayName(index: number): string {
+  return t(`engine.nextContent.dayNames.${index}`);
+}
 
 /** Minimum keyword overlap for Rule 1 to fire. */
 const MIN_KEYWORD_OVERLAP = 1;
@@ -240,8 +240,11 @@ function buildTiming(
   if (bestHour !== null && bestDayOfWeek !== null) {
     return {
       bestHour,
-      bestDay: DAY_NAMES[bestDayOfWeek],
-      reasoning: `Based on your historical posting data: your best engagement window is ${DAY_NAMES[bestDayOfWeek]}s at ${bestHour}:00 UTC.`,
+      bestDay: dayName(bestDayOfWeek),
+      reasoning: t('engine.nextContent.timingPersonal', {
+        day: dayName(bestDayOfWeek),
+        hour: String(bestHour),
+      }),
     };
   }
 
@@ -250,8 +253,11 @@ function buildTiming(
   const hour = peakHours[1]; // Pick the mid-peak
   return {
     bestHour: hour,
-    bestDay: 'Tuesday', // Common mid-week engagement peak
-    reasoning: `Based on ${platform} platform-wide peak hours (${peakHours.join(':00, ')}:00 UTC). No personal rhythm data available yet.`,
+    bestDay: dayName(2), // Tuesday — common mid-week engagement peak
+    reasoning: t('engine.nextContent.timingPlatform', {
+      platform: t('platform.' + platform),
+      hours: peakHours.join(':00, ') + ':00',
+    }),
   };
 }
 

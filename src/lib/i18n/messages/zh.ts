@@ -463,7 +463,7 @@ const zh: Record<string, string> = {
   'engine.strategy.contentMixTitle': '向{category}内容倾斜',
   'engine.strategy.contentMixDesc': '你的{category}作品互动率是发布最多的类别（{mostPosted}）的 {ratio} 倍。考虑增加{category}内容占比，减少效果较差的类别。',
   'engine.strategy.rhythmTitle': '建立稳定的发布节奏',
-  'engine.strategy.rhythmDesc': '你的发布一致性评分为 {score}/100，说明发布间隔不规律。大多数平台的算法偏好可预测的创作者。历史数据表明{bestDay} {bestHour} UTC 左右可能是你的最佳发布时段。试着固定发布节奏（例如每 {interval}）。',
+  'engine.strategy.rhythmDesc': '你的发布一致性评分为 {score}/100，说明发布间隔不规律。大多数平台的算法偏好可预测的创作者。历史数据表明{bestDay} {bestHour} UTC 左右可能是你的最佳发布时段。试着固定发布节奏（例如每 {interval} 天）。',
   'engine.strategy.crossPlatformTitle': '将 {platform} 策略应用到其他平台',
   'engine.strategy.crossPlatformDesc': '{insight}。分析你的内容在 {platform} 上引起共鸣的原因 \u2014 格式、时长、钩子、时间 \u2014 然后在较弱的平台上测试这些模式。',
   'engine.strategy.engagementDeclineTitle': '扭转互动下降趋势',
@@ -593,6 +593,8 @@ const zh: Record<string, string> = {
   'engine.nextContent.dayNames.4': '周四',
   'engine.nextContent.dayNames.5': '周五',
   'engine.nextContent.dayNames.6': '周六',
+  'engine.nextContent.timingPersonal': '基于你的历史发布数据：你的最佳互动窗口是{day} {hour}:00 UTC。',
+  'engine.nextContent.timingPlatform': '基于{platform}平台整体高峰时段（{hours} UTC）。暂无个人节奏数据。',
 
   // ===========================================================================
   // 雷达图维度标签

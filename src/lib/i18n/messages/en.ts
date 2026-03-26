@@ -463,7 +463,7 @@ const en: Record<string, string> = {
   'engine.strategy.contentMixTitle': 'Shift towards {category} content',
   'engine.strategy.contentMixDesc': 'Your {category} posts achieve {ratio}x higher engagement than your most-posted category ({mostPosted}). Consider increasing {category} content from its current share and reducing less effective categories.',
   'engine.strategy.rhythmTitle': 'Establish a consistent posting schedule',
-  'engine.strategy.rhythmDesc': 'Your posting consistency score is {score}/100, which indicates irregular publishing intervals. Algorithms on most platforms favour predictable creators. Your historical data suggests {bestDay} around {bestHour} UTC may be your best time slot. Try committing to a fixed schedule (e.g., every {interval}).',
+  'engine.strategy.rhythmDesc': 'Your posting consistency score is {score}/100, which indicates irregular publishing intervals. Algorithms on most platforms favour predictable creators. Your historical data suggests {bestDay} around {bestHour} UTC may be your best time slot. Try committing to a fixed schedule (e.g., every {interval} days).',
   'engine.strategy.crossPlatformTitle': 'Adapt {platform} strategy to other platforms',
   'engine.strategy.crossPlatformDesc': '{insight}. Analyse what makes your content resonate on {platform} \u2014 format, length, hooks, timing \u2014 and test applying those patterns to your weaker platforms.',
   'engine.strategy.engagementDeclineTitle': 'Reverse the engagement decline',
@@ -593,6 +593,8 @@ const en: Record<string, string> = {
   'engine.nextContent.dayNames.4': 'Thursday',
   'engine.nextContent.dayNames.5': 'Friday',
   'engine.nextContent.dayNames.6': 'Saturday',
+  'engine.nextContent.timingPersonal': 'Based on your historical posting data: your best engagement window is {day}s at {hour}:00 UTC.',
+  'engine.nextContent.timingPlatform': 'Based on {platform} platform-wide peak hours ({hours} UTC). No personal rhythm data available yet.',
 
   // ===========================================================================
   // Radar chart dimension labels

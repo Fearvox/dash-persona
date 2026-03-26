@@ -11,6 +11,7 @@
  */
 
 import type { TrendingPost } from '../collectors/trending-collector';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Public type definitions
@@ -237,12 +238,12 @@ function analyzeCopy(posts: TrendingPost[]): CopyAnalysis {
   }
 
   const hookLabels: Record<HookName, string> = {
-    question: 'Question hook',
-    number: 'Number hook',
-    contrast: 'Contrast hook',
-    emotional: 'Emotional hook',
-    challenge: 'Challenge hook',
-    story: 'Story hook',
+    question: t('engine.analyzer.questionHook'),
+    number: t('engine.analyzer.numberHook'),
+    contrast: t('engine.analyzer.contrastHook'),
+    emotional: t('engine.analyzer.emotionalHook'),
+    challenge: t('engine.analyzer.challengeHook'),
+    story: t('engine.analyzer.storyHook'),
   };
 
   const hookPatterns = (Object.entries(hookLabels) as [HookName, string][])
@@ -630,10 +631,10 @@ function generateKeyInsights(
   // Insight 2: hashtag strategy + average count
   if (copy.hashtagStrategy.avgCount > 0) {
     const strategyLabel: Record<CopyAnalysis['hashtagStrategy']['mixStrategy'], string> = {
-      'niche-heavy': 'skewing toward niche-specific tags',
-      'broad-heavy': 'leaning on broad discovery tags',
-      'balanced': 'mixing niche and broad tags',
-      'trending-heavy': 'clustering around a few dominant trending tags',
+      'niche-heavy': t('engine.analyzer.nicheHeavy'),
+      'broad-heavy': t('engine.analyzer.broadHeavy'),
+      'balanced': t('engine.analyzer.balanced'),
+      'trending-heavy': t('engine.analyzer.trendingHeavy'),
     };
     insights.push(
       `Average ${copy.hashtagStrategy.avgCount} hashtags per post, ${strategyLabel[copy.hashtagStrategy.mixStrategy]}`,

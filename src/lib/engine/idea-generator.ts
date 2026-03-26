@@ -15,6 +15,7 @@ import {
   computeRhythm,
   computePersonaConsistency,
 } from './persona';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -133,12 +134,23 @@ export function generateExperimentIdeas(
       const engMult = globalEngagement.overallRate > 0
         ? (cat.meanEngagementRate / globalEngagement.overallRate).toFixed(1)
         : '2';
+      const categoryLabel = t('engine.category.' + cat.category);
       ideas.push({
         id: ideaId,
-        title: `Increase ${capitalise(cat.category)} Content`,
-        hypothesis: `If you increase ${cat.category} content from ${currentPct}% to ${suggestedPct}%, engagement rate should improve by ~${engMult}x based on current per-category performance.`,
+        title: t('engine.ideas.contentGapTitle', { category: categoryLabel }),
+        hypothesis: t('engine.ideas.contentGapHypothesis', {
+          category: categoryLabel,
+          currentPct: String(currentPct),
+          suggestedPct: String(suggestedPct),
+          engMult,
+        }),
         series: cat.category,
-        rationale: `${capitalise(cat.category)} has ${(cat.meanEngagementRate * 100).toFixed(1)}% engagement rate (${engMult}x above average) but only makes up ${currentPct}% of your posts.`,
+        rationale: t('engine.ideas.contentGapRationale', {
+          category: categoryLabel,
+          rate: (cat.meanEngagementRate * 100).toFixed(1),
+          engMult,
+          currentPct: String(currentPct),
+        }),
         potentialImpact: cat.meanEngagementRate > globalEngagement.overallRate * 2 ? 'high' : 'medium',
         basedOn: [
           `${cat.category} engagement rate: ${(cat.meanEngagementRate * 100).toFixed(1)}%`,
@@ -187,10 +199,21 @@ export function generateExperimentIdeas(
         bestRate / worstRate >= 2
       ) {
         const ratio = (bestRate / worstRate).toFixed(1);
+        const catLabel = t('engine.category.' + cat.category);
+        const bestPlatLabel = t('platform.' + bestPlatform);
+        const worstPlatLabel = t('platform.' + worstPlatform);
         ideas.push({
           id: `idea-cross-platform-${cat.category}`,
-          title: `Test ${capitalise(cat.category)} on ${capitalise(worstPlatform)}`,
-          hypothesis: `${capitalise(cat.category)} content gets ${ratio}x higher engagement on ${bestPlatform} vs ${worstPlatform}. Adapting the format for ${worstPlatform}'s audience could close the gap.`,
+          title: t('engine.ideas.crossPlatformTitle', {
+            category: catLabel,
+            platform: worstPlatLabel,
+          }),
+          hypothesis: t('engine.ideas.crossPlatformHypothesis', {
+            category: catLabel,
+            ratio,
+            bestPlatform: bestPlatLabel,
+            worstPlatform: worstPlatLabel,
+          }),
           series: 'cross-platform',
           rationale: `${capitalise(bestPlatform)} achieves ${(bestRate * 100).toFixed(1)}% engagement for ${cat.category}, while ${worstPlatform} only gets ${(worstRate * 100).toFixed(1)}%.`,
           potentialImpact: bestRate / worstRate >= 3 ? 'high' : 'medium',
@@ -215,8 +238,7 @@ export function generateExperimentIdeas(
     const [platName, platPosts] = primaryPlatform;
     const rhythm = platformRhythm[platName];
     if (rhythm && rhythm.bestHour !== null && rhythm.bestDayOfWeek !== null) {
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const bestDay = dayNames[rhythm.bestDayOfWeek];
+      const bestDay = t(`engine.nextContent.dayNames.${rhythm.bestDayOfWeek}`);
 
       // Check if the best time slot is underutilised
       const datedPosts = platPosts.filter((p) => p.publishedAt);
@@ -237,8 +259,12 @@ export function generateExperimentIdeas(
         if (!treeCovers(existingTree, 'scheduling', 'rhythm')) {
           ideas.push({
             id: 'idea-rhythm-anomaly',
-            title: 'Optimize Publishing Schedule',
-            hypothesis: `Your best engagement window is ${bestDay}s around ${rhythm.bestHour}:00 UTC, but only ${Math.min(bestHourPct, bestDayPct)}% of posts target this slot. Scheduling more posts here could boost visibility.`,
+            title: t('engine.ideas.rhythmTitle'),
+            hypothesis: t('engine.ideas.rhythmHypothesis', {
+              bestDay,
+              bestHour: String(rhythm.bestHour),
+              usagePct: String(Math.min(bestHourPct, bestDayPct)),
+            }),
             series: 'scheduling',
             rationale: `Peak engagement at hour ${rhythm.bestHour} (${bestHourPct}% of posts) and ${bestDay} (${bestDayPct}% of posts) suggests an underutilised scheduling opportunity.`,
             potentialImpact: 'medium',
@@ -260,10 +286,15 @@ export function generateExperimentIdeas(
   if (globalConsistency.score < 60 && globalConsistency.score > 0 && allPosts.length >= 10) {
     if (!treeCovers(existingTree, 'content-identity', 'refocus')) {
       const dominant = globalConsistency.dominantCategory ?? 'unknown';
+      const dominantLabel = t('engine.category.' + dominant);
       ideas.push({
         id: 'idea-persona-drift',
-        title: 'Refocus Content Identity',
-        hypothesis: `Persona consistency is at ${globalConsistency.score}/100. Refocusing on ${dominant} (currently ${globalConsistency.dominantCategoryPct}% of posts) and reducing topic scatter could strengthen audience retention.`,
+        title: t('engine.ideas.personaDriftTitle'),
+        hypothesis: t('engine.ideas.personaDriftHypothesis', {
+          score: String(globalConsistency.score),
+          category: dominantLabel,
+          pct: String(globalConsistency.dominantCategoryPct),
+        }),
         series: 'content-identity',
         rationale: `Consistency score of ${globalConsistency.score} indicates frequent topic switching, which can dilute audience expectations and reduce repeat viewership.`,
         potentialImpact: globalConsistency.score < 40 ? 'high' : 'medium',
@@ -290,10 +321,14 @@ export function generateExperimentIdeas(
       const viralCategory = viral.contentType!;
       if (!treeCovers(existingTree, 'viral-replication', viralCategory)) {
         const viewsMultiple = (viral.views / avgViews).toFixed(1);
+        const viralCatLabel = t('engine.category.' + viralCategory);
         ideas.push({
           id: `idea-viral-pattern-${viralCategory}`,
-          title: `Replicate ${capitalise(viralCategory)} Viral Hit`,
-          hypothesis: `One ${viralCategory} post achieved ${viewsMultiple}x average views. Replicating its characteristics (format, length, hook style) in a series of 3-5 posts could capture similar audience spikes.`,
+          title: t('engine.ideas.viralTitle', { category: viralCatLabel }),
+          hypothesis: t('engine.ideas.viralHypothesis', {
+            category: viralCatLabel,
+            multiple: viewsMultiple,
+          }),
           series: 'viral-replication',
           rationale: `Post "${viral.desc.slice(0, 40)}..." got ${viral.views.toLocaleString()} views vs ${Math.round(avgViews).toLocaleString()} average -- a ${viewsMultiple}x outlier.`,
           potentialImpact: viral.views >= avgViews * 10 ? 'high' : 'medium',

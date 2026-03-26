@@ -17,6 +17,7 @@ import {
   type EngagementProfile,
   type ContentDistribution,
 } from './persona';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -163,7 +164,11 @@ export function comparePlatforms(
     ).toFixed(1);
     insights.push({
       type: 'engagement_gap',
-      text: `Your content gets ${ratio}x more engagement on ${topEng.platform} than ${bottomEng.platform}`,
+      text: t('engine.compare.engagementGap', {
+        ratio,
+        topPlatform: t('platform.' + topEng.platform),
+        bottomPlatform: t('platform.' + bottomEng.platform),
+      }),
       platforms: [topEng.platform, bottomEng.platform],
       magnitude:
         topEng.overallEngagementRate / bottomEng.overallEngagementRate,
@@ -177,7 +182,11 @@ export function comparePlatforms(
     const ratio = (topAud.followers / bottomAud.followers).toFixed(1);
     insights.push({
       type: 'audience_size',
-      text: `Your audience on ${topAud.platform} is ${ratio}x larger than on ${bottomAud.platform}`,
+      text: t('engine.compare.audienceSize', {
+        ratio,
+        topPlatform: t('platform.' + topAud.platform),
+        bottomPlatform: t('platform.' + bottomAud.platform),
+      }),
       platforms: [topAud.platform, bottomAud.platform],
       magnitude: topAud.followers / bottomAud.followers,
     });
@@ -208,7 +217,12 @@ export function comparePlatforms(
         const ratio = Math.round(best.rate / worst.rate);
         insights.push({
           type: 'best_content',
-          text: `Your ${cat} content gets ${ratio}x more engagement on ${best.platform} than ${worst.platform}`,
+          text: t('engine.compare.bestContent', {
+            category: t('engine.category.' + cat),
+            ratio: String(ratio),
+            bestPlatform: t('platform.' + best.platform),
+            worstPlatform: t('platform.' + worst.platform),
+          }),
           platforms: [best.platform, worst.platform],
           magnitude: best.rate / worst.rate,
         });
@@ -233,14 +247,24 @@ export function comparePlatforms(
         if (aPct >= 25 && bPct < 5) {
           insights.push({
             type: 'content_distribution',
-            text: `${cat} content is ${Math.round(aPct)}% of your ${a.platform} but nearly absent on ${b.platform}`,
+            text: t('engine.compare.contentDistribution', {
+              category: t('engine.category.' + cat),
+              pct: String(Math.round(aPct)),
+              platformA: t('platform.' + a.platform),
+              platformB: t('platform.' + b.platform),
+            }),
             platforms: [a.platform, b.platform],
             magnitude: aPct - bPct,
           });
         } else if (bPct >= 25 && aPct < 5) {
           insights.push({
             type: 'content_distribution',
-            text: `${cat} content is ${Math.round(bPct)}% of your ${b.platform} but nearly absent on ${a.platform}`,
+            text: t('engine.compare.contentDistribution', {
+              category: t('engine.category.' + cat),
+              pct: String(Math.round(bPct)),
+              platformA: t('platform.' + b.platform),
+              platformB: t('platform.' + a.platform),
+            }),
             platforms: [b.platform, a.platform],
             magnitude: bPct - aPct,
           });

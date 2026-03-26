@@ -12,6 +12,7 @@ import type { Post } from '../schema/creator-data';
 import type { NodeScoring } from '../schema/persona-tree';
 import type { PersonaScore } from './persona';
 import type { GrowthDelta } from './growth';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -166,21 +167,21 @@ function explainEngagement(score: PersonaScore, posts: Post[]): ScoreExplanation
 
   const factors: ScoreFactor[] = [
     {
-      name: 'Overall Rate',
+      name: t('engine.explain.overallRate'),
       value: overallPct,
       weight: 0.4,
       impact: scoreImpact(engScore),
       topPostIds: topPostsByEngagement(posts, 3),
     },
     {
-      name: 'Median Rate',
+      name: t('engine.explain.medianRate'),
       value: medianPct,
       weight: 0.3,
       impact: medianPct >= 3 ? 'positive' : medianPct >= 1 ? 'neutral' : 'negative',
       topPostIds: [],
     },
     {
-      name: 'Trend',
+      name: t('engine.explain.trend'),
       value: trendPct,
       weight: 0.3,
       impact: trendPct > 0 ? 'positive' : trendPct < -0.5 ? 'negative' : 'neutral',
@@ -211,21 +212,21 @@ function explainRhythm(score: PersonaScore, posts: Post[]): ScoreExplanation {
 
   const factors: ScoreFactor[] = [
     {
-      name: 'Posts Per Week',
+      name: t('engine.explain.postsPerWeek'),
       value: ppw,
       weight: 0.4,
       impact: ppw >= 3 ? 'positive' : ppw >= 1 ? 'neutral' : 'negative',
       topPostIds: recentPosts,
     },
     {
-      name: 'Consistency',
+      name: t('engine.explain.consistency'),
       value: rhythmScore,
       weight: 0.4,
       impact: scoreImpact(rhythmScore),
       topPostIds: [],
     },
     {
-      name: 'Mean Interval',
+      name: t('engine.explain.meanInterval'),
       value: interval,
       weight: 0.2,
       impact: interval <= 2 ? 'positive' : interval <= 5 ? 'neutral' : 'negative',
@@ -254,14 +255,16 @@ function explainConsistency(score: PersonaScore, posts: Post[]): ScoreExplanatio
 
   const factors: ScoreFactor[] = [
     {
-      name: 'Cosine Similarity',
+      name: t('engine.explain.cosineSimilarity'),
       value: cScore,
       weight: 0.6,
       impact: scoreImpact(cScore),
       topPostIds: [],
     },
     {
-      name: `Dominant: ${capitalise(dominant)}`,
+      name: t('engine.explain.dominant', {
+        category: dominant !== 'N/A' ? t('engine.category.' + dominant) : t('ui.common.na'),
+      }),
       value: dominantPct,
       weight: 0.4,
       impact: dominantPct >= 40 ? 'positive' : dominantPct >= 20 ? 'neutral' : 'negative',
@@ -293,21 +296,21 @@ function explainGrowth(score: PersonaScore, posts: Post[]): ScoreExplanation {
 
   const factors: ScoreFactor[] = [
     {
-      name: 'Follower Growth Rate',
+      name: t('engine.explain.followerGrowthRate'),
       value: followerGrowth,
       weight: 0.5,
       impact: followerGrowth > 5 ? 'positive' : followerGrowth > 0 ? 'neutral' : 'negative',
       topPostIds: topPostsByViews(posts, 3),
     },
     {
-      name: 'Momentum',
+      name: t('engine.explain.momentum'),
       value: growthScore,
       weight: 0.3,
       impact: scoreImpact(growthScore),
       topPostIds: [],
     },
     {
-      name: 'Data Points',
+      name: t('engine.explain.dataPoints'),
       value: dataPoints,
       weight: 0.2,
       impact: dataPoints >= 3 ? 'positive' : dataPoints >= 2 ? 'neutral' : 'negative',
@@ -334,21 +337,23 @@ function explainViralPotential(score: PersonaScore, posts: Post[]): ScoreExplana
 
   const factors: ScoreFactor[] = [
     {
-      name: `Best Category: ${bestCat ? capitalise(bestCat.category) : 'N/A'}`,
+      name: t('engine.explain.bestCategory', {
+        category: bestCat ? t('engine.category.' + bestCat.category) : t('ui.common.na'),
+      }),
       value: r1(bestRate * 100),
       weight: 0.6,
       impact: bestRate >= 0.1 ? 'positive' : bestRate >= 0.05 ? 'neutral' : 'negative',
       topPostIds: bestCatPosts,
     },
     {
-      name: 'Post Count',
+      name: t('engine.explain.postCount'),
       value: bestCat?.postCount ?? 0,
       weight: 0.2,
       impact: (bestCat?.postCount ?? 0) >= 5 ? 'positive' : 'neutral',
       topPostIds: [],
     },
     {
-      name: 'Overall Engagement',
+      name: t('engine.explain.overallEngagement'),
       value: r1(score.engagement.overallRate * 100),
       weight: 0.2,
       impact: score.engagement.overallRate >= 0.08 ? 'positive' : 'neutral',
@@ -389,21 +394,21 @@ export function explainGrowthDelta(delta: GrowthDelta): ScoreExplanation {
 
   const factors: ScoreFactor[] = [
     {
-      name: 'Followers',
+      name: t('engine.explain.followers'),
       value: followerDelta,
       weight: 0.5,
       impact: followerDelta > 0 ? 'positive' : followerDelta < 0 ? 'negative' : 'neutral',
       topPostIds: [],
     },
     {
-      name: 'Likes',
+      name: t('engine.explain.likes'),
       value: likesDelta,
       weight: 0.3,
       impact: likesDelta > 0 ? 'positive' : likesDelta < 0 ? 'negative' : 'neutral',
       topPostIds: [],
     },
     {
-      name: 'Views',
+      name: t('engine.explain.views'),
       value: viewsDelta,
       weight: 0.2,
       impact: viewsDelta > 0 ? 'positive' : viewsDelta < 0 ? 'negative' : 'neutral',
@@ -437,21 +442,21 @@ export function explainNodeScoring(
 
   const factors: ScoreFactor[] = [
     {
-      name: 'Engagement',
+      name: t('engine.explain.engagement'),
       value: engagementScore,
       weight: 0.4,
       impact: scoreImpact(engagementScore),
       topPostIds: topPostsByEngagement(posts, 3),
     },
     {
-      name: 'Retention',
+      name: t('engine.explain.retention'),
       value: retentionScore,
       weight: 0.35,
       impact: scoreImpact(retentionScore),
       topPostIds: topPostsBySaves(posts, 3),
     },
     {
-      name: 'Growth',
+      name: t('engine.explain.growth'),
       value: growthScore,
       weight: 0.25,
       impact: scoreImpact(growthScore),

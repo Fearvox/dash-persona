@@ -17,6 +17,7 @@
 
 import type { PersonaScore } from './persona';
 import type { CrossPlatformComparison } from './comparator';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,10 +95,14 @@ function ruleContentMixMismatch(score: PersonaScore): StrategySuggestion | null 
       : 'significantly';
 
   return {
-    title: `Shift towards ${engagement.bestCategory} content`,
-    description:
-      `Your ${engagement.bestCategory} posts achieve ${ratio}x higher engagement than your most-posted category (${mostPostedCategory}). ` +
-      `Consider increasing ${engagement.bestCategory} content from its current share and reducing less effective categories.`,
+    title: t('engine.strategy.contentMixTitle', {
+      category: t('engine.category.' + engagement.bestCategory),
+    }),
+    description: t('engine.strategy.contentMixDesc', {
+      category: t('engine.category.' + engagement.bestCategory),
+      ratio,
+      mostPosted: t('engine.category.' + mostPostedCategory),
+    }),
     priority: 'high',
     area: 'content_mix',
     ruleId: 'content-mix-mismatch',
@@ -116,18 +121,19 @@ function ruleInconsistentRhythm(score: PersonaScore): StrategySuggestion | null 
   if (rhythm.consistencyScore >= 50) return null;
 
   const bestHourLabel =
-    rhythm.bestHour !== null ? `${String(rhythm.bestHour).padStart(2, '0')}:00` : 'N/A';
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    rhythm.bestHour !== null ? `${String(rhythm.bestHour).padStart(2, '0')}:00` : t('ui.common.na');
   const bestDay =
-    rhythm.bestDayOfWeek !== null ? dayNames[rhythm.bestDayOfWeek] : 'N/A';
+    rhythm.bestDayOfWeek !== null ? t(`engine.nextContent.dayNames.${rhythm.bestDayOfWeek}`) : t('ui.common.na');
+  const interval = rhythm.postsPerWeek >= 3 ? '2' : '3';
 
   return {
-    title: 'Establish a consistent posting schedule',
-    description:
-      `Your posting consistency score is ${rhythm.consistencyScore}/100, which indicates irregular publishing intervals. ` +
-      `Algorithms on most platforms favour predictable creators. ` +
-      `Your historical data suggests ${bestDay} around ${bestHourLabel} UTC may be your best time slot. ` +
-      `Try committing to a fixed schedule (e.g., every ${rhythm.postsPerWeek >= 3 ? '2 days' : '3 days'}).`,
+    title: t('engine.strategy.rhythmTitle'),
+    description: t('engine.strategy.rhythmDesc', {
+      score: String(rhythm.consistencyScore),
+      bestDay,
+      bestHour: bestHourLabel,
+      interval,
+    }),
     priority: rhythm.consistencyScore < 30 ? 'high' : 'medium',
     area: 'rhythm',
     ruleId: 'inconsistent-rhythm',
@@ -151,11 +157,13 @@ function ruleCrossPlatformGap(
   if (!engGap) return null;
 
   return {
-    title: `Adapt ${comparison.bestEngagementPlatform} strategy to other platforms`,
-    description:
-      `${engGap.text}. ` +
-      `Analyse what makes your content resonate on ${comparison.bestEngagementPlatform} -- format, length, hooks, timing -- ` +
-      `and test applying those patterns to your weaker platforms.`,
+    title: t('engine.strategy.crossPlatformTitle', {
+      platform: t('platform.' + comparison.bestEngagementPlatform),
+    }),
+    description: t('engine.strategy.crossPlatformDesc', {
+      insight: engGap.text,
+      platform: t('platform.' + comparison.bestEngagementPlatform),
+    }),
     priority: engGap.magnitude >= 3 ? 'high' : 'medium',
     area: 'cross_platform',
     ruleId: 'cross-platform-gap',
@@ -172,11 +180,10 @@ function ruleEngagementDecline(score: PersonaScore): StrategySuggestion | null {
   if (score.engagement.trend >= -0.005) return null;
 
   return {
-    title: 'Reverse the engagement decline',
-    description:
-      `Your engagement rate is trending downward (${(score.engagement.trend * 100).toFixed(2)}pp shift from older to newer posts). ` +
-      `This may indicate audience fatigue with the current format. ` +
-      `Consider experimenting with new content formats, stronger opening hooks, or direct calls-to-action in your posts.`,
+    title: t('engine.strategy.engagementDeclineTitle'),
+    description: t('engine.strategy.engagementDeclineDesc', {
+      trend: (score.engagement.trend * 100).toFixed(2),
+    }),
     priority: score.engagement.trend < -0.02 ? 'high' : 'medium',
     area: 'engagement',
     ruleId: 'engagement-decline',
@@ -192,11 +199,10 @@ function ruleGrowthPlateau(score: PersonaScore): StrategySuggestion | null {
   if (score.growthHealth.momentum !== 'decelerating') return null;
 
   return {
-    title: 'Break through the growth plateau',
-    description:
-      `Your follower growth is decelerating (${score.growthHealth.followerGrowthRate}% over the tracked window). ` +
-      `Consider collaborations with creators in adjacent niches, leveraging trending formats, ` +
-      `or running a content series that encourages saves and shares to boost algorithmic distribution.`,
+    title: t('engine.strategy.growthPlateauTitle'),
+    description: t('engine.strategy.growthPlateauDesc', {
+      rate: String(score.growthHealth.followerGrowthRate),
+    }),
     priority: score.growthHealth.followerGrowthRate < 2 ? 'high' : 'medium',
     area: 'growth',
     ruleId: 'growth-plateau',
