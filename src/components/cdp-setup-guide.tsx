@@ -531,6 +531,7 @@ function MultiCollectPanel({
   onXhsInputChange,
   onCollectPlatform,
   onCollectAll,
+  onLaunchDashboard,
 }: {
   collectStates: Record<string, PlatformCollectState>;
   loginStates: Record<string, PlatformLoginState>;
@@ -538,6 +539,7 @@ function MultiCollectPanel({
   onXhsInputChange: (value: string) => void;
   onCollectPlatform: (platformId: 'douyin' | 'xhs' | 'tiktok') => void;
   onCollectAll: () => void;
+  onLaunchDashboard: () => void;
 }) {
   const hasAnyVerifiedIdle = PLATFORMS.some((p) => {
     const login = loginStates[p.id]?.status;
@@ -550,6 +552,7 @@ function MultiCollectPanel({
   });
 
   const anyCollecting = PLATFORMS.some((p) => collectStates[p.id]?.status === 'collecting');
+  const anyDone = PLATFORMS.some((p) => collectStates[p.id]?.status === 'done');
 
   return (
     <div className="flex flex-col gap-3">
@@ -652,9 +655,20 @@ function MultiCollectPanel({
         {anyCollecting ? 'Collecting...' : 'Collect All Verified Platforms'}
       </button>
 
+      {/* Launch Dashboard — shown when at least one platform has data */}
+      {anyDone && !anyCollecting && (
+        <button
+          type="button"
+          onClick={onLaunchDashboard}
+          className="flex h-10 w-full items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
+        >
+          Launch Dashboard
+        </button>
+      )}
+
       <p className="text-xs leading-5 text-[var(--text-subtle)]">
-        Collection reads from your existing Chrome browser sessions. Make sure
-        you are logged in to each platform before collecting.
+        Collect each platform individually or all at once. You can launch the
+        dashboard anytime after at least one platform is collected.
       </p>
     </div>
   );
@@ -836,20 +850,15 @@ export default function CdpSetupGuide() {
     }
   }, [phase, startPoll, stopPoll]);
 
-  // Auto-transition to done when no platform is collecting and at least one is done
+  // Keep sessionStorage in sync as profiles are collected (no auto-transition)
   useEffect(() => {
-    const states = Object.values(collectStates);
-    const anyCollecting = states.some((s) => s.status === 'collecting');
-    const anyDone = states.some((s) => s.status === 'done');
-
-    if (phase === 'ready' && !anyCollecting && anyDone) {
+    if (Object.keys(collectedProfiles).length > 0) {
       sessionStorage.setItem(
         'dashpersona-import-profiles',
         JSON.stringify(collectedProfiles),
       );
-      setPhase('done');
     }
-  }, [collectStates, collectedProfiles, phase]);
+  }, [collectedProfiles]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -1032,6 +1041,7 @@ export default function CdpSetupGuide() {
             onXhsInputChange={setXhsInput}
             onCollectPlatform={collectPlatform}
             onCollectAll={collectAll}
+            onLaunchDashboard={handleLaunchDashboard}
           />
         </>
       )}
