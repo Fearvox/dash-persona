@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { CrossPlatformComparison, PlatformSummary } from '@/lib/engine';
 import { formatNumber } from '@/lib/engine';
 import { PLATFORM_LABELS } from '@/lib/utils/constants';
+import { t } from '@/lib/i18n';
 
 interface PlatformComparisonProps {
   comparison: CrossPlatformComparison;
@@ -11,7 +12,7 @@ interface PlatformComparisonProps {
 
 function topContentType(summary: PlatformSummary): string {
   const entries = Object.entries(summary.contentDistribution);
-  if (entries.length === 0) return 'N/A';
+  if (entries.length === 0) return t('ui.common.na');
   entries.sort((a, b) => b[1] - a[1]);
   return entries[0][0];
 }
@@ -27,7 +28,7 @@ function PlatformCard({ summary }: { summary: PlatformSummary }) {
             className="text-xs"
             style={{ color: 'var(--text-subtle)' }}
           >
-            Followers
+            {t('ui.compare.followers')}
           </p>
           <p
             className="metric-value text-lg font-semibold"
@@ -41,7 +42,7 @@ function PlatformCard({ summary }: { summary: PlatformSummary }) {
             className="text-xs"
             style={{ color: 'var(--text-subtle)' }}
           >
-            Engagement Rate
+            {t('ui.compare.engagementRate')}
           </p>
           <p
             className="metric-value text-lg font-semibold"
@@ -55,7 +56,7 @@ function PlatformCard({ summary }: { summary: PlatformSummary }) {
             className="text-xs"
             style={{ color: 'var(--text-subtle)' }}
           >
-            Top Content
+            {t('ui.components.topContent')}
           </p>
           <p
             className="text-sm font-medium capitalize"
@@ -69,7 +70,7 @@ function PlatformCard({ summary }: { summary: PlatformSummary }) {
             className="text-xs"
             style={{ color: 'var(--text-subtle)' }}
           >
-            Posts
+            {t('ui.common.posts')}
           </p>
           <p
             className="metric-value text-lg font-semibold"

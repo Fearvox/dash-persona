@@ -1,4 +1,5 @@
 import type { StrategySuggestion, SuggestionPriority } from '@/lib/engine';
+import { t } from '@/lib/i18n';
 
 interface StrategySuggestionsProps {
   suggestions: StrategySuggestion[];
@@ -25,8 +26,7 @@ export default function StrategySuggestions({
         className="card p-6 text-center text-sm"
         style={{ color: 'var(--text-subtle)' }}
       >
-        No strategy suggestions available yet. Add more data to unlock
-        personalised recommendations.
+        {t('ui.components.noStrategySuggestions')}
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function StrategySuggestions({
                   className="shrink-0 text-xs font-medium uppercase"
                   style={{ color: accent }}
                 >
-                  {s.priority}
+                  {t(`priority.${s.priority}`)}
                 </span>
               </div>
               <p

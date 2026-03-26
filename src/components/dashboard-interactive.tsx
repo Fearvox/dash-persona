@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import type { Post } from '@/lib/schema/creator-data';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import type { PersonaScore, SparklinePoint, BenchmarkResult } from '@/lib/engine';
@@ -56,14 +57,14 @@ export default function DashboardInteractive({
   const analysisDelta = useAnalysisDelta(analysisStoreKey ?? null, analysisSnapshot ?? null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerTitle, setDrawerTitle] = useState('Posts');
+  const [drawerTitle, setDrawerTitle] = useState(t('ui.components.postsTitle'));
   const [drawerFilterIds, setDrawerFilterIds] = useState<string[] | undefined>(
     undefined,
   );
 
   const openDrawerWithIds = useCallback((postIds: string[]) => {
     setDrawerFilterIds(postIds);
-    setDrawerTitle(`Related Posts (${postIds.length})`);
+    setDrawerTitle(t('ui.components.relatedPosts', { count: postIds.length }));
     setDrawerOpen(true);
   }, []);
 
@@ -71,7 +72,7 @@ export default function DashboardInteractive({
     (_platformKey: string, _point: SparklinePoint) => {
       // Open drawer with all posts (no filter) when clicking a chart point
       setDrawerFilterIds(undefined);
-      setDrawerTitle('Posts');
+      setDrawerTitle(t('ui.components.postsTitle'));
       setDrawerOpen(true);
     },
     [],
@@ -83,7 +84,7 @@ export default function DashboardInteractive({
 
   const openAllPosts = useCallback(() => {
     setDrawerFilterIds(undefined);
-    setDrawerTitle(`Posts (${allPosts.length})`);
+    setDrawerTitle(t('ui.components.postsCount', { count: allPosts.length }));
     setDrawerOpen(true);
   }, [allPosts.length]);
 
@@ -104,7 +105,7 @@ export default function DashboardInteractive({
           <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 4h16v16H4z" /><path d="M4 10h16" /><path d="M10 4v16" />
           </svg>
-          Browse All Posts ({allPosts.length})
+          {t('ui.components.browseAllPosts', { count: allPosts.length })}
         </button>
         <button
           type="button"
@@ -113,7 +114,7 @@ export default function DashboardInteractive({
           disabled={historyLoading}
           style={{ color: 'var(--accent-blue)', opacity: historyLoading ? 0.5 : 1 }}
         >
-          {historyLoading ? 'Collecting...' : 'Collect Now'}
+          {historyLoading ? t('ui.components.collecting') : t('ui.components.collectNow')}
         </button>
       </div>
 
@@ -131,13 +132,13 @@ export default function DashboardInteractive({
       {/* Persona Score heading */}
       <div className="mb-3 mt-10 flex items-center justify-between">
         <h2 id="persona-heading" className="kicker">
-          Persona Score
+          {t('ui.dashboard.personaScore')}
         </h2>
         <Link
           href={`/persona?source=${source}&persona=${personaType}`}
           className="nav-pill"
         >
-          View details &rarr;
+          {t('ui.common.viewDetails')} &rarr;
         </Link>
       </div>
 

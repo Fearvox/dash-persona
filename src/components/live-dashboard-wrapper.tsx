@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import {
   computePersonaScore,
@@ -68,14 +69,14 @@ export default function LiveDashboardWrapper({
             &larr; DashPersona
           </Link>
           <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-            Dashboard
+            {t('ui.dashboard.title')}
           </h1>
           <span className="badge badge-green mt-1">
-            {usedFallback ? 'Demo Mode (live fetch failed)' : 'Live Data'}
+            {usedFallback ? t('ui.components.demoModeFallback') : t('ui.components.liveData')}
           </span>
         </div>
         <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-          {usedFallback ? 'Showing demo data' : url}
+          {usedFallback ? t('ui.components.showingDemo') : url}
         </p>
         {!usedFallback && profiles !== null && (
           <p
@@ -86,8 +87,7 @@ export default function LiveDashboardWrapper({
               border: '1px solid rgba(126, 184, 210, 0.15)',
             }}
           >
-            Showing current snapshot only. Growth history and trend tracking
-            will be available once continuous data collection is enabled.
+            {t('ui.components.snapshotNote')}
           </p>
         )}
       </header>
@@ -100,28 +100,28 @@ export default function LiveDashboardWrapper({
         <>
           <section aria-labelledby="growth-heading">
             <h2 id="growth-heading" className="kicker mb-3">
-              Growth Overview
+              {t('ui.dashboard.growthOverview')}
             </h2>
             <GrowthSparklines profiles={activeProfiles} />
           </section>
 
           <section aria-labelledby="persona-heading">
             <h2 id="persona-heading" className="kicker mb-3">
-              Persona Score
+              {t('ui.dashboard.personaScore')}
             </h2>
             <PersonaOverview scores={personaScores} />
           </section>
 
           <section aria-labelledby="platforms-heading">
             <h2 id="platforms-heading" className="kicker mb-3">
-              Cross-Platform Comparison
+              {t('ui.dashboard.crossPlatformComparison')}
             </h2>
             <PlatformComparison comparison={comparison} />
           </section>
 
           <section aria-labelledby="strategy-heading">
             <h2 id="strategy-heading" className="kicker mb-3">
-              Strategy Suggestions
+              {t('ui.dashboard.strategySuggestions')}
             </h2>
             <StrategySuggestions suggestions={suggestions} />
           </section>

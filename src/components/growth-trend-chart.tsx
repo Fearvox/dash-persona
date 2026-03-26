@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { t } from '@/lib/i18n';
 import {
   LineChart,
   Line,
@@ -33,16 +34,16 @@ interface ChartDataPoint {
 // ---------------------------------------------------------------------------
 
 const METRICS: { key: MetricKey; label: string; color: string; bgTint: string }[] = [
-  { key: 'followers', label: 'Followers', color: 'var(--accent-green)', bgTint: 'rgba(126, 210, 154, 0.15)' },
-  { key: 'likesTotal', label: 'Total Likes', color: 'var(--accent-yellow)', bgTint: 'rgba(210, 200, 126, 0.15)' },
-  { key: 'videosCount', label: 'Videos', color: 'var(--accent-blue)', bgTint: 'rgba(126, 184, 210, 0.15)' },
+  { key: 'followers', label: t('ui.components.followers'), color: 'var(--accent-green)', bgTint: 'rgba(126, 210, 154, 0.15)' },
+  { key: 'likesTotal', label: t('ui.components.totalLikes'), color: 'var(--accent-yellow)', bgTint: 'rgba(210, 200, 126, 0.15)' },
+  { key: 'videosCount', label: t('ui.components.videos'), color: 'var(--accent-blue)', bgTint: 'rgba(126, 184, 210, 0.15)' },
 ];
 
 const RANGES: { key: RangeKey; label: string; days: number }[] = [
   { key: '7d', label: '7D', days: 7 },
   { key: '30d', label: '30D', days: 30 },
   { key: '90d', label: '90D', days: 90 },
-  { key: 'all', label: 'All', days: Infinity },
+  { key: 'all', label: t('ui.components.rangeAll'), days: Infinity },
 ];
 
 // ---------------------------------------------------------------------------
@@ -123,10 +124,10 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-lg py-16 bg-[var(--bg-card)] border border-dashed border-[var(--border-subtle)]">
       <p className="text-sm font-medium text-[var(--text-secondary)]">
-        Start tracking to see trends
+        {t('ui.components.startTracking')}
       </p>
       <p className="max-w-xs text-center text-xs text-[var(--text-subtle)]">
-        Growth history snapshots will appear here once data is collected over multiple sessions.
+        {t('ui.components.startTrackingDesc')}
       </p>
     </div>
   );
@@ -283,7 +284,7 @@ export default function GrowthTrendChart({ storeKeys }: GrowthTrendChartProps) {
         {filteredData.length < 2 ? (
           <div className="flex h-48 items-center justify-center">
             <p className="text-xs text-[var(--text-subtle)]">
-              Need at least 2 data points to render a trend line
+              {t('ui.components.needTwoDataPoints')}
             </p>
           </div>
         ) : (

@@ -88,6 +88,8 @@ const en: Record<string, string> = {
   'ui.dashboard.loadingImported': 'Loading imported data...',
   'ui.dashboard.runningEngines': 'Running analysis engines...',
   'ui.dashboard.enrichmentTip': 'Want more accurate analysis? Export data from your Creator Center (account metrics, post lists) and click <strong>Import more</strong> to add them. The more data you provide, the better the persona insights.',
+  'ui.dashboard.enrichmentTipPre': 'Want more accurate analysis? Export data from your Creator Center (account metrics, post lists) and click\u00a0',
+  'ui.dashboard.enrichmentTipPost': '\u00a0to add them. The more data you provide, the better the persona insights.',
   'ui.dashboard.forYou': 'For You',
   'ui.dashboard.nicheDetection': 'Niche Detection',
   'ui.dashboard.overallScore': 'Overall Score',
@@ -611,6 +613,26 @@ const en: Record<string, string> = {
   'priority.high': 'high',
   'priority.medium': 'medium',
   'priority.low': 'low',
+
+  // ===========================================================================
+  // Components — Platform comparison card
+  // ===========================================================================
+  'ui.components.topContent': 'Top Content',
+  'ui.components.rangeAll': 'All',
+
+  // ===========================================================================
+  // Components — Live collector
+  // ===========================================================================
+  'ui.components.fetchingLive': 'Fetching live data from TikTok\u2026 This may take a few seconds.',
+  'ui.components.liveCollectionFailed': 'Live collection failed',
+  'ui.components.fallingBackDemo': 'Falling back to demo data\u2026',
+  'ui.components.liveDataCollected': 'Live data collected for @{userId}',
+  'ui.components.errorTimedOut': 'TikTok took too long to respond. This sometimes happens due to rate limiting.',
+  'ui.components.errorNotAllowed': 'This URL is not supported. Please use a TikTok profile URL.',
+  'ui.components.errorCouldNotFind': 'Could not extract profile data. The page may be private or geo-restricted.',
+  'ui.components.errorInvalidResponse': 'Server returned an invalid response. Please try again.',
+  'ui.components.errorNoProfile': 'No profile data returned',
+  'ui.components.errorNetwork': 'Network error',
 };
 
 export default en;

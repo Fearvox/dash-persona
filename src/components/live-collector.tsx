@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
+import { t } from '@/lib/i18n';
 
 type CollectorState =
   | { status: 'idle' }
@@ -13,11 +14,11 @@ type CollectorState =
 function friendlyError(raw: string): string {
   const lower = raw.toLowerCase();
   if (lower.includes('timed out'))
-    return 'TikTok took too long to respond. This sometimes happens due to rate limiting.';
+    return t('ui.components.errorTimedOut');
   if (lower.includes('not allowed'))
-    return 'This URL is not supported. Please use a TikTok profile URL.';
+    return t('ui.components.errorNotAllowed');
   if (lower.includes('could not find'))
-    return 'Could not extract profile data. The page may be private or geo-restricted.';
+    return t('ui.components.errorCouldNotFind');
   return raw;
 }
 
@@ -53,7 +54,7 @@ export default function LiveCollector({
         try {
           data = await res.json();
         } catch {
-          throw new Error('Server returned an invalid response. Please try again.');
+          throw new Error(t('ui.components.errorInvalidResponse'));
         }
 
         if (!res.ok) {
@@ -70,7 +71,7 @@ export default function LiveCollector({
         } else {
           setState({
             status: 'error',
-            message: 'No profile data returned',
+            message: t('ui.components.errorNoProfile'),
           });
           onError();
         }
@@ -79,7 +80,7 @@ export default function LiveCollector({
         setState({
           status: 'error',
           message:
-            err instanceof Error ? err.message : 'Network error',
+            err instanceof Error ? err.message : t('ui.components.errorNetwork'),
         });
         onError();
       }
@@ -107,7 +108,7 @@ export default function LiveCollector({
             style={{ borderColor: 'var(--accent-green)', borderTopColor: 'transparent' }}
           />
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Fetching live data from TikTok&hellip; This may take a few seconds.
+            {t('ui.components.fetchingLive')}
           </p>
         </div>
       )}
@@ -115,7 +116,7 @@ export default function LiveCollector({
       {state.status === 'error' && (
         <div>
           <p className="text-sm font-medium" style={{ color: 'var(--accent-red, #ef4444)' }}>
-            Live collection failed
+            {t('ui.components.liveCollectionFailed')}
           </p>
           <p
             className="mt-1 text-sm"
@@ -127,7 +128,7 @@ export default function LiveCollector({
             className="mt-3 text-sm"
             style={{ color: 'var(--text-subtle)' }}
           >
-            Falling back to demo data&hellip;
+            {t('ui.components.fallingBackDemo')}
           </p>
         </div>
       )}
@@ -147,10 +148,7 @@ export default function LiveCollector({
             <path d="M3 8l4 4 6-7" />
           </svg>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Live data collected for{' '}
-            <strong style={{ color: 'var(--text-primary)' }}>
-              @{state.profile.profile.uniqueId}
-            </strong>
+            {t('ui.components.liveDataCollected', { userId: state.profile.profile.uniqueId })}
           </p>
         </div>
       )}

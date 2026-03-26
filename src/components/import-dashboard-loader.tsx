@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { t } from '@/lib/i18n';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import { loadProfiles } from '@/lib/store/profile-store';
 import { runAllEngines, type AllEngineResults } from '@/lib/engine';
@@ -57,7 +58,7 @@ export default function ImportDashboardLoader() {
   if (!profiles) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
-        <p className="text-sm text-[var(--text-secondary)]">Loading imported data...</p>
+        <p className="text-sm text-[var(--text-secondary)]">{t('ui.dashboard.loadingImported')}</p>
       </div>
     );
   }
@@ -65,7 +66,7 @@ export default function ImportDashboardLoader() {
   if (!engineResults) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
-        <p className="text-sm text-[var(--text-secondary)]">Running analysis engines...</p>
+        <p className="text-sm text-[var(--text-secondary)]">{t('ui.dashboard.runningEngines')}</p>
       </div>
     );
   }
@@ -84,21 +85,19 @@ export default function ImportDashboardLoader() {
           >
             &larr;
           </Link>
-          <h1 className="text-lg font-bold tracking-tight sm:text-xl">Dashboard</h1>
-          <span className="badge badge-green">Import</span>
+          <h1 className="text-lg font-bold tracking-tight sm:text-xl">{t('ui.dashboard.title')}</h1>
+          <span className="badge badge-green">{t('ui.common.import')}</span>
         </div>
         <Link href="/onboarding" className="nav-pill">
-          Import more
+          {t('ui.common.importMore')}
         </Link>
       </header>
 
       {/* Data enrichment prompt */}
       <div className="animate-stagger animate-stagger-0 rounded-lg border border-[rgba(210,200,126,0.15)] bg-[rgba(210,200,126,0.04)] px-4 py-2.5 flex items-start gap-3">
-        <span className="mt-0.5 text-[var(--accent-yellow)] text-xs shrink-0">Tip</span>
+        <span className="mt-0.5 text-[var(--accent-yellow)] text-xs shrink-0">{t('ui.common.tip')}</span>
         <p className="text-xs text-[var(--text-subtle)] leading-relaxed">
-          Want more accurate analysis? Export data from your Creator Center (account metrics, post lists)
-          and click <strong className="text-[var(--text-secondary)]">Import more</strong> to add them.
-          The more data you provide, the better the persona insights.
+          {t('ui.dashboard.enrichmentTipPre')}<strong className="text-[var(--text-secondary)]">{t('ui.common.importMore')}</strong>{t('ui.dashboard.enrichmentTipPost')}
         </p>
       </div>
 
@@ -109,7 +108,7 @@ export default function ImportDashboardLoader() {
           </section>
 
           <section className="animate-stagger animate-stagger-2" aria-labelledby="growth-heading">
-            <h2 id="growth-heading" className="kicker mb-3">Growth Overview</h2>
+            <h2 id="growth-heading" className="kicker mb-3">{t('ui.dashboard.growthOverview')}</h2>
             <DashboardInteractive
               profiles={profiles}
               personaScores={personaScores}
@@ -122,7 +121,7 @@ export default function ImportDashboardLoader() {
           </section>
 
           <section className="animate-stagger animate-stagger-3" aria-labelledby="platforms-heading">
-            <h2 id="platforms-heading" className="kicker mb-3">Cross-Platform Comparison</h2>
+            <h2 id="platforms-heading" className="kicker mb-3">{t('ui.dashboard.crossPlatformComparison')}</h2>
             <PlatformComparison comparison={comparison} />
           </section>
         </div>
@@ -133,7 +132,7 @@ export default function ImportDashboardLoader() {
           </section>
 
           <section className="animate-stagger animate-stagger-2" aria-labelledby="strategy-heading">
-            <h2 id="strategy-heading" className="kicker mb-3">Strategy Suggestions</h2>
+            <h2 id="strategy-heading" className="kicker mb-3">{t('ui.dashboard.strategySuggestions')}</h2>
             <StrategySuggestions suggestions={suggestions} />
           </section>
         </aside>

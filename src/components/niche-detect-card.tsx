@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import type { NicheDetectionResult } from '@/lib/engine/niche-detect';
 import { CATEGORY_TO_NICHE } from '@/lib/engine/niche-detect';
 import type { BenchmarkNiche } from '@/lib/engine/benchmark-data';
@@ -69,7 +70,7 @@ export default function NicheDetectCard({ result }: NicheDetectCardProps) {
         </span>
         <div className="min-w-0">
           <h3 className="text-sm font-medium text-[var(--text-primary)]">
-            Niche Detection
+            {t('ui.dashboard.nicheDetection')}
           </h3>
         </div>
       </div>
@@ -82,7 +83,7 @@ export default function NicheDetectCard({ result }: NicheDetectCardProps) {
       {/* Confidence */}
       <div className="flex flex-col gap-1">
         <p className="text-xs text-[var(--text-subtle)]">
-          Confidence
+          {t('ui.components.confidence')}
         </p>
         <ConfidenceBar value={result.confidence} />
       </div>
@@ -91,7 +92,7 @@ export default function NicheDetectCard({ result }: NicheDetectCardProps) {
       {keywords.length > 0 && (
         <div className="flex flex-col gap-1.5">
           <p className="text-xs text-[var(--text-subtle)]">
-            Related categories
+            {t('ui.components.relatedCategories')}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {keywords.map((kw) => (

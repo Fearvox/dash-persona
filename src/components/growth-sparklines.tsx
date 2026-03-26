@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useCallback, memo } from 'react';
+import { t } from '@/lib/i18n';
 import {
   AreaChart,
   Area,
@@ -76,7 +77,7 @@ function SparklineTooltip({
     >
       <p className="text-[var(--text-subtle)]">{point.time}</p>
       <p className="mt-1 font-medium">
-        Followers: {formatNumber(point.followers)}
+        {t('ui.components.followersTooltip', { count: formatNumber(point.followers) })}
       </p>
     </div>
   );
@@ -234,7 +235,7 @@ const SparklineCard = memo(function SparklineCard({
       </p>
       <div className="mt-0.5 flex items-center gap-2">
         <p className="text-xs text-[var(--text-subtle)]">
-          followers
+          {t('ui.common.followers')}
         </p>
         {pctChange !== 0 && (
           <span
@@ -332,7 +333,7 @@ const SparklineCard = memo(function SparklineCard({
               color: 'var(--text-subtle)',
             }}
           >
-            Insufficient data
+            {t('ui.common.insufficientData')}
           </div>
         )}
       </div>

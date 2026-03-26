@@ -3,16 +3,7 @@
 import { useEffect, useState } from 'react';
 import { derivePreferences, type UserPreferences } from '@/lib/learning';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: 'Douyin',
-  tiktok: 'TikTok',
-  xhs: 'Red Note',
-};
+import { t } from '@/lib/i18n';
 
 interface Insight {
   label: string;
@@ -29,12 +20,12 @@ function generateInsights(
   // 1. Focus platform insight
   if (prefs.focusPlatform && profiles[prefs.focusPlatform]) {
     const p = profiles[prefs.focusPlatform];
-    const label = PLATFORM_LABELS[prefs.focusPlatform] ?? prefs.focusPlatform;
+    const label = t(`platform.${prefs.focusPlatform}` as never) || prefs.focusPlatform;
     const topPost = [...p.posts].sort((a, b) => b.views - a.views)[0];
     if (topPost) {
       insights.push({
-        label: `${label} Top Post`,
-        detail: `Your most viewed ${label} post has ${topPost.views.toLocaleString()} views. Tap to explore patterns.`,
+        label: t('ui.components.topPost', { platform: label }),
+        detail: t('ui.components.topPostDetail', { platform: label, views: topPost.views.toLocaleString() }),
         accent: 'var(--accent-green)',
       });
     }
@@ -43,9 +34,8 @@ function generateInsights(
   // 2. Persona / expand pattern insight
   if (prefs.topSections.some((s) => s.toLowerCase().includes('persona'))) {
     insights.push({
-      label: 'Persona Deep Dive',
-      detail:
-        'You frequently explore persona scores. Check the Persona page for detailed breakdowns and tag analysis.',
+      label: t('ui.components.personaDeepDive'),
+      detail: t('ui.components.personaDeepDiveDetail'),
       accent: 'var(--accent-yellow)',
     });
   }
@@ -54,8 +44,8 @@ function generateInsights(
   if (prefs.preferredTimeRange !== 168) {
     const days = Math.round(prefs.preferredTimeRange / 24);
     insights.push({
-      label: `${days}-Day Growth Trend`,
-      detail: `You prefer the ${days}-day view. Your growth trends over this period are available in the Growth section.`,
+      label: t('ui.components.dayGrowthTrend', { days }),
+      detail: t('ui.components.dayGrowthTrendDetail', { days }),
       accent: 'var(--accent-blue)',
     });
   }
@@ -63,8 +53,8 @@ function generateInsights(
   // 4. Dismissed content types
   if (prefs.dismissedContentTypes.length > 0) {
     insights.push({
-      label: 'Content Filter Applied',
-      detail: `You've dismissed ${prefs.dismissedContentTypes.length} content type(s). Your calendar view is tailored accordingly.`,
+      label: t('ui.components.contentFilterApplied'),
+      detail: t('ui.components.contentFilterDetail', { count: prefs.dismissedContentTypes.length }),
       accent: 'var(--accent-yellow)',
     });
   }
@@ -72,9 +62,8 @@ function generateInsights(
   // 5. Exploration insights (multi-section users)
   if (prefs.topSections.length >= 3) {
     insights.push({
-      label: 'Power User',
-      detail:
-        'You explore multiple dashboard sections. Consider the cross-platform comparison for a holistic view.',
+      label: t('ui.components.powerUser'),
+      detail: t('ui.components.powerUserDetail'),
       accent: 'var(--accent-green)',
     });
   }
@@ -83,21 +72,18 @@ function generateInsights(
   if (insights.length === 0) {
     insights.push(
       {
-        label: 'Explore Your Data',
-        detail:
-          'Click around the dashboard to personalize this section. Your interactions shape the insights shown here.',
+        label: t('ui.components.exploreData'),
+        detail: t('ui.components.exploreDataDetail'),
         accent: 'var(--accent-blue)',
       },
       {
-        label: 'Cross-Platform View',
-        detail:
-          'Compare your performance across Douyin, TikTok, and Red Note to find your strongest platform.',
+        label: t('ui.components.crossPlatformView'),
+        detail: t('ui.components.crossPlatformViewDetail'),
         accent: 'var(--accent-green)',
       },
       {
-        label: 'Content Calendar',
-        detail:
-          'Check the content calendar for AI-free publishing suggestions based on your engagement patterns.',
+        label: t('ui.components.contentCalendarInsight'),
+        detail: t('ui.components.contentCalendarInsightDetail'),
         accent: 'var(--accent-yellow)',
       },
     );
@@ -137,7 +123,7 @@ export default function ForYouCard({ profiles }: ForYouCardProps) {
             }}
           />
           <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-            Loading personalized insights...
+            {t('ui.components.loadingInsights')}
           </span>
         </div>
       </div>
@@ -150,7 +136,7 @@ export default function ForYouCard({ profiles }: ForYouCardProps) {
         className="mb-4 text-xs font-semibold uppercase tracking-wider"
         style={{ color: 'var(--accent-green)' }}
       >
-        For You
+        {t('ui.dashboard.forYou')}
       </h3>
       <div className="grid gap-3 sm:grid-cols-[1.2fr_1fr_1fr]">
         {insights.map((insight) => (

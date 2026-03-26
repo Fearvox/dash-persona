@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useId, useMemo, memo } from 'react';
 import type { Post } from '@/lib/schema/creator-data';
 import { formatNumber } from '@/lib/engine';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -57,9 +58,10 @@ export default function PostDrawer({
   posts,
   isOpen,
   onClose,
-  title = 'Posts',
+  title,
   filterPostIds,
 }: PostDrawerProps) {
+  if (title === undefined) title = t('ui.components.postsTitle');
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
@@ -176,7 +178,7 @@ export default function PostDrawer({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close panel"
+            aria-label={t('ui.components.closePanel')}
             className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--bg-secondary)] text-[var(--text-subtle)] border border-[var(--border-subtle)] cursor-pointer hover:text-[var(--text-primary)] transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
@@ -198,7 +200,7 @@ export default function PostDrawer({
                   : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
               }`}
             >
-              {key.charAt(0).toUpperCase() + key.slice(1)}
+              {t(`ui.components.sort${key.charAt(0).toUpperCase() + key.slice(1)}` as never)}
             </button>
           ))}
         </div>
@@ -211,7 +213,7 @@ export default function PostDrawer({
         >
           {sortedPosts.length === 0 ? (
             <p className="py-8 text-center text-sm text-[var(--text-subtle)]">
-              No posts to display.
+              {t('ui.components.noPosts')}
             </p>
           ) : (
             <div className="space-y-3">
@@ -220,7 +222,7 @@ export default function PostDrawer({
               ))}
               {hasMore && (
                 <p className="py-3 text-center text-xs text-[var(--text-subtle)]">
-                  Showing {visibleCount} of {sortedPosts.length} — scroll for more
+                  {t('ui.components.showingPosts', { visible: visibleCount, total: sortedPosts.length })}
                 </p>
               )}
             </div>
@@ -252,11 +254,11 @@ const PostCard = memo(function PostCard({ post }: { post: Post }) {
 
       {/* Metrics row */}
       <div className="mt-2 flex flex-wrap gap-3">
-        <MetricPill label="Views" value={post.views} />
-        <MetricPill label="Likes" value={post.likes} />
-        <MetricPill label="Comments" value={post.comments} />
-        <MetricPill label="Shares" value={post.shares} />
-        <MetricPill label="Saves" value={post.saves} />
+        <MetricPill label={t('ui.components.metricViews')} value={post.views} />
+        <MetricPill label={t('ui.components.metricLikes')} value={post.likes} />
+        <MetricPill label={t('ui.components.metricComments')} value={post.comments} />
+        <MetricPill label={t('ui.components.metricShares')} value={post.shares} />
+        <MetricPill label={t('ui.components.metricSaves')} value={post.saves} />
       </div>
     </div>
   );

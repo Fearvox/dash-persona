@@ -1,6 +1,7 @@
 'use client';
 
 import { overallScore, type PersonaScore } from '@/lib/engine';
+import { t } from '@/lib/i18n';
 import type { ScoreExplanation } from '@/lib/engine/explain';
 import type { AnalysisDelta } from '@/lib/history/analysis-types';
 import ExplainableScore from './explainable-score';
@@ -102,32 +103,32 @@ export default function PersonaOverview({
 
   const dimensions = [
     {
-      label: 'Content Mix',
+      label: t('ui.persona.contentMix'),
       score: diversityScore,
       key: 'contentMix',
     },
     {
-      label: 'Engagement Rate',
+      label: t('ui.persona.engagementProfile'),
       score: engagementScore,
       key: 'engagementProfile',
     },
     {
-      label: 'Posting Rhythm',
+      label: t('ui.persona.postingRhythm'),
       score: bestScore.rhythm.consistencyScore,
       key: 'rhythm',
     },
     {
-      label: 'Persona Consistency',
+      label: t('ui.persona.personaConsistency'),
       score: bestScore.consistency.score,
       key: 'personaConsistency',
     },
     {
-      label: 'Growth Health',
+      label: t('ui.persona.growthHealth'),
       score: growthScore,
       key: 'growthHealth',
     },
     {
-      label: 'Viral Potential',
+      label: t('ui.persona.viralPotential'),
       score: viral,
       key: 'viralPotential',
     },
@@ -162,7 +163,7 @@ export default function PersonaOverview({
               className="text-xs font-medium"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Overall Score
+              {t('ui.dashboard.overallScore')}
             </p>
             {analysisDelta?.hasPrevious && (
               <MiniDelta value={analysisDelta.scoreChange} />
@@ -172,7 +173,7 @@ export default function PersonaOverview({
             className="text-xs"
             style={{ color: 'var(--text-subtle)' }}
           >
-            Best: {bestPlatform}
+            {t('ui.dashboard.bestPlatform', { platform: bestPlatform })}
           </p>
         </div>
 
@@ -268,7 +269,7 @@ function ViewPostsButton({
         padding: '2px 0',
       }}
     >
-      View posts ({postIds.length})
+      {t('ui.components.viewPosts', { count: postIds.length })}
     </button>
   );
 }

@@ -88,6 +88,8 @@ const zh: Record<string, string> = {
   'ui.dashboard.loadingImported': '正在加载导入数据...',
   'ui.dashboard.runningEngines': '正在运行分析引擎...',
   'ui.dashboard.enrichmentTip': '想要更精准的分析？从创作者中心导出数据（账号指标、作品列表），点击<strong>导入更多</strong>添加。数据越多，人设洞察越准。',
+  'ui.dashboard.enrichmentTipPre': '想要更精准的分析？从创作者中心导出数据（账号指标、作品列表），点击',
+  'ui.dashboard.enrichmentTipPost': '添加。数据越多，人设洞察越准。',
   'ui.dashboard.forYou': '为你推荐',
   'ui.dashboard.nicheDetection': '赛道识别',
   'ui.dashboard.overallScore': '综合评分',
@@ -611,6 +613,26 @@ const zh: Record<string, string> = {
   'priority.high': '高',
   'priority.medium': '中',
   'priority.low': '低',
+
+  // ===========================================================================
+  // 组件 — 平台对比卡片
+  // ===========================================================================
+  'ui.components.topContent': '热门内容',
+  'ui.components.rangeAll': '全部',
+
+  // ===========================================================================
+  // 组件 — 实时采集器
+  // ===========================================================================
+  'ui.components.fetchingLive': '正在从 TikTok 获取实时数据…可能需要几秒钟。',
+  'ui.components.liveCollectionFailed': '实时采集失败',
+  'ui.components.fallingBackDemo': '正在回退到演示数据…',
+  'ui.components.liveDataCollected': '已为 @{userId} 采集实时数据',
+  'ui.components.errorTimedOut': 'TikTok 响应超时，可能是限流导致。',
+  'ui.components.errorNotAllowed': '不支持该链接，请使用 TikTok 主页链接。',
+  'ui.components.errorCouldNotFind': '无法提取主页数据，该页面可能为私密或受地区限制。',
+  'ui.components.errorInvalidResponse': '服务器返回了无效响应，请重试。',
+  'ui.components.errorNoProfile': '未返回主页数据',
+  'ui.components.errorNetwork': '网络错误',
 };
 
 export default zh;

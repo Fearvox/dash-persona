@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
 import {
@@ -36,8 +37,8 @@ export async function generateMetadata({
   return {
     title:
       params.source === 'demo'
-        ? 'Demo Dashboard — DashPersona'
-        : 'Dashboard — DashPersona',
+        ? `${t('ui.dashboard.demoDashboard')} — DashPersona`
+        : `${t('ui.dashboard.title')} — DashPersona`,
   };
 }
 
@@ -91,15 +92,15 @@ export default async function DashboardPage({
       return (
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {liveUrl ? 'Invalid profile URL' : 'No profile URL provided'}
+            {liveUrl ? t('ui.dashboard.invalidProfileUrl') : t('ui.dashboard.noProfileUrl')}
           </h1>
           <p
             className="max-w-md text-center text-sm leading-6"
             style={{ color: 'var(--text-secondary)' }}
           >
             {liveUrl
-              ? 'The URL provided is not valid. Please go through the onboarding flow and paste a valid TikTok profile URL.'
-              : 'To use live data collection, please go through the onboarding flow and paste your TikTok profile URL.'}
+              ? t('ui.dashboard.invalidUrlMessage')
+              : t('ui.dashboard.noUrlMessage')}
           </p>
           <Link
             href="/onboarding"
@@ -109,7 +110,7 @@ export default async function DashboardPage({
               color: 'var(--bg-primary)',
             }}
           >
-            Go to Onboarding
+            {t('ui.common.goToOnboarding')}
           </Link>
         </div>
       );
@@ -130,7 +131,7 @@ export default async function DashboardPage({
             return (
               <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Waiting for extension data...
+                  {t('ui.dashboard.waitingExtension')}
                 </p>
               </div>
             );
@@ -139,7 +140,7 @@ export default async function DashboardPage({
             return (
               <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                  Extension Error
+                  {t('ui.dashboard.extensionError')}
                 </h1>
                 <p
                   className="max-w-md text-center text-sm leading-6"
@@ -151,7 +152,7 @@ export default async function DashboardPage({
                   href={`/dashboard?source=demo&persona=${personaType}`}
                   className="nav-pill"
                 >
-                  View demo instead
+                  {t('ui.common.viewDemoInstead')}
                 </Link>
               </div>
             );
@@ -160,21 +161,19 @@ export default async function DashboardPage({
             return (
               <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                  Extension Data
+                  {t('ui.dashboard.extensionData')}
                 </h1>
                 <p
                   className="max-w-md text-center text-sm leading-6"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  No extension data received yet. Open the Data Passport extension
-                  on creator.douyin.com and click &quot;Collect&quot;.
-                  Using demo data as fallback.
+                  {t('ui.dashboard.noExtensionData')}
                 </p>
                 <Link
                   href={`/dashboard?source=demo&persona=${personaType}`}
                   className="nav-pill"
                 >
-                  View demo instead
+                  {t('ui.common.viewDemoInstead')}
                 </Link>
               </div>
             );
@@ -235,11 +234,11 @@ export default async function DashboardPage({
             &larr;
           </Link>
           <h1 className="text-lg font-bold tracking-tight sm:text-xl">
-            Dashboard
+            {t('ui.dashboard.title')}
           </h1>
           <AnalysisDeltaBadge current={analysisSnapshot} storeKey={analysisStoreKey} />
           {isDemo && (
-            <span className="badge badge-green">Demo</span>
+            <span className="badge badge-green">{t('ui.common.demo')}</span>
           )}
           <span
             className="text-xs"
@@ -255,7 +254,7 @@ export default async function DashboardPage({
             className="nav-pill"
             aria-label="Settings"
           >
-            Settings
+            {t('ui.common.settings')}
           </Link>
         </div>
       </header>
@@ -283,13 +282,13 @@ export default async function DashboardPage({
           >
             <div className="mb-3 flex items-center justify-between">
               <h2 id="growth-heading" className="kicker">
-                Growth Overview
+                {t('ui.dashboard.growthOverview')}
               </h2>
               <Link
                 href={`/compare?source=${sourceParam}&persona=${personaType}`}
                 className="nav-pill"
               >
-                View details &rarr;
+                {t('ui.common.viewDetails')} &rarr;
               </Link>
             </div>
             <DashboardInteractive
@@ -312,13 +311,13 @@ export default async function DashboardPage({
           >
             <div className="mb-3 flex items-center justify-between">
               <h2 id="platforms-heading" className="kicker">
-                Cross-Platform Comparison
+                {t('ui.dashboard.crossPlatformComparison')}
               </h2>
               <Link
                 href={`/compare?source=${sourceParam}&persona=${personaType}`}
                 className="nav-pill"
               >
-                View details &rarr;
+                {t('ui.common.viewDetails')} &rarr;
               </Link>
             </div>
             <PlatformComparison comparison={comparison} />
@@ -338,7 +337,7 @@ export default async function DashboardPage({
             aria-labelledby="strategy-heading"
           >
             <h2 id="strategy-heading" className="kicker mb-3">
-              Strategy Suggestions
+              {t('ui.dashboard.strategySuggestions')}
             </h2>
             <StrategySuggestions suggestions={suggestions} />
           </section>
@@ -348,7 +347,7 @@ export default async function DashboardPage({
             className="animate-stagger animate-stagger-3 flex flex-col gap-3"
             aria-label="Quick links"
           >
-            <h2 className="kicker">Quick Links</h2>
+            <h2 className="kicker">{t('ui.dashboard.quickLinks')}</h2>
 
             <Link
               href={`/calendar?source=${sourceParam}&persona=${personaType}`}
@@ -373,13 +372,13 @@ export default async function DashboardPage({
                   className="text-sm font-medium"
                   style={{ color: 'var(--text-primary)' }}
                 >
-                  Content Calendar
+                  {t('ui.dashboard.contentCalendar')}
                 </p>
                 <p
                   className="mt-0.5 text-xs leading-snug"
                   style={{ color: 'var(--text-subtle)' }}
                 >
-                  Schedule posts based on engagement patterns
+                  {t('ui.dashboard.contentCalendarDesc')}
                 </p>
               </div>
             </Link>
@@ -409,13 +408,13 @@ export default async function DashboardPage({
                   className="text-sm font-medium"
                   style={{ color: 'var(--text-primary)' }}
                 >
-                  Persona Timeline
+                  {t('ui.dashboard.personaTimeline')}
                 </p>
                 <p
                   className="mt-0.5 text-xs leading-snug"
                   style={{ color: 'var(--text-subtle)' }}
                 >
-                  Track strategy experiments and decisions
+                  {t('ui.dashboard.personaTimelineDesc')}
                 </p>
               </div>
             </Link>
@@ -443,13 +442,13 @@ export default async function DashboardPage({
                   className="text-sm font-medium"
                   style={{ color: 'var(--text-primary)' }}
                 >
-                  Compare Platforms
+                  {t('ui.dashboard.comparePlatforms')}
                 </p>
                 <p
                   className="mt-0.5 text-xs leading-snug"
                   style={{ color: 'var(--text-subtle)' }}
                 >
-                  Side-by-side platform performance
+                  {t('ui.dashboard.comparePlatformsDesc')}
                 </p>
               </div>
             </Link>
@@ -478,7 +477,7 @@ export default async function DashboardPage({
                 className="text-sm font-medium"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                Settings
+                {t('ui.common.settings')}
               </p>
             </Link>
           </div>

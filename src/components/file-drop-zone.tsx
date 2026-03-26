@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { t } from '@/lib/i18n';
 
 const ACCEPTED_EXTENSIONS = ['.json', '.csv', '.xlsx', '.xls'];
 const ACCEPT_STRING = ACCEPTED_EXTENSIONS.join(',');
@@ -89,10 +90,10 @@ export default function FileDropZone({ onFilesSelected, results, isProcessing }:
         </svg>
         <div className="text-center">
           <p className="text-sm font-medium text-[var(--text-primary)]">
-            {isDragOver ? 'Drop files here' : 'Drag files here or click to browse'}
+            {isDragOver ? t('ui.components.dropFilesHere') : t('ui.components.dragOrBrowse')}
           </p>
           <p className="mt-1 text-xs text-[var(--text-subtle)]">
-            JSON, CSV, XLSX — multiple files supported, 10 MB max each
+            {t('ui.components.fileFormats')}
           </p>
         </div>
       </button>
