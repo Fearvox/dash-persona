@@ -366,6 +366,17 @@ const en: Record<string, string> = {
   'ui.components.updateExperiment': 'Update Experiment',
 
   // ===========================================================================
+  // Onboarding — File import schema type labels
+  // ===========================================================================
+  'ui.onboarding.schemaPostList': 'Post List',
+  'ui.onboarding.schemaPostAnalysis': 'Post Analysis',
+  'ui.onboarding.schemaAggregate': 'Aggregate',
+  'ui.onboarding.schemaTimeseries': 'Time Series',
+  'ui.onboarding.schemaGeneric': 'Generic Data',
+  'ui.onboarding.profileUrls': 'Profile URLs',
+  'ui.onboarding.removeUrl': 'Remove URL {index}',
+
+  // ===========================================================================
   // Components — CDP Setup Guide
   // ===========================================================================
   'ui.components.cdpReadsCreatorCenter': 'Reads from your Creator Center \u2014 no URL needed',
@@ -374,6 +385,95 @@ const en: Record<string, string> = {
   'ui.components.cdpNotLoggedIn': 'Not logged in to the platform',
   'ui.components.cdpTimeout': 'Collection timed out',
   'ui.components.cdpParseError': 'Could not read page data',
+  // Step indicator
+  'ui.components.cdpStepSetup': 'Setup',
+  'ui.components.cdpStepLogin': 'Login',
+  'ui.components.cdpStepCollect': 'Collect',
+  'ui.components.cdpStepDone': 'Done',
+  // Setup instructions
+  'ui.components.cdpStep1Header': 'Step 1 \u2014 Enable Chrome Remote Debugging',
+  'ui.components.cdpStep1_1': 'Open',
+  'ui.components.cdpStep1_1_suffix': 'in your Chrome browser.',
+  'ui.components.cdpStep1_2_pre': 'Check',
+  'ui.components.cdpStep1_2_strong': '\u201cAllow remote debugging for this browser instance\u201d',
+  'ui.components.cdpStep1_2_suffix': '.',
+  'ui.components.cdpStep2Header': 'Step 2 \u2014 Start CDP Proxy',
+  'ui.components.cdpStep2Desc': 'Run this command in your terminal:',
+  'ui.components.cdpRecheckBtn': 'Recheck Connection',
+  'ui.components.cdpChecking': 'Checking...',
+  // Troubleshoot
+  'ui.components.cdpTroubleshoot': 'Troubleshoot',
+  'ui.components.cdpHowToFix': 'How to fix',
+  // Troubleshoot step 1 items
+  'ui.components.cdpTs1_1': '"Page not found?" \u2014 Make sure you\'re using Google Chrome (not Safari or Firefox)',
+  'ui.components.cdpTs1_2': '"No checkbox visible?" \u2014 Scroll down, it may be below the fold',
+  'ui.components.cdpTs1_3': '"Still not working?" \u2014 Restart Chrome completely, then try again',
+  // Troubleshoot step 2 items
+  'ui.components.cdpTs2_1': '"node" not found? \u2014 Install Node.js from nodejs.org (version 22+)',
+  'ui.components.cdpTs2_2': '"Port already in use?" \u2014 Another proxy may be running; this is fine',
+  'ui.components.cdpTs2_3': '"Chrome auth popup?" \u2014 Click "Allow" in your Chrome browser',
+  // Error recovery
+  'ui.components.cdpErrProxyTitle': 'CDP Proxy is not running',
+  'ui.components.cdpErrProxy1': 'Open your terminal',
+  'ui.components.cdpErrProxy3': 'Wait for the "proxy: ready" message',
+  'ui.components.cdpErrProxy4': 'Come back here and retry',
+  'ui.components.cdpErrLoginTitle': 'Not logged in to the platform',
+  'ui.components.cdpErrLogin1': 'Open the platform website in your Chrome browser',
+  'ui.components.cdpErrLogin2': 'Log in with your account credentials',
+  'ui.components.cdpErrLogin3': 'Come back here and click Collect again',
+  'ui.components.cdpErrTimeoutTitle': 'Collection timed out',
+  'ui.components.cdpErrTimeout1': 'The page may be loading slowly',
+  'ui.components.cdpErrTimeout2': 'Make sure your internet connection is stable',
+  'ui.components.cdpErrTimeout3': 'Try again \u2014 it usually works on retry',
+  'ui.components.cdpErrParseTitle': 'Could not read page data',
+  'ui.components.cdpErrParse1': 'The platform page structure may have changed',
+  'ui.components.cdpErrParse2': 'Try refreshing the platform page in Chrome first',
+  'ui.components.cdpErrParse3': 'If the issue persists, try again later',
+  // Login check panel
+  'ui.components.cdpVerifyLogins': 'Verify platform logins',
+  'ui.components.cdpLoginDesc': 'Data collection reads from your existing browser sessions. Make sure you are logged in to each platform you want to collect.',
+  'ui.components.cdpCheckLoginBtn': 'Check Login',
+  'ui.components.cdpLoginReady': 'Ready',
+  'ui.components.cdpLoginAs': 'as {username}',
+  'ui.components.cdpOpenInChrome': 'Open',
+  'ui.components.cdpOpenAndLogin': 'in Chrome and log in',
+  'ui.components.cdpSkipLoginNote': 'Skip if you prefer to verify manually. You can always retry if collection fails with a login error.',
+  // Copy button
+  'ui.components.cdpCopy': 'Copy',
+  'ui.components.cdpCopied': 'Copied',
+  'ui.components.cdpCopyAriaDefault': 'Copy command',
+  'ui.components.cdpCopyAriaCopied': 'Copied',
+  // Collect panel
+  'ui.components.cdpNotVerified': 'Not verified',
+  'ui.components.cdpCollecting': 'Collecting...',
+  'ui.components.cdpFailed': 'Failed',
+  'ui.components.cdpRecollect': 'Recollect',
+  'ui.components.cdpCollect': 'Collect',
+  'ui.components.cdpCollectAll': 'Collect All Verified Platforms',
+  'ui.components.cdpCollectPanelNote': 'Collect each platform individually or all at once. You can launch the dashboard anytime after at least one platform is collected.',
+  'ui.components.cdpPostsCount': '{count} post{plural}',
+  // Phase status bars
+  'ui.components.cdpCheckingProxy': 'Checking CDP proxy connection...',
+  'ui.components.cdpProxyNotRunningStatus': 'CDP proxy not running',
+  'ui.components.cdpProxyNotRunningSub': 'Follow the steps below to connect your Chrome browser.',
+  'ui.components.cdpProxyConnected': 'CDP proxy connected',
+  'ui.components.cdpVerifyLoginsSub': 'Verify your platform logins before collecting.',
+  'ui.components.cdpReadyToCollect': 'CDP proxy connected',
+  'ui.components.cdpReadyToCollectSub': 'Select platforms and collect data.',
+  // Platform status dot labels
+  'ui.components.cdpStatusIdle': 'Idle',
+  'ui.components.cdpStatusCollecting': 'Collecting',
+  'ui.components.cdpStatusDone': 'Done',
+  'ui.components.cdpStatusError': 'Error',
+  // Login dot labels
+  'ui.components.cdpLoginDotLoggedIn': 'Logged in',
+  'ui.components.cdpLoginDotNotLoggedIn': 'Not logged in',
+  'ui.components.cdpLoginDotUnknown': 'Status unknown',
+  // Done panel
+  'ui.components.cdpCollectionComplete': 'Collection complete',
+  'ui.components.cdpCollectionSummary': '{posts} post{plural} across {platforms} platform{platformPlural}',
+  'ui.components.cdpRetryFailed': 'Retry Failed',
+  'ui.components.cdpNeedOneCollection': 'At least one successful collection is required to launch the dashboard.',
 
   // ===========================================================================
   // Components — Extension Data Loader / Fan Portrait

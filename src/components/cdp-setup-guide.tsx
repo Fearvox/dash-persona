@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import { saveProfiles } from '@/lib/store/profile-store';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,82 +44,88 @@ interface PlatformCollectState {
 // Constants
 // ---------------------------------------------------------------------------
 
-const PLATFORMS: SupportedPlatform[] = [
-  {
-    id: 'douyin',
-    label: 'Douyin',
-    available: true,
-    needsInput: false,
-    inputHint: '',
-    inputPlaceholder: '',
-    hint: 'Reads from your Creator Center — no URL needed',
-    loginUrl: 'https://creator.douyin.com',
-    loginLabel: 'creator.douyin.com',
-  },
-  {
-    id: 'xhs',
-    label: 'Red Note',
-    available: true,
-    needsInput: false,
-    inputHint: '',
-    inputPlaceholder: '',
-    hint: 'Reads from your Creator Center — no URL needed',
-    loginUrl: 'https://creator.xiaohongshu.com',
-    loginLabel: 'creator.xiaohongshu.com',
-  },
-  {
-    id: 'tiktok',
-    label: 'TikTok',
-    available: true,
-    needsInput: false,
-    inputHint: '',
-    inputPlaceholder: '',
-    hint: 'Reads from your TikTok Studio — no URL needed',
-    loginUrl: 'https://www.tiktok.com/tiktokstudio',
-    loginLabel: 'tiktok.com/tiktokstudio',
-  },
-];
+function getPlatforms(): SupportedPlatform[] {
+  return [
+    {
+      id: 'douyin',
+      label: t('platform.douyin'),
+      available: true,
+      needsInput: false,
+      inputHint: '',
+      inputPlaceholder: '',
+      hint: t('ui.components.cdpReadsCreatorCenter'),
+      loginUrl: 'https://creator.douyin.com',
+      loginLabel: 'creator.douyin.com',
+    },
+    {
+      id: 'xhs',
+      label: t('platform.xhs'),
+      available: true,
+      needsInput: false,
+      inputHint: '',
+      inputPlaceholder: '',
+      hint: t('ui.components.cdpReadsCreatorCenter'),
+      loginUrl: 'https://creator.xiaohongshu.com',
+      loginLabel: 'creator.xiaohongshu.com',
+    },
+    {
+      id: 'tiktok',
+      label: t('platform.tiktok'),
+      available: true,
+      needsInput: false,
+      inputHint: '',
+      inputPlaceholder: '',
+      hint: t('ui.components.cdpReadsTikTokStudio'),
+      loginUrl: 'https://www.tiktok.com/tiktokstudio',
+      loginLabel: 'tiktok.com/tiktokstudio',
+    },
+  ];
+}
+
+const PLATFORMS = getPlatforms();
 
 const SETUP_COMMAND = 'bash ~/.claude/skills/web-access/scripts/check-deps.sh';
 
 const HEALTH_POLL_INTERVAL_MS = 5_000;
 
-// Error recovery map
-const ERROR_RECOVERY: Record<string, { title: string; steps: string[] }> = {
-  PROXY_NOT_RUNNING: {
-    title: 'CDP Proxy is not running',
-    steps: [
-      'Open your terminal',
-      `Run: ${SETUP_COMMAND}`,
-      'Wait for the "proxy: ready" message',
-      'Come back here and retry',
-    ],
-  },
-  NOT_LOGGED_IN: {
-    title: 'Not logged in to the platform',
-    steps: [
-      'Open the platform website in your Chrome browser',
-      'Log in with your account credentials',
-      'Come back here and click Collect again',
-    ],
-  },
-  TIMEOUT: {
-    title: 'Collection timed out',
-    steps: [
-      'The page may be loading slowly',
-      'Make sure your internet connection is stable',
-      'Try again — it usually works on retry',
-    ],
-  },
-  PARSE_ERROR: {
-    title: 'Could not read page data',
-    steps: [
-      'The platform page structure may have changed',
-      'Try refreshing the platform page in Chrome first',
-      'If the issue persists, try again later',
-    ],
-  },
-};
+// Error recovery map — built at call-time so t() picks up current locale
+function getErrorRecovery(): Record<string, { title: string; steps: string[] }> {
+  return {
+    PROXY_NOT_RUNNING: {
+      title: t('ui.components.cdpErrProxyTitle'),
+      steps: [
+        t('ui.components.cdpErrProxy1'),
+        `Run: ${SETUP_COMMAND}`,
+        t('ui.components.cdpErrProxy3'),
+        t('ui.components.cdpErrProxy4'),
+      ],
+    },
+    NOT_LOGGED_IN: {
+      title: t('ui.components.cdpErrLoginTitle'),
+      steps: [
+        t('ui.components.cdpErrLogin1'),
+        t('ui.components.cdpErrLogin2'),
+        t('ui.components.cdpErrLogin3'),
+      ],
+    },
+    TIMEOUT: {
+      title: t('ui.components.cdpErrTimeoutTitle'),
+      steps: [
+        t('ui.components.cdpErrTimeout1'),
+        t('ui.components.cdpErrTimeout2'),
+        t('ui.components.cdpErrTimeout3'),
+      ],
+    },
+    PARSE_ERROR: {
+      title: t('ui.components.cdpErrParseTitle'),
+      steps: [
+        t('ui.components.cdpErrParse1'),
+        t('ui.components.cdpErrParse2'),
+        t('ui.components.cdpErrParse3'),
+      ],
+    },
+  };
+}
 
 const PHASE_STEP: Record<SetupPhase, number> = {
   checking: 0,
@@ -203,11 +210,11 @@ function CopyButton({ text }: { text: string }) {
     <button
       type="button"
       onClick={handleCopy}
-      aria-label={copied ? 'Copied' : 'Copy command'}
+      aria-label={copied ? t('ui.components.cdpCopyAriaCopied') : t('ui.components.cdpCopyAriaDefault')}
       className="shrink-0 rounded px-2 py-1 text-xs font-medium transition-colors hover:bg-white/5"
       style={{ color: copied ? 'var(--accent-green)' : 'var(--text-subtle)' }}
     >
-      {copied ? 'Copied' : 'Copy'}
+      {copied ? t('ui.components.cdpCopied') : t('ui.components.cdpCopy')}
     </button>
   );
 }
@@ -217,7 +224,12 @@ function CopyButton({ text }: { text: string }) {
 // ---------------------------------------------------------------------------
 
 function StepIndicator({ currentStep }: { currentStep: number }) {
-  const steps = ['Setup', 'Login', 'Collect', 'Done'];
+  const steps = [
+    t('ui.components.cdpStepSetup'),
+    t('ui.components.cdpStepLogin'),
+    t('ui.components.cdpStepCollect'),
+    t('ui.components.cdpStepDone'),
+  ];
   return (
     <div className="flex items-center gap-1 mb-6">
       {steps.map((label, i) => (
@@ -285,46 +297,46 @@ function SetupInstructions({ onRecheck, isChecking }: { onRecheck: () => void; i
     <div className="flex flex-col gap-5">
       <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-subtle)]">
-          Step 1 — Enable Chrome Remote Debugging
+          {t('ui.components.cdpStep1Header')}
         </p>
         <ol className="mt-3 flex flex-col gap-2">
           <li className="flex gap-2 text-xs text-[var(--text-secondary)]">
             <span className="mt-px shrink-0 text-[var(--text-subtle)]">1.</span>
             <span>
-              Open{' '}
+              {t('ui.components.cdpStep1_1')}{' '}
               <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[0.7rem] text-[var(--text-primary)]">
                 chrome://inspect/#remote-debugging
               </code>{' '}
-              in your Chrome browser.
+              {t('ui.components.cdpStep1_1_suffix')}
             </span>
           </li>
           <li className="flex gap-2 text-xs text-[var(--text-secondary)]">
             <span className="mt-px shrink-0 text-[var(--text-subtle)]">2.</span>
             <span>
-              Check{' '}
+              {t('ui.components.cdpStep1_2_pre')}{' '}
               <strong className="font-medium text-[var(--text-primary)]">
-                &ldquo;Allow remote debugging for this browser instance&rdquo;
+                {t('ui.components.cdpStep1_2_strong')}
               </strong>
-              .
+              {t('ui.components.cdpStep1_2_suffix')}
             </span>
           </li>
         </ol>
         <TroubleshootSection
-          title="Troubleshoot"
+          title={t('ui.components.cdpTroubleshoot')}
           items={[
-            '"Page not found?" — Make sure you\'re using Google Chrome (not Safari or Firefox)',
-            '"No checkbox visible?" — Scroll down, it may be below the fold',
-            '"Still not working?" — Restart Chrome completely, then try again',
+            t('ui.components.cdpTs1_1'),
+            t('ui.components.cdpTs1_2'),
+            t('ui.components.cdpTs1_3'),
           ]}
         />
       </div>
 
       <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-subtle)]">
-          Step 2 — Start CDP Proxy
+          {t('ui.components.cdpStep2Header')}
         </p>
         <p className="mt-2 text-xs text-[var(--text-secondary)]">
-          Run this command in your terminal:
+          {t('ui.components.cdpStep2Desc')}
         </p>
         <div className="mt-2 flex items-center gap-2 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-primary)] px-3 py-2">
           <code className="min-w-0 flex-1 truncate font-mono text-[0.7rem] text-[var(--text-primary)]">
@@ -333,11 +345,11 @@ function SetupInstructions({ onRecheck, isChecking }: { onRecheck: () => void; i
           <CopyButton text={SETUP_COMMAND} />
         </div>
         <TroubleshootSection
-          title="Troubleshoot"
+          title={t('ui.components.cdpTroubleshoot')}
           items={[
-            '"node" not found? — Install Node.js from nodejs.org (version 22+)',
-            '"Port already in use?" — Another proxy may be running; this is fine',
-            '"Chrome auth popup?" — Click "Allow" in your Chrome browser',
+            t('ui.components.cdpTs2_1'),
+            t('ui.components.cdpTs2_2'),
+            t('ui.components.cdpTs2_3'),
           ]}
         />
       </div>
@@ -350,7 +362,7 @@ function SetupInstructions({ onRecheck, isChecking }: { onRecheck: () => void; i
         style={{ color: 'var(--text-secondary)' }}
       >
         {isChecking && <Spinner />}
-        {isChecking ? 'Checking...' : 'Recheck Connection'}
+        {isChecking ? t('ui.components.cdpChecking') : t('ui.components.cdpRecheckBtn')}
       </button>
     </div>
   );
@@ -379,11 +391,10 @@ function LoginCheckPanel({
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-subtle)] mb-3">
-          Verify platform logins
+          {t('ui.components.cdpVerifyLogins')}
         </p>
         <p className="text-xs text-[var(--text-secondary)] mb-4">
-          Data collection reads from your existing browser sessions. Make sure
-          you are logged in to each platform you want to collect.
+          {t('ui.components.cdpLoginDesc')}
         </p>
         <div className="flex flex-col gap-3">
           {PLATFORMS.map((p) => {
@@ -401,7 +412,7 @@ function LoginCheckPanel({
                     </span>
                     {state.status === 'logged_in' && state.username && (
                       <span className="text-xs text-[var(--text-subtle)] truncate">
-                        as {state.username}
+                        {t('ui.components.cdpLoginAs', { username: state.username })}
                       </span>
                     )}
                     {state.status === 'checking' && (
@@ -414,16 +425,16 @@ function LoginCheckPanel({
                       onClick={() => onCheckLogin(p.id)}
                       className="shrink-0 rounded px-2 py-1 text-xs font-medium border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--accent-green)] hover:text-[var(--accent-green)] transition-colors"
                     >
-                      Check Login
+                      {t('ui.components.cdpCheckLoginBtn')}
                     </button>
                   )}
                   {state.status === 'logged_in' && (
-                    <span className="shrink-0 text-xs text-[var(--accent-green)]">Ready</span>
+                    <span className="shrink-0 text-xs text-[var(--accent-green)]">{t('ui.components.cdpLoginReady')}</span>
                   )}
                 </div>
                 {state.status !== 'logged_in' && (
                   <p className="text-xs text-[var(--text-subtle)]">
-                    Open{' '}
+                    {t('ui.components.cdpOpenInChrome')}{' '}
                     <a
                       href={p.loginUrl}
                       target="_blank"
@@ -432,7 +443,7 @@ function LoginCheckPanel({
                     >
                       {p.loginLabel}
                     </a>{' '}
-                    in Chrome and log in
+                    {t('ui.components.cdpOpenAndLogin')}
                   </p>
                 )}
               </div>
@@ -448,7 +459,7 @@ function LoginCheckPanel({
           disabled={!allConfirmed}
           className="flex h-10 flex-1 items-center justify-center rounded-lg px-5 text-sm font-medium transition-colors disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
         >
-          Continue
+          {t('ui.common.continue')}
         </button>
         <button
           type="button"
@@ -456,12 +467,11 @@ function LoginCheckPanel({
           className="flex h-10 items-center justify-center rounded-lg border border-[var(--border-medium)] px-4 text-sm font-medium transition-colors hover:border-[var(--accent-green)] hover:text-[var(--accent-green)]"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Skip
+          {t('ui.common.cancel')}
         </button>
       </div>
       <p className="text-xs text-[var(--text-subtle)]">
-        Skip if you prefer to verify manually. You can always retry if collection
-        fails with a login error.
+        {t('ui.components.cdpSkipLoginNote')}
       </p>
     </div>
   );
@@ -473,7 +483,7 @@ function LoginDot({ status }: { status: LoginStatus }) {
       <span
         className="inline-block h-2 w-2 rounded-full shrink-0"
         style={{ background: 'var(--accent-green)' }}
-        aria-label="Logged in"
+        aria-label={t('ui.components.cdpLoginDotLoggedIn')}
       />
     );
   }
@@ -482,7 +492,7 @@ function LoginDot({ status }: { status: LoginStatus }) {
       <span
         className="inline-block h-2 w-2 rounded-full shrink-0"
         style={{ background: 'var(--accent-red)' }}
-        aria-label="Not logged in"
+        aria-label={t('ui.components.cdpLoginDotNotLoggedIn')}
       />
     );
   }
@@ -490,7 +500,7 @@ function LoginDot({ status }: { status: LoginStatus }) {
     <span
       className="inline-block h-2 w-2 rounded-full shrink-0"
       style={{ background: 'var(--border-medium)' }}
-      aria-label="Status unknown"
+      aria-label={t('ui.components.cdpLoginDotUnknown')}
     />
   );
 }
@@ -507,10 +517,10 @@ function PlatformStatusDot({ status }: { status: PlatformCollectStatus }) {
     error: 'var(--accent-red)',
   };
   const labelMap: Record<PlatformCollectStatus, string> = {
-    idle: 'Idle',
-    collecting: 'Collecting',
-    done: 'Done',
-    error: 'Error',
+    idle: t('ui.components.cdpStatusIdle'),
+    collecting: t('ui.components.cdpStatusCollecting'),
+    done: t('ui.components.cdpStatusDone'),
+    error: t('ui.components.cdpStatusError'),
   };
   return (
     <span
@@ -570,13 +580,13 @@ function MultiCollectPanel({
 
         let statusText: string;
         if (!isVerified) {
-          statusText = 'Not verified';
+          statusText = t('ui.components.cdpNotVerified');
         } else if (status === 'collecting') {
-          statusText = 'Collecting...';
+          statusText = t('ui.components.cdpCollecting');
         } else if (status === 'done') {
-          statusText = `${collectState.postsCount ?? 0} post${(collectState.postsCount ?? 0) !== 1 ? 's' : ''}`;
+          statusText = t('ui.components.cdpPostsCount', { count: collectState.postsCount ?? 0, plural: (collectState.postsCount ?? 0) !== 1 ? 's' : '' });
         } else if (status === 'error') {
-          statusText = 'Failed';
+          statusText = t('ui.components.cdpFailed');
         } else {
           statusText = p.hint;
         }
@@ -602,7 +612,7 @@ function MultiCollectPanel({
                 disabled={!canCollect}
                 className="shrink-0 flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
               >
-                {status === 'collecting' ? 'Collecting...' : status === 'done' ? 'Recollect' : 'Collect'}
+                {status === 'collecting' ? t('ui.components.cdpCollecting') : status === 'done' ? t('ui.components.cdpRecollect') : t('ui.components.cdpCollect')}
               </button>
             </div>
 
@@ -622,10 +632,10 @@ function MultiCollectPanel({
             </p>
 
             {/* Error detail with recovery hint */}
-            {status === 'error' && collectState.errorCode && ERROR_RECOVERY[collectState.errorCode] && (
+            {status === 'error' && collectState.errorCode && getErrorRecovery()[collectState.errorCode] && (
               <TroubleshootSection
-                title="How to fix"
-                items={ERROR_RECOVERY[collectState.errorCode].steps}
+                title={t('ui.components.cdpHowToFix')}
+                items={getErrorRecovery()[collectState.errorCode].steps}
               />
             )}
 
@@ -653,7 +663,7 @@ function MultiCollectPanel({
         style={{ color: 'var(--text-secondary)' }}
       >
         {anyCollecting && <Spinner />}
-        {anyCollecting ? 'Collecting...' : 'Collect All Verified Platforms'}
+        {anyCollecting ? t('ui.components.cdpCollecting') : t('ui.components.cdpCollectAll')}
       </button>
 
       {/* Launch Dashboard — shown when at least one platform has data */}
@@ -663,13 +673,12 @@ function MultiCollectPanel({
           onClick={onLaunchDashboard}
           className="flex h-10 w-full items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
         >
-          Launch Dashboard
+          {t('ui.common.launchDashboard')}
         </button>
       )}
 
       <p className="text-xs leading-5 text-[var(--text-subtle)]">
-        Collect each platform individually or all at once. You can launch the
-        dashboard anytime after at least one platform is collected.
+        {t('ui.components.cdpCollectPanelNote')}
       </p>
     </div>
   );
@@ -705,8 +714,8 @@ function MultiDonePanel({
     <div className="flex flex-col gap-4">
       <StatusBar
         icon={<CheckIcon />}
-        label="Collection complete"
-        sub={`${totalPosts} post${totalPosts !== 1 ? 's' : ''} across ${doneCount} platform${doneCount !== 1 ? 's' : ''}`}
+        label={t('ui.components.cdpCollectionComplete')}
+        sub={t('ui.components.cdpCollectionSummary', { posts: totalPosts, plural: totalPosts !== 1 ? 's' : '', platforms: doneCount, platformPlural: doneCount !== 1 ? 's' : '' })}
         accent="green"
       />
 
@@ -730,8 +739,8 @@ function MultiDonePanel({
                 }}
               >
                 {state.status === 'done'
-                  ? `${state.postsCount ?? 0} posts`
-                  : state.error ?? 'Failed'}
+                  ? t('ui.components.cdpPostsCount', { count: state.postsCount ?? 0 })
+                  : state.error ?? t('ui.components.cdpFailed')}
               </span>
             </div>
           );
@@ -745,7 +754,7 @@ function MultiDonePanel({
           disabled={!canLaunch}
           className="flex h-10 flex-1 items-center justify-center rounded-lg px-5 text-sm font-medium transition-colors disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
         >
-          Launch Dashboard
+          {t('ui.common.launchDashboard')}
         </button>
         {hasErrors && (
           <button
@@ -754,14 +763,14 @@ function MultiDonePanel({
             className="flex h-10 items-center justify-center rounded-lg border border-[var(--border-medium)] px-4 text-sm font-medium transition-colors hover:border-[var(--accent-yellow)] hover:text-[var(--accent-yellow)]"
             style={{ color: 'var(--text-secondary)' }}
           >
-            Retry Failed
+            {t('ui.components.cdpRetryFailed')}
           </button>
         )}
       </div>
 
       {!canLaunch && (
         <p className="text-xs text-[var(--text-subtle)]">
-          At least one successful collection is required to launch the dashboard.
+          {t('ui.components.cdpNeedOneCollection')}
         </p>
       )}
     </div>
@@ -990,7 +999,7 @@ export default function CdpSetupGuide() {
       {phase === 'checking' && (
         <StatusBar
           icon={<Spinner />}
-          label="Checking CDP proxy connection..."
+          label={t('ui.components.cdpCheckingProxy')}
           accent="neutral"
         />
       )}
@@ -1000,8 +1009,8 @@ export default function CdpSetupGuide() {
         <>
           <StatusBar
             icon={<CrossIcon />}
-            label="CDP proxy not running"
-            sub="Follow the steps below to connect your Chrome browser."
+            label={t('ui.components.cdpProxyNotRunningStatus')}
+            sub={t('ui.components.cdpProxyNotRunningSub')}
             accent="red"
           />
           <SetupInstructions
@@ -1016,8 +1025,8 @@ export default function CdpSetupGuide() {
         <>
           <StatusBar
             icon={<CheckIcon />}
-            label="CDP proxy connected"
-            sub="Verify your platform logins before collecting."
+            label={t('ui.components.cdpProxyConnected')}
+            sub={t('ui.components.cdpVerifyLoginsSub')}
             accent="green"
           />
           <LoginCheckPanel
@@ -1034,8 +1043,8 @@ export default function CdpSetupGuide() {
         <>
           <StatusBar
             icon={<CheckIcon />}
-            label="CDP proxy connected"
-            sub="Select platforms and collect data."
+            label={t('ui.components.cdpReadyToCollect')}
+            sub={t('ui.components.cdpReadyToCollectSub')}
             accent="green"
           />
           <MultiCollectPanel

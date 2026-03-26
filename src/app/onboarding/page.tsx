@@ -8,6 +8,7 @@ import CDPSetupGuide from "@/components/cdp-setup-guide";
 import { parseFileContent, parseXlsxRaw, mergeXlsxResults, type XlsxParseResult } from "@/lib/adapters/file-import-adapter";
 import type { CreatorProfile } from "@/lib/schema/creator-data";
 import { saveProfiles } from "@/lib/store/profile-store";
+import { t } from "@/lib/i18n";
 
 type PlatformEntry = {
   id: string;
@@ -120,11 +121,11 @@ export default function OnboardingPage() {
           const result = parseXlsxRaw(base64, file.name);
           newXlsx.push(result);
 
-          const label = result.schema === "post_list" ? "作品列表"
-            : result.schema === "post_analysis" ? "投稿分析"
-            : result.schema === "aggregate" ? "投稿汇总"
-            : result.schema === "timeseries" ? "时间序列"
-            : "通用数据";
+          const label = result.schema === "post_list" ? t("ui.onboarding.schemaPostList")
+            : result.schema === "post_analysis" ? t("ui.onboarding.schemaPostAnalysis")
+            : result.schema === "aggregate" ? t("ui.onboarding.schemaAggregate")
+            : result.schema === "timeseries" ? t("ui.onboarding.schemaTimeseries")
+            : t("ui.onboarding.schemaGeneric");
           const count = result.posts?.length ?? result.history?.length ?? 1;
           newResults.push({ fileName: file.name, status: "success", profileCount: count, error: label });
         } else {
@@ -233,7 +234,7 @@ export default function OnboardingPage() {
           aria-valuenow={step}
           aria-valuemin={1}
           aria-valuemax={2}
-          aria-label={`Step ${step} of 2`}
+          aria-label={t("ui.onboarding.step", { step })}
         >
           <div
             className="h-1 flex-1 rounded-full"
@@ -255,13 +256,13 @@ export default function OnboardingPage() {
         {step === 1 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Connect your accounts
+              {t("ui.onboarding.connectAccounts")}
             </h1>
             <p
               className="mt-2 text-sm leading-6"
               style={{ color: "var(--text-secondary)" }}
             >
-              Import your data files or paste a TikTok profile URL to get started.
+              {t("ui.onboarding.connectDesc")}
             </p>
 
             {/* Mode toggle */}
@@ -280,7 +281,7 @@ export default function OnboardingPage() {
                     : "bg-transparent text-[var(--text-secondary)]"
                 }`}
               >
-                Import Files
+                {t("ui.onboarding.importFiles")}
               </button>
               <button
                 type="button"
@@ -293,7 +294,7 @@ export default function OnboardingPage() {
                     : "bg-transparent text-[var(--text-secondary)]"
                 }`}
               >
-                Paste URL
+                {t("ui.onboarding.pasteUrl")}
               </button>
               <button
                 type="button"
@@ -306,7 +307,7 @@ export default function OnboardingPage() {
                     : "bg-transparent text-[var(--text-secondary)]"
                 }`}
               >
-                Auto Collect
+                {t("ui.onboarding.autoCollect")}
               </button>
             </div>
 
@@ -316,35 +317,34 @@ export default function OnboardingPage() {
                 {/* Export guide — teach users how to get the data */}
                 <div className="mb-6 rounded-lg border border-[rgba(210,200,126,0.15)] bg-[rgba(210,200,126,0.06)] px-4 py-3">
                   <p className="text-xs font-semibold text-[var(--accent-yellow)]">
-                    How to export your data from Creator Centers
+                    {t("ui.onboarding.exportGuideTitle")}
                   </p>
                   <div className="mt-2 flex flex-col gap-2">
                     <div className="text-xs text-[var(--text-secondary)]">
-                      <strong className="text-[var(--text-primary)]">Douyin</strong> —
+                      <strong className="text-[var(--text-primary)]">{t("ui.onboarding.douyinExport")}</strong> —
                       Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">creator.douyin.com</code>:
                       <ol className="mt-1 ml-3 flex flex-col gap-0.5 text-[var(--text-subtle)]">
-                        <li>1. Data Center &rarr; Account Overview &rarr; select <strong className="text-[var(--text-secondary)]">Last 30 days</strong> &rarr; click each metric tab &rarr; Export Data</li>
-                        <li>2. Data Center &rarr; Content Analysis &rarr; Post List &rarr; click calendar icon &rarr; select <strong className="text-[var(--text-secondary)]">All</strong> (max range) &rarr; Export Data</li>
+                        <li>{t("ui.onboarding.douyinStep1")}</li>
+                        <li>{t("ui.onboarding.douyinStep2")}</li>
                       </ol>
                     </div>
                     <div className="text-xs text-[var(--text-secondary)]">
-                      <strong className="text-[var(--text-primary)]">TikTok</strong> —
+                      <strong className="text-[var(--text-primary)]">{t("ui.onboarding.tiktokExport")}</strong> —
                       Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">tiktok.com/tiktokstudio/analytics</code>:
                       <ol className="mt-1 ml-3 flex flex-col gap-0.5 text-[var(--text-subtle)]">
-                        <li>1. Overview tab &rarr; Download Data (365 days of views, likes, comments)</li>
-                        <li>2. Content tab &rarr; Download Data (per-video metrics)</li>
-                        <li>3. Followers tab &rarr; Download Data (follower history, demographics, regions)</li>
-                        <li>4. Viewers tab &rarr; Download Data (viewer trends)</li>
+                        <li>{t("ui.onboarding.tiktokStep1")}</li>
+                        <li>{t("ui.onboarding.tiktokStep2")}</li>
+                        <li>{t("ui.onboarding.tiktokStep3")}</li>
+                        <li>{t("ui.onboarding.tiktokStep4")}</li>
                       </ol>
                     </div>
                     <div className="text-xs text-[var(--text-secondary)]">
-                      <strong className="text-[var(--text-primary)]">Red Note</strong> —
-                      Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">creator.xiaohongshu.com</code> &rarr; Data Dashboard &rarr; Export Data
+                      <strong className="text-[var(--text-primary)]">{t("ui.onboarding.redNoteExport")}</strong> —{" "}
+                      {t("ui.onboarding.redNoteStep")}
                     </div>
                   </div>
                   <p className="mt-2 text-[0.65rem] text-[var(--text-subtle)]">
-                    Export as much data as possible — more data means more accurate analysis.
-                    Select the maximum date range available for the best results.
+                    {t("ui.onboarding.exportMoreData")}
                   </p>
                 </div>
 
@@ -357,21 +357,21 @@ export default function OnboardingPage() {
                   <div className="mt-6 flex flex-col gap-3">
                     <div className="rounded-lg bg-[var(--bg-card)] px-4 py-3">
                       <p className="text-xs font-medium text-[var(--text-primary)]">
-                        Merge preview
+                        {t("ui.onboarding.mergePreview")}
                       </p>
                       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)]">
-                        {totalPosts > 0 && <span>{totalPosts} posts</span>}
-                        {totalHistory > 0 && <span>{totalHistory} daily snapshots</span>}
-                        {schemaTypes.map((t) => (
-                          <span key={t} className="rounded bg-[rgba(126,210,154,0.1)] px-1.5 py-0.5 text-[var(--accent-green)]">
-                            {t === "post_list" ? "作品列表" : t === "post_analysis" ? "投稿分析" : t === "aggregate" ? "投稿汇总" : t === "timeseries" ? "时间序列" : t}
+                        {totalPosts > 0 && <span>{t("ui.onboarding.postsCount", { count: totalPosts })}</span>}
+                        {totalHistory > 0 && <span>{t("ui.onboarding.dailySnapshots", { count: totalHistory })}</span>}
+                        {schemaTypes.map((s) => (
+                          <span key={s} className="rounded bg-[rgba(126,210,154,0.1)] px-1.5 py-0.5 text-[var(--accent-green)]">
+                            {s === "post_list" ? t("ui.onboarding.schemaPostList") : s === "post_analysis" ? t("ui.onboarding.schemaPostAnalysis") : s === "aggregate" ? t("ui.onboarding.schemaAggregate") : s === "timeseries" ? t("ui.onboarding.schemaTimeseries") : s}
                           </span>
                         ))}
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                     <p className="text-sm text-[var(--text-secondary)]">
-                      Ready to analyze
+                      {t("ui.onboarding.readyToAnalyze")}
                     </p>
                     <button
                       type="button"
@@ -382,7 +382,7 @@ export default function OnboardingPage() {
                         color: "var(--bg-primary)",
                       }}
                     >
-                      Launch Dashboard
+                      {t("ui.common.launchDashboard")}
                     </button>
                   </div>
                   </div>
@@ -401,13 +401,11 @@ export default function OnboardingPage() {
                 border: "1px solid rgba(210, 200, 126, 0.15)",
               }}
             >
-              TikTok is supported via URL paste. For Douyin, install the
-              Data Passport browser extension for one-click data capture.
-              Red Note support is coming soon.
+              {t("ui.onboarding.tiktokSupported")}
             </p>
 
             <fieldset className="mt-8 flex flex-col gap-4">
-              <legend className="sr-only">Profile URLs</legend>
+              <legend className="sr-only">{t("ui.onboarding.profileUrls")}</legend>
               {entries.map((entry, index) => (
                 <div key={entry.id} className="flex items-center gap-3">
                   <div className="relative flex-1">
@@ -415,7 +413,7 @@ export default function OnboardingPage() {
                       htmlFor={`url-${index}`}
                       className="sr-only"
                     >
-                      Profile URL {index + 1}
+                      {t("ui.onboarding.profileUrl", { index: index + 1 })}
                     </label>
                     <input
                       id={`url-${index}`}
@@ -454,7 +452,7 @@ export default function OnboardingPage() {
                       onClick={() => removeEntry(entries, setEntries, index)}
                       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
                       style={{ color: "var(--text-subtle)" }}
-                      aria-label={`Remove URL ${index + 1}`}
+                      aria-label={t("ui.onboarding.removeUrl", { index: index + 1 })}
                     >
                       <svg
                         width="16"
@@ -478,8 +476,7 @@ export default function OnboardingPage() {
                 className="mt-3 text-xs"
                 style={{ color: "var(--accent-red)" }}
               >
-                Douyin and Red Note URLs detected but not yet supported for live
-                collection. Please use a TikTok URL or try demo data.
+                {t("ui.onboarding.douyinRedNoteNotSupported")}
               </p>
             )}
 
@@ -489,7 +486,7 @@ export default function OnboardingPage() {
               className="mt-4 text-sm font-medium transition-colors hover:opacity-80"
               style={{ color: "var(--accent-green)" }}
             >
-              + Add another platform
+              {t("ui.onboarding.addPlatform")}
             </button>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between">
@@ -499,14 +496,14 @@ export default function OnboardingPage() {
                   className="text-sm font-medium transition-colors hover:opacity-80"
                   style={{ color: "var(--text-subtle)" }}
                 >
-                  Skip &mdash; use demo data
+                  {t("ui.onboarding.skipDemo")}
                 </Link>
                 <Link
                   href="/dashboard?source=extension"
                   className="text-sm font-medium transition-colors hover:opacity-80"
                   style={{ color: "var(--accent-blue)" }}
                 >
-                  Use extension (Douyin)
+                  {t("ui.onboarding.useExtension")}
                 </Link>
               </div>
               <button
@@ -519,7 +516,7 @@ export default function OnboardingPage() {
                   color: "var(--bg-primary)",
                 }}
               >
-                Continue
+                {t("ui.common.continue")}
               </button>
             </div>
               </>
@@ -535,14 +532,13 @@ export default function OnboardingPage() {
         {step === 2 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Benchmark comparison
+              {t("ui.onboarding.benchmarkTitle")}
             </h1>
             <p
               className="mt-2 text-sm leading-6"
               style={{ color: "var(--text-secondary)" }}
             >
-              Compare your account against competitors or aspirational
-              creators to identify gaps and opportunities.
+              {t("ui.onboarding.benchmarkDesc")}
             </p>
             <div
               className="mt-4 rounded-md px-4 py-3 text-xs leading-5"
@@ -552,10 +548,7 @@ export default function OnboardingPage() {
                 border: "1px solid rgba(210, 200, 126, 0.15)",
               }}
             >
-              Benchmark comparison is not yet available. This feature
-              requires live data collection for both your account and
-              benchmark accounts, which is currently limited to TikTok
-              snapshots. Full benchmark support is on the roadmap.
+              {t("ui.onboarding.benchmarkNotAvailable")}
             </div>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between">
@@ -565,7 +558,7 @@ export default function OnboardingPage() {
                 className="text-sm font-medium transition-colors hover:opacity-80"
                 style={{ color: "var(--text-subtle)" }}
               >
-                &larr; Back
+                &larr; {t("ui.common.back")}
               </button>
               <button
                 type="button"
@@ -576,7 +569,7 @@ export default function OnboardingPage() {
                   color: "var(--bg-primary)",
                 }}
               >
-                Launch Dashboard
+                {t("ui.common.launchDashboard")}
               </button>
             </div>
           </div>

@@ -366,6 +366,17 @@ const zh: Record<string, string> = {
   'ui.components.updateExperiment': '更新实验',
 
   // ===========================================================================
+  // 引导 — 文件导入模式 Schema 类型标签
+  // ===========================================================================
+  'ui.onboarding.schemaPostList': '作品列表',
+  'ui.onboarding.schemaPostAnalysis': '投稿分析',
+  'ui.onboarding.schemaAggregate': '投稿汇总',
+  'ui.onboarding.schemaTimeseries': '时间序列',
+  'ui.onboarding.schemaGeneric': '通用数据',
+  'ui.onboarding.profileUrls': '主页链接',
+  'ui.onboarding.removeUrl': '删除链接 {index}',
+
+  // ===========================================================================
   // 组件 — CDP 设置指南
   // ===========================================================================
   'ui.components.cdpReadsCreatorCenter': '从创作者中心读取 \u2014 无需链接',
@@ -374,6 +385,95 @@ const zh: Record<string, string> = {
   'ui.components.cdpNotLoggedIn': '未登录到平台',
   'ui.components.cdpTimeout': '采集超时',
   'ui.components.cdpParseError': '无法读取页面数据',
+  // Step indicator
+  'ui.components.cdpStepSetup': '设置',
+  'ui.components.cdpStepLogin': '登录',
+  'ui.components.cdpStepCollect': '采集',
+  'ui.components.cdpStepDone': '完成',
+  // Setup instructions
+  'ui.components.cdpStep1Header': '第 1 步 \u2014 开启 Chrome 远程调试',
+  'ui.components.cdpStep1_1': '在 Chrome 浏览器中打开',
+  'ui.components.cdpStep1_1_suffix': '。',
+  'ui.components.cdpStep1_2_pre': '勾选',
+  'ui.components.cdpStep1_2_strong': '\u201c允许为此浏览器实例启用远程调试\u201d',
+  'ui.components.cdpStep1_2_suffix': '。',
+  'ui.components.cdpStep2Header': '第 2 步 \u2014 启动 CDP 代理',
+  'ui.components.cdpStep2Desc': '在终端中运行以下命令：',
+  'ui.components.cdpRecheckBtn': '重新检测连接',
+  'ui.components.cdpChecking': '检测中...',
+  // Troubleshoot
+  'ui.components.cdpTroubleshoot': '故障排查',
+  'ui.components.cdpHowToFix': '如何修复',
+  // Troubleshoot step 1 items
+  'ui.components.cdpTs1_1': '"找不到页面？" \u2014 请确保使用的是 Google Chrome（不是 Safari 或 Firefox）',
+  'ui.components.cdpTs1_2': '"没有看到复选框？" \u2014 向下滚动，可能在折叠区域以下',
+  'ui.components.cdpTs1_3': '"仍然无效？" \u2014 完全重启 Chrome 后再试',
+  // Troubleshoot step 2 items
+  'ui.components.cdpTs2_1': '"找不到 node"？\u2014 从 nodejs.org 安装 Node.js（22+ 版本）',
+  'ui.components.cdpTs2_2': '"端口已占用？" \u2014 可能有其他代理在运行，这是正常的',
+  'ui.components.cdpTs2_3': '"Chrome 认证弹窗？" \u2014 在 Chrome 中点击"允许"',
+  // Error recovery
+  'ui.components.cdpErrProxyTitle': 'CDP 代理未运行',
+  'ui.components.cdpErrProxy1': '打开终端',
+  'ui.components.cdpErrProxy3': '等待出现 "proxy: ready" 消息',
+  'ui.components.cdpErrProxy4': '回到此处并重试',
+  'ui.components.cdpErrLoginTitle': '未登录到平台',
+  'ui.components.cdpErrLogin1': '在 Chrome 浏览器中打开平台网站',
+  'ui.components.cdpErrLogin2': '用账号密码登录',
+  'ui.components.cdpErrLogin3': '回到此处并再次点击采集',
+  'ui.components.cdpErrTimeoutTitle': '采集超时',
+  'ui.components.cdpErrTimeout1': '页面加载可能较慢',
+  'ui.components.cdpErrTimeout2': '请确保网络连接稳定',
+  'ui.components.cdpErrTimeout3': '重试 \u2014 通常第二次会成功',
+  'ui.components.cdpErrParseTitle': '无法读取页面数据',
+  'ui.components.cdpErrParse1': '平台页面结构可能已更新',
+  'ui.components.cdpErrParse2': '请先在 Chrome 中刷新平台页面',
+  'ui.components.cdpErrParse3': '如果问题持续，请稍后再试',
+  // Login check panel
+  'ui.components.cdpVerifyLogins': '验证平台登录状态',
+  'ui.components.cdpLoginDesc': '数据采集依赖你已有的浏览器会话。请确保已登录每个需要采集的平台。',
+  'ui.components.cdpCheckLoginBtn': '检测登录',
+  'ui.components.cdpLoginReady': '已就绪',
+  'ui.components.cdpLoginAs': '已登录为 {username}',
+  'ui.components.cdpOpenInChrome': '在 Chrome 中打开',
+  'ui.components.cdpOpenAndLogin': '并登录',
+  'ui.components.cdpSkipLoginNote': '如果你想手动验证可以跳过。采集时若遇到登录错误，随时可以重试。',
+  // Copy button
+  'ui.components.cdpCopy': '复制',
+  'ui.components.cdpCopied': '已复制',
+  'ui.components.cdpCopyAriaDefault': '复制命令',
+  'ui.components.cdpCopyAriaCopied': '已复制',
+  // Collect panel
+  'ui.components.cdpNotVerified': '未验证',
+  'ui.components.cdpCollecting': '采集中...',
+  'ui.components.cdpFailed': '失败',
+  'ui.components.cdpRecollect': '重新采集',
+  'ui.components.cdpCollect': '采集',
+  'ui.components.cdpCollectAll': '采集所有已验证平台',
+  'ui.components.cdpCollectPanelNote': '可逐个采集各平台，也可一键全部采集。至少完成一个平台的采集后即可启动仪表盘。',
+  'ui.components.cdpPostsCount': '{count} 条作品',
+  // Phase status bars
+  'ui.components.cdpCheckingProxy': '正在检测 CDP 代理连接...',
+  'ui.components.cdpProxyNotRunningStatus': 'CDP 代理未运行',
+  'ui.components.cdpProxyNotRunningSub': '请按以下步骤连接你的 Chrome 浏览器。',
+  'ui.components.cdpProxyConnected': 'CDP 代理已连接',
+  'ui.components.cdpVerifyLoginsSub': '采集前请先验证平台登录状态。',
+  'ui.components.cdpReadyToCollect': 'CDP 代理已连接',
+  'ui.components.cdpReadyToCollectSub': '选择平台并开始采集数据。',
+  // Platform status dot labels
+  'ui.components.cdpStatusIdle': '空闲',
+  'ui.components.cdpStatusCollecting': '采集中',
+  'ui.components.cdpStatusDone': '已完成',
+  'ui.components.cdpStatusError': '错误',
+  // Login dot labels
+  'ui.components.cdpLoginDotLoggedIn': '已登录',
+  'ui.components.cdpLoginDotNotLoggedIn': '未登录',
+  'ui.components.cdpLoginDotUnknown': '状态未知',
+  // Done panel
+  'ui.components.cdpCollectionComplete': '采集完成',
+  'ui.components.cdpCollectionSummary': '共 {posts} 条作品，来自 {platforms} 个平台',
+  'ui.components.cdpRetryFailed': '重试失败项',
+  'ui.components.cdpNeedOneCollection': '至少需要一个平台成功采集后才能启动仪表盘。',
 
   // ===========================================================================
   // 组件 — 扩展数据加载 / 粉丝画像
