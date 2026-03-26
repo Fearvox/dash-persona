@@ -412,7 +412,7 @@ function parseTimeseries(rows: Record<string, unknown>[]): { history: CreatorPro
       return {
         fetchedAt: String(row['日期']),
         profile: {
-          followers: 0,
+          followers: metricCol === '总粉丝量' ? val : 0,
           likesTotal: metricCol === '作品点赞' ? val : 0,
           videosCount: 0,
         },
@@ -724,9 +724,9 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
     }
   }
 
-  // Merge TikTok history: Overview provides likesTotal, FollowerHistory provides followers.
-  // Both are keyed by the same date string — merge them so each snapshot has both values.
-  if (hasTikTok && history && history.length > 0) {
+  // Merge history entries by date — multiple timeseries files (Douyin: 9 files x 30 days,
+  // TikTok: Overview + FollowerHistory) may have entries for the same dates with different metrics.
+  if (history && history.length > 0) {
     const byDate = new Map<string, NonNullable<CreatorProfile['history']>[number]>();
     for (const snap of history) {
       const existing = byDate.get(snap.fetchedAt);
@@ -751,9 +751,9 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
     history.sort((a, b) => a.fetchedAt.localeCompare(b.fetchedAt));
   }
 
-  // Derive current follower count from the most recent follower history snapshot
+  // Derive current follower count from the most recent history snapshot
   const latestFollowers =
-    hasTikTok && history && history.length > 0
+    history && history.length > 0
       ? (history[history.length - 1]?.profile.followers ?? 0)
       : 0;
 
