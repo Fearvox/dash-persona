@@ -51,12 +51,31 @@ export interface AggregatedGrowth {
 
 /** Single sparkline data point. */
 export interface SparklinePoint {
-  /** Human-readable time label (HH:mm). */
+  /** Human-readable time label (HH:mm or "Mar 25"). */
   time: string;
   /** Follower count at this point. */
   followers: number;
   /** Cumulative views at this point. */
   views: number;
+}
+
+/**
+ * Format a timestamp for use as a sparkline X-axis label.
+ *
+ * Returns HH:mm for windows of 24h or less, and "Mon DD" (e.g. "Mar 25")
+ * for longer windows where showing a time-of-day would be meaningless.
+ *
+ * @param fetchedAt  ISO-8601 timestamp string.
+ * @param hoursBack  The look-back window in hours used to extract the data.
+ */
+export function formatTimeLabel(fetchedAt: string, hoursBack: number): string {
+  const d = new Date(fetchedAt);
+  if (isNaN(d.getTime())) return '';
+  if (hoursBack <= 24) {
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate();
 }
 
 // ---------------------------------------------------------------------------
@@ -299,11 +318,7 @@ export function extractSparklineData(
       return true;
     })
     .map((e) => ({
-      time: new Date(e.fetchedAt).toLocaleTimeString('zh-CN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      }),
+      time: formatTimeLabel(e.fetchedAt, hoursBack),
       followers: e.followers,
       views: e.views,
     }));

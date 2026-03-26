@@ -28,6 +28,7 @@ export {
   computeGrowthDelta,
   aggregateGrowth,
   extractSparklineData,
+  formatTimeLabel,
   formatDelta,
   formatNumber,
 } from './growth';

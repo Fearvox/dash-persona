@@ -5,6 +5,7 @@ import {
   AreaChart,
   Area,
   YAxis,
+  XAxis,
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
@@ -246,7 +247,7 @@ const SparklineCard = memo(function SparklineCard({
         )}
       </div>
 
-      <div className="mt-3 h-16 w-full">
+      <div className="mt-3 h-20 w-full">
         {sparkData.length >= 2 ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
@@ -297,6 +298,14 @@ const SparklineCard = memo(function SparklineCard({
                 </linearGradient>
               </defs>
 
+              <XAxis
+                dataKey="time"
+                tick={{ fill: 'var(--text-subtle)', fontSize: 9 }}
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
+                minTickGap={40}
+              />
               <YAxis domain={['dataMin', 'dataMax']} hide />
               <Tooltip content={<SparklineTooltip />} cursor={false} />
               <Area
