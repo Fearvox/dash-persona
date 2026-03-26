@@ -1,73 +1,128 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getDemoProfile } from '@/lib/adapters/demo-adapter';
-import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
-import ImportTimelineLoader from './import-timeline-loader';
-import { generateDemoTree, getTreeLanes, generateExperimentIdeas } from '@/lib/engine';
-import { PLATFORM_LABELS, VALID_PERSONAS } from '@/lib/utils/constants';
+import type { CreatorProfile } from '@/lib/schema/creator-data';
+import type { PersonaTree } from '@/lib/schema/persona-tree';
+import type { PersonaTreeNode } from '@/lib/schema/persona-tree';
+import { generateDemoTree, getTreeLanes, generateExperimentIdeas, type ExperimentIdea } from '@/lib/engine';
+import { loadProfiles } from '@/lib/store/profile-store';
+import { PLATFORM_LABELS } from '@/lib/utils/constants';
 import { profileKey } from '@/lib/history/store';
 import TimelineClient from './timeline-client';
 import GrowthTrendChart from '@/components/growth-trend-chart';
 
 // ---------------------------------------------------------------------------
-// Constants
+// Types
 // ---------------------------------------------------------------------------
 
-const VALID_PERSONAS_SET = new Set<DemoPersonaType>(
-  VALID_PERSONAS as readonly DemoPersonaType[],
-);
-
-const PLATFORMS = ['douyin', 'tiktok', 'xhs'] as const;
-
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
-interface TimelinePageProps {
-  searchParams: Promise<{
-    source?: string;
-    persona?: string;
-    platform?: string;
-  }>;
+interface TreeLanes {
+  mainline: PersonaTreeNode[];
+  branches: PersonaTreeNode[];
+  boundaries: PersonaTreeNode[];
 }
 
-export default async function TimelinePage({
-  searchParams,
-}: TimelinePageProps) {
-  const params = await searchParams;
+interface LoadedData {
+  tree: PersonaTree;
+  lanes: TreeLanes;
+  ideas: ExperimentIdea[];
+  storeKeys: string[];
+  platform: string;
+  platforms: string[];
+}
 
-  if (params.source === 'import') {
-    return <ImportTimelineLoader platform={params.platform} />;
+interface ImportTimelineLoaderProps {
+  platform?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderProps) {
+  const router = useRouter();
+  const [data, setData] = useState<LoadedData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      // loadProfiles() handles sessionStorage-first + IndexedDB fallback
+      let profiles: Record<string, CreatorProfile> | null = null;
+      try {
+        const loaded = await loadProfiles();
+        if (loaded && Object.keys(loaded).length > 0) {
+          profiles = loaded;
+        }
+      } catch {
+        // storage unavailable
+      }
+
+      if (cancelled) return;
+
+      // No data — redirect to onboarding
+      if (!profiles || Object.keys(profiles).length === 0) {
+        router.replace('/onboarding');
+        return;
+      }
+
+      // Ensure profileUrl exists (consistent with sibling loaders)
+      for (const p of Object.values(profiles)) {
+        if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
+      }
+
+      // Validate platform against available platforms
+      const availablePlatforms = Object.keys(profiles);
+      const resolvedPlatform =
+        platform && availablePlatforms.includes(platform)
+          ? platform
+          : availablePlatforms[0];
+
+      const profile = profiles[resolvedPlatform];
+      const tree = generateDemoTree(profile);
+      const lanes = getTreeLanes(tree);
+      const ideas = generateExperimentIdeas(profiles, tree);
+      const storeKeys = [profileKey(resolvedPlatform, profile.profile.uniqueId)];
+
+      if (!cancelled) {
+        setData({
+          tree,
+          lanes,
+          ideas,
+          storeKeys,
+          platform: resolvedPlatform,
+          platforms: availablePlatforms,
+        });
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [platform, router]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Loading imported data...
+        </p>
+      </div>
+    );
   }
 
-  const personaParam = params.persona ?? 'tutorial';
-  const personaType: DemoPersonaType = VALID_PERSONAS_SET.has(
-    personaParam as DemoPersonaType,
-  )
-    ? (personaParam as DemoPersonaType)
-    : 'tutorial';
+  if (!data) return null;
 
-  const platformParam = params.platform ?? 'douyin';
-  const platform = PLATFORMS.includes(
-    platformParam as (typeof PLATFORMS)[number],
-  )
-    ? platformParam
-    : 'douyin';
+  const { tree, lanes, ideas, storeKeys, platforms } = data;
+  const activePlatform = data.platform;
 
-  // Load demo profile and generate tree + ideas
-  const profiles = getDemoProfile(personaType);
-  const profile = profiles[platform];
-  const tree = generateDemoTree(profile);
-  const lanes = getTreeLanes(tree);
-  const ideas = generateExperimentIdeas(profiles, tree);
-
-  // Build store key for history chart
-  const storeKeys = [profileKey(platform, profile.profile.uniqueId)];
-
-  // Build search params for platform tabs
   function platformHref(p: string) {
     const sp = new URLSearchParams();
-    if (params.source) sp.set('source', params.source);
-    sp.set('persona', personaType);
+    sp.set('source', 'import');
     sp.set('platform', p);
     return `/timeline?${sp.toString()}`;
   }
@@ -77,7 +132,7 @@ export default async function TimelinePage({
       {/* Header */}
       <header className="flex flex-col gap-2">
         <Link
-          href={`/dashboard?source=${params.source ?? 'demo'}&persona=${personaType}`}
+          href="/dashboard?source=import"
           className="nav-pill"
           aria-label="Back to dashboard"
         >
@@ -103,8 +158,8 @@ export default async function TimelinePage({
             style={{ background: 'var(--bg-secondary)' }}
             role="tablist"
           >
-            {PLATFORMS.map((p) => {
-              const isActive = p === platform;
+            {platforms.map((p) => {
+              const isActive = p === activePlatform;
               return (
                 <Link
                   key={p}
@@ -122,7 +177,7 @@ export default async function TimelinePage({
                       : '1px solid transparent',
                   }}
                 >
-                  {PLATFORM_LABELS[p]}
+                  {PLATFORM_LABELS[p] ?? p}
                 </Link>
               );
             })}
@@ -179,7 +234,13 @@ export default async function TimelinePage({
       </section>
 
       {/* Tree visualization (interactive client component) */}
-      <TimelineClient key={platform} nodes={tree.nodes} lanes={lanes} ideas={ideas} platform={platform} />
+      <TimelineClient
+        key={activePlatform}
+        nodes={tree.nodes}
+        lanes={lanes}
+        ideas={ideas}
+        platform={activePlatform}
+      />
     </div>
   );
 }
