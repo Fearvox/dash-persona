@@ -89,8 +89,9 @@ async function cdpHealth(): Promise<boolean> {
   }
 }
 
-async function cdpNew(url: string): Promise<string> {
-  const data = await cdpFetch(`/new?url=${encodeURIComponent(url)}`) as { targetId?: string };
+async function cdpNew(url: string, opts?: { foreground?: boolean }): Promise<string> {
+  const bg = opts?.foreground ? '&background=false' : '';
+  const data = await cdpFetch(`/new?url=${encodeURIComponent(url)}${bg}`) as { targetId?: string };
   if (!data.targetId) {
     throw new CDPAdapterError('NAVIGATION_FAILED', `CDP /new did not return targetId for URL: ${url}`);
   }
@@ -362,8 +363,9 @@ const DOUYIN_HOME_JS = [
 // ---------------------------------------------------------------------------
 
 async function collectDouyin(): Promise<CreatorProfile> {
-  // Open creator home — will redirect to /creator-micro/home after login check
-  const target = await cdpNew('https://creator.douyin.com');
+  // Open creator home in FOREGROUND tab — required for IntersectionObserver
+  // to fire during infinite scroll loading on 作品管理 page
+  const target = await cdpNew('https://creator.douyin.com', { foreground: true });
 
   try {
     // Wait for SPA render — creator center is slow, poll for page content
@@ -407,8 +409,22 @@ async function collectDouyin(): Promise<CreatorProfile> {
         20_000,
       );
 
-      // Scroll to load more posts (infinite scroll with load-more trigger)
-      await scrollUntilStable(target, 15, 2000);
+      // Scroll load-more into view repeatedly to trigger IntersectionObserver
+      // (requires foreground tab — background tabs don't fire IO callbacks)
+      for (let scrollAttempt = 0; scrollAttempt < 20; scrollAttempt++) {
+        const hasMore = await cdpEval(target, [
+          '(function() {',
+          '  var lm = document.querySelector("[class*=load-more]");',
+          '  if (lm && lm.textContent.indexOf("没有更多") < 0) {',
+          '    lm.scrollIntoView({behavior: "instant", block: "center"});',
+          '    return true;',
+          '  }',
+          '  return false;',
+          '})()',
+        ].join('\n'));
+        if (!hasMore) break;
+        await sleep(2000);
+      }
     } catch {
       // Navigation failed — return profile-only
     }
