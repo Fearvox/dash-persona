@@ -5,6 +5,7 @@ import type { PersonaTreeNode } from '@/lib/schema/persona-tree';
 import type { ExperimentIdea } from '@/lib/engine/idea-generator';
 import { detectConflicts } from '@/lib/engine';
 import { scoreColor } from '@/lib/utils/constants';
+import { t } from '@/lib/i18n';
 import ExperimentForm from '@/components/experiment-form';
 import IdeaCards from '@/components/idea-cards';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
@@ -14,31 +15,30 @@ import { showToast } from '@/components/ui/toast';
 // Helpers
 // ---------------------------------------------------------------------------
 
-const STATUS_STYLES: Record<
-  string,
-  { bg: string; text: string; label: string }
-> = {
-  adopted: {
-    bg: 'rgba(126, 210, 154, 0.15)',
-    text: 'var(--accent-green)',
-    label: 'Adopted',
-  },
-  running: {
-    bg: 'rgba(210, 200, 126, 0.15)',
-    text: 'var(--accent-yellow)',
-    label: 'Running',
-  },
-  discarded: {
-    bg: 'rgba(200, 126, 126, 0.15)',
-    text: 'var(--accent-red)',
-    label: 'Discarded',
-  },
-  planned: {
-    bg: 'rgba(138, 149, 144, 0.15)',
-    text: 'var(--text-subtle)',
-    label: 'Planned',
-  },
-};
+function getStatusStyles(): Record<string, { bg: string; text: string; label: string }> {
+  return {
+    adopted: {
+      bg: 'rgba(126, 210, 154, 0.15)',
+      text: 'var(--accent-green)',
+      label: t('ui.timeline.statusAdopted'),
+    },
+    running: {
+      bg: 'rgba(210, 200, 126, 0.15)',
+      text: 'var(--accent-yellow)',
+      label: t('ui.timeline.statusRunning'),
+    },
+    discarded: {
+      bg: 'rgba(200, 126, 126, 0.15)',
+      text: 'var(--accent-red)',
+      label: t('ui.timeline.statusDiscarded'),
+    },
+    planned: {
+      bg: 'rgba(138, 149, 144, 0.15)',
+      text: 'var(--text-subtle)',
+      label: t('ui.timeline.statusPlanned'),
+    },
+  };
+}
 
 const OUTCOME_STYLES: Record<
   string,
@@ -66,6 +66,7 @@ function NodeCard({
   onDiscard: () => void;
   onSetOutcome: (outcome: 'mainline' | 'branch' | 'boundary') => void;
 }) {
+  const STATUS_STYLES = getStatusStyles();
   const status = STATUS_STYLES[node.status] ?? STATUS_STYLES.planned;
   const hasConflict = detectConflicts(node);
 
@@ -131,7 +132,7 @@ function NodeCard({
               className="text-xs"
               style={{ color: 'var(--text-subtle)' }}
             >
-              composite
+              {t('ui.timeline.scoreCompositeLabel')}
             </span>
             {hasConflict && (
               <span
@@ -141,7 +142,7 @@ function NodeCard({
                   color: 'var(--accent-yellow)',
                 }}
               >
-                Conflict
+                {t('ui.timeline.conflict')}
               </span>
             )}
           </div>
@@ -190,7 +191,7 @@ function NodeCard({
             }}
             aria-label={`Discard experiment ${node.id}`}
           >
-            Discard
+            {t('ui.timeline.discard')}
           </button>
         )}
       </div>
@@ -244,6 +245,7 @@ function ScoreBar({
 // ---------------------------------------------------------------------------
 
 function DetailPanel({ node }: { node: PersonaTreeNode }) {
+  const STATUS_STYLES = getStatusStyles();
   const status = STATUS_STYLES[node.status] ?? STATUS_STYLES.planned;
   const hasConflict = detectConflicts(node);
 
@@ -273,7 +275,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
                   color: 'var(--accent-yellow)',
                 }}
               >
-                Metric Conflict
+                {t('ui.timeline.metricConflict')}
               </span>
             )}
           </div>
@@ -288,7 +290,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
           className="text-xs"
           style={{ color: 'var(--text-subtle)' }}
         >
-          Series: {node.series}
+          {t('ui.timeline.series')}: {node.series}
         </span>
       </div>
 
@@ -303,12 +305,12 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
       {/* Scoring breakdown */}
       {node.scoring && (
         <div className="mt-5">
-          <p className="kicker mb-3">Scoring Breakdown</p>
+          <p className="kicker mb-3">{t('ui.timeline.scoringBreakdown')}</p>
           <div className="grid gap-3 sm:grid-cols-2">
-            <ScoreBar label="Engagement" value={node.scoring.engagementScore} />
-            <ScoreBar label="Retention" value={node.scoring.retentionScore} />
-            <ScoreBar label="Growth" value={node.scoring.growthScore} />
-            <ScoreBar label="Composite" value={node.scoring.compositeScore} />
+            <ScoreBar label={t('ui.timeline.scoreEngagement')} value={node.scoring.engagementScore} />
+            <ScoreBar label={t('ui.timeline.scoreRetention')} value={node.scoring.retentionScore} />
+            <ScoreBar label={t('ui.timeline.scoreGrowth')} value={node.scoring.growthScore} />
+            <ScoreBar label={t('ui.timeline.scoreComposite')} value={node.scoring.compositeScore} />
           </div>
           <p
             className="mt-2 text-xs"
@@ -326,7 +328,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
 
       {/* Variants */}
       <div className="mt-5">
-        <p className="kicker mb-3">Variants</p>
+        <p className="kicker mb-3">{t('ui.timeline.variants')}</p>
         <div className="flex flex-col gap-3">
           {node.variants.map((variant) => (
             <div
@@ -373,7 +375,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
       {/* Decision rationale */}
       {node.decision && (
         <div className="mt-5">
-          <p className="kicker mb-3">Decision</p>
+          <p className="kicker mb-3">{t('ui.timeline.decision')}</p>
           <div
             className="rounded-lg p-3"
             style={{
@@ -398,7 +400,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
                 className="mt-1 text-xs"
                 style={{ color: 'var(--text-subtle)' }}
               >
-                Merged back to: {node.decision.mergedBack}
+                {t('ui.timeline.mergedBackTo')}: {node.decision.mergedBack}
               </p>
             )}
             {node.decision.rejected && (
@@ -406,7 +408,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
                 className="mt-1 text-xs"
                 style={{ color: 'var(--accent-red)' }}
               >
-                Rejected: {node.decision.rejected}
+                {t('ui.timeline.rejected')}: {node.decision.rejected}
               </p>
             )}
           </div>
@@ -426,15 +428,15 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
             className="text-xs font-semibold"
             style={{ color: 'var(--accent-yellow)' }}
           >
-            Metric Conflict Detected
+            {t('ui.timeline.metricConflictDetected')}
           </p>
           <p
             className="mt-1 text-xs leading-relaxed"
             style={{ color: 'var(--text-secondary)' }}
           >
             {node.status === 'adopted'
-              ? 'This experiment was adopted by human decision, but its composite score is below the adaptive threshold. The decision may be based on qualitative factors not captured by metrics.'
-              : 'This experiment was discarded by human decision, but its composite score passes the adaptive threshold. The metrics suggest it might have been worth pursuing.'}
+              ? t('ui.timeline.conflictAdoptedDesc')
+              : t('ui.timeline.conflictDiscardedDesc')}
           </p>
         </div>
       )}
@@ -448,8 +450,12 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[d.getMonth()]} ${d.getDate()}`;
+  const monthKeys = [
+    'ui.timeline.month1','ui.timeline.month2','ui.timeline.month3','ui.timeline.month4',
+    'ui.timeline.month5','ui.timeline.month6','ui.timeline.month7','ui.timeline.month8',
+    'ui.timeline.month9','ui.timeline.month10','ui.timeline.month11','ui.timeline.month12',
+  ];
+  return `${t(monthKeys[d.getMonth()])} ${d.getDate()}`;
 }
 
 function Lane({
@@ -605,9 +611,9 @@ export default function TimelineClient({
   const handleSave = useCallback(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(treeNodes));
-      showToast('Changes saved', 'success');
+      showToast(t('ui.timeline.changesSaved'), 'success');
     } catch {
-      showToast('Failed to save — storage unavailable', 'error');
+      showToast(t('ui.timeline.saveFailed'), 'error');
     }
   }, [storageKey, treeNodes]);
 
@@ -619,7 +625,7 @@ export default function TimelineClient({
       // Ignore
     }
     setShowResetConfirm(false);
-    showToast('Tree reset to computed state', 'success');
+    showToast(t('ui.timeline.treeReset'), 'success');
   }, [initialNodes, storageKey]);
 
   // Recompute lanes from local state
@@ -744,14 +750,7 @@ export default function TimelineClient({
           }}
         >
           <span>
-            Each platform has its own timeline — switch the platform capsule
-            <span
-              className="ml-1 inline-block font-medium"
-              style={{ color: 'var(--accent-blue)' }}
-            >
-              ↗ above right
-            </span>
-            {' '}to compare experiment trees across Douyin, TikTok, and Red Note.
+            {t('ui.timeline.platformHint')}
           </span>
           <button
             type="button"
@@ -760,7 +759,7 @@ export default function TimelineClient({
             style={{ color: 'var(--text-subtle)' }}
             aria-label="Dismiss hint"
           >
-            Got it
+            {t('ui.timeline.gotIt')}
           </button>
         </div>
       )}
@@ -824,7 +823,7 @@ export default function TimelineClient({
                   color: 'var(--bg-primary)',
                 }}
               >
-                Save
+                {t('ui.timeline.save')}
               </button>
               <button
                 type="button"
@@ -835,7 +834,7 @@ export default function TimelineClient({
                   color: 'var(--accent-red)',
                 }}
               >
-                Reset
+                {t('ui.timeline.reset')}
               </button>
             </>
           )}
@@ -851,7 +850,7 @@ export default function TimelineClient({
               color: 'var(--bg-primary)',
             }}
           >
-            + New Experiment
+            {t('ui.timeline.newExperimentBtn')}
           </button>
         </div>
       </div>
@@ -864,7 +863,7 @@ export default function TimelineClient({
               className="mb-4 text-sm font-bold"
               style={{ color: 'var(--text-primary)' }}
             >
-              {formPrefill ? 'Create Experiment from Idea' : 'New Experiment'}
+              {formPrefill ? t('ui.timeline.createFromIdea') : t('ui.timeline.newExperiment')}
             </h3>
             <ExperimentForm
               onSubmit={handleFormSubmit}
@@ -889,7 +888,7 @@ export default function TimelineClient({
       <div className="flex flex-col gap-6">
         {/* Branches lane (top) */}
         <Lane
-          label="Branches"
+          label={t('ui.timeline.branches')}
           nodes={filteredLanes.branches}
           selectedId={selectedId}
           onSelect={setSelectedId}
@@ -910,7 +909,7 @@ export default function TimelineClient({
 
         {/* Mainline lane (center) */}
         <Lane
-          label="Mainline"
+          label={t('ui.timeline.mainline')}
           nodes={filteredLanes.mainline}
           selectedId={selectedId}
           onSelect={setSelectedId}
@@ -931,7 +930,7 @@ export default function TimelineClient({
 
         {/* Boundaries lane (bottom) */}
         <Lane
-          label="Boundaries"
+          label={t('ui.timeline.boundaries')}
           nodes={filteredLanes.boundaries}
           selectedId={selectedId}
           onSelect={setSelectedId}
@@ -945,7 +944,7 @@ export default function TimelineClient({
         <section aria-labelledby="detail-heading">
           <div className="mb-3 flex items-center justify-between">
             <h2 id="detail-heading" className="kicker">
-              Experiment Detail
+              {t('ui.timeline.experimentDetail')}
             </h2>
             <button
               type="button"
@@ -953,7 +952,7 @@ export default function TimelineClient({
               className="text-xs font-medium transition-colors"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Close
+              {t('ui.timeline.close')}
             </button>
           </div>
           <DetailPanel node={selectedNode} />
@@ -965,14 +964,13 @@ export default function TimelineClient({
         <section aria-labelledby="ideas-heading">
           <div className="mb-3 flex items-center justify-between">
             <h2 id="ideas-heading" className="kicker">
-              Experiment Ideas
+              {t('ui.timeline.experimentIdeas')}
             </h2>
             <span
               className="text-xs"
               style={{ color: 'var(--text-subtle)' }}
             >
-              {ideas.length} suggestion{ideas.length !== 1 ? 's' : ''} based on
-              your data
+              {t('ui.timeline.ideasCount', { count: ideas.length })}
             </span>
           </div>
           <IdeaCards ideas={ideas} onUseIdea={handleUseIdea} />
@@ -982,10 +980,10 @@ export default function TimelineClient({
       {/* Reset confirmation dialog */}
       <ConfirmDialog
         open={showResetConfirm}
-        title="Reset experiment tree?"
-        description="This will discard all manual edits (outcome changes, discarded nodes, new experiments) and revert to the server-computed tree. This action cannot be undone."
-        confirmLabel="Reset"
-        cancelLabel="Keep editing"
+        title={t('ui.timeline.resetDialogTitle')}
+        description={t('ui.timeline.resetDialogDesc')}
+        confirmLabel={t('ui.timeline.reset')}
+        cancelLabel={t('ui.timeline.keepEditing')}
         variant="danger"
         onConfirm={handleResetConfirm}
         onCancel={() => setShowResetConfirm(false)}

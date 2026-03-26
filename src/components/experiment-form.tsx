@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import type { PersonaTreeNode } from '@/lib/schema/persona-tree';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -98,10 +99,10 @@ export default function ExperimentForm({
     <form
       onSubmit={handleSubmit}
       className="flex flex-col gap-5"
-      aria-label="Experiment form"
+      aria-label={t('ui.components.experimentForm')}
     >
       <fieldset className="flex flex-col gap-5 border-none p-0 m-0">
-        <legend className="sr-only">Experiment details</legend>
+        <legend className="sr-only">{t('ui.components.experimentDetails')}</legend>
       {/* Title */}
       <div className="flex flex-col gap-1.5">
         <label
@@ -109,14 +110,14 @@ export default function ExperimentForm({
           className="text-xs font-medium"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Title <span style={{ color: 'var(--accent-red)' }}>*</span>
+          {t('ui.components.expTitle')} <span style={{ color: 'var(--accent-red)' }}>*</span>
         </label>
         <input
           id="exp-title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Tutorial Content Deep-dive"
+          placeholder={t('ui.components.expTitlePlaceholder')}
           className="rounded-lg px-3 py-2 text-sm outline-none transition-colors"
           style={{
             background: 'var(--bg-secondary)',
@@ -135,13 +136,13 @@ export default function ExperimentForm({
           className="text-xs font-medium"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Hypothesis <span style={{ color: 'var(--accent-red)' }}>*</span>
+          {t('ui.components.expHypothesis')} <span style={{ color: 'var(--accent-red)' }}>*</span>
         </label>
         <textarea
           id="exp-hypothesis"
           value={hypothesis}
           onChange={(e) => setHypothesis(e.target.value)}
-          placeholder="If we increase tutorial content from 10% to 25%..."
+          placeholder={t('ui.components.expHypothesisPlaceholder')}
           rows={3}
           className="rounded-lg px-3 py-2 text-sm outline-none transition-colors"
           style={{
@@ -161,7 +162,7 @@ export default function ExperimentForm({
           className="text-xs font-medium"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Series
+          {t('ui.components.expSeries')}
         </label>
         <div className="relative">
           <input
@@ -173,7 +174,7 @@ export default function ExperimentForm({
               setShowSeriesDropdown(true);
             }}
             onFocus={() => setShowSeriesDropdown(true)}
-            placeholder="e.g. content-mix, hook-style"
+            placeholder={t('ui.components.expSeriesPlaceholder')}
             className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors"
             style={{
               background: 'var(--bg-secondary)',
@@ -226,7 +227,7 @@ export default function ExperimentForm({
           className="text-xs font-medium"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Parent Node
+          {t('ui.components.expParentNode')}
         </label>
         <select
           id="exp-parent"
@@ -239,7 +240,7 @@ export default function ExperimentForm({
             color: 'var(--text-primary)',
           }}
         >
-          <option value="">None (root node)</option>
+          <option value="">{t('ui.components.expNoneRoot')}</option>
           {parentNodes.map((node) => (
             <option key={node.id} value={node.id}>
               {node.id} - {node.title}
@@ -255,7 +256,7 @@ export default function ExperimentForm({
           className="text-xs font-medium"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Status
+          {t('ui.components.expStatus')}
         </label>
         <select
           id="exp-status"
@@ -268,8 +269,8 @@ export default function ExperimentForm({
             color: 'var(--text-primary)',
           }}
         >
-          <option value="planned">Planned</option>
-          <option value="running">Running</option>
+          <option value="planned">{t('ui.components.expPlanned')}</option>
+          <option value="running">{t('ui.components.expRunning')}</option>
         </select>
       </div>
 
@@ -288,7 +289,7 @@ export default function ExperimentForm({
             cursor: isValid ? 'pointer' : 'not-allowed',
           }}
         >
-          {editingNode ? 'Update Experiment' : 'Create Experiment'}
+          {editingNode ? t('ui.components.updateExperiment') : t('ui.components.createExperiment')}
         </button>
         <button
           type="button"
@@ -300,7 +301,7 @@ export default function ExperimentForm({
             border: '1px solid var(--border-subtle)',
           }}
         >
-          Cancel
+          {t('ui.common.cancel')}
         </button>
       </div>
     </form>

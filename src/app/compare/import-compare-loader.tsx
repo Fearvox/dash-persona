@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import {
   computePersonaScore,
@@ -47,14 +48,13 @@ function SinglePlatformNotice() {
         </svg>
       </div>
       <p className="text-sm font-medium text-[var(--text-primary)]">
-        Need at least 2 platforms to compare
+        {t('ui.compare.needTwoPlatforms')}
       </p>
       <p className="max-w-sm text-xs leading-relaxed text-[var(--text-subtle)]">
-        Import data from multiple platforms (Douyin, TikTok, Red Note) to see
-        cross-platform comparison, radar charts, and actionable insights.
+        {t('ui.compare.needTwoPlatformsDesc')}
       </p>
       <Link href="/onboarding" className="nav-pill mt-2">
-        Import more data
+        {t('ui.compare.importMoreData')}
       </Link>
     </div>
   );
@@ -78,7 +78,7 @@ function buildMetricRows(
     raw: profiles[p].profile.followers,
   }));
   rows.push({
-    label: 'Followers',
+    label: t('ui.compare.followers'),
     values: followerValues,
     winnerPlatform: followerValues.reduce((a, b) => (b.raw > a.raw ? b : a)).platform,
   });
@@ -89,7 +89,7 @@ function buildMetricRows(
     raw: scores[p].engagement.overallRate,
   }));
   rows.push({
-    label: 'Engagement Rate',
+    label: t('ui.compare.engagementRate'),
     values: engValues,
     winnerPlatform: engValues.reduce((a, b) => (b.raw > a.raw ? b : a)).platform,
   });
@@ -100,7 +100,7 @@ function buildMetricRows(
     raw: scores[p].postsAnalysed,
   }));
   rows.push({
-    label: 'Posts',
+    label: t('ui.common.posts'),
     values: postValues,
     winnerPlatform: postValues.reduce((a, b) => (b.raw > a.raw ? b : a)).platform,
   });
@@ -111,7 +111,7 @@ function buildMetricRows(
     raw: profiles[p].profile.likesTotal,
   }));
   rows.push({
-    label: 'Likes Total',
+    label: t('ui.compare.likesTotal'),
     values: likeValues,
     winnerPlatform: likeValues.reduce((a, b) => (b.raw > a.raw ? b : a)).platform,
   });
@@ -176,7 +176,7 @@ export default function ImportCompareLoader() {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
         <p className="text-sm text-[var(--text-secondary)]">
-          Loading imported data...
+          {t('ui.common.loadingImported')}
         </p>
       </div>
     );
@@ -190,7 +190,7 @@ export default function ImportCompareLoader() {
             &larr; Dashboard
           </Link>
           <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl">
-            Cross-Platform Comparison
+            {t('ui.compare.title')}
           </h1>
         </header>
         <SinglePlatformNotice />
@@ -210,7 +210,7 @@ export default function ImportCompareLoader() {
             &larr; Dashboard
           </Link>
           <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl">
-            Cross-Platform Comparison
+            {t('ui.compare.title')}
           </h1>
         </header>
         <SinglePlatformNotice />
@@ -253,7 +253,7 @@ export default function ImportCompareLoader() {
       {/* Key Metrics */}
       <section aria-labelledby="import-metrics-heading">
         <h2 id="import-metrics-heading" className="kicker mb-3">
-          Key Metrics
+          {t('ui.compare.keyMetrics')}
         </h2>
         <CompareTable
           metricRows={metricRows}
@@ -267,7 +267,7 @@ export default function ImportCompareLoader() {
       {comparison.insights.length > 0 && (
         <section aria-labelledby="import-insights-heading">
           <h2 id="import-insights-heading" className="kicker mb-3">
-            Insights
+            {t('ui.compare.insights')}
           </h2>
           <div className="flex flex-col gap-3">
             {comparison.insights.map((insight, i) => (
@@ -291,7 +291,7 @@ export default function ImportCompareLoader() {
       {/* Persona Score Comparison */}
       <section aria-labelledby="import-scores-heading">
         <h2 id="import-scores-heading" className="kicker mb-3">
-          Persona Score Comparison
+          {t('ui.compare.personaScoreComparison')}
         </h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
           {scoreEntries.map((entry) => {

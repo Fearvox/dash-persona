@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { ContentPlan, ContentSlot } from '@/lib/engine';
 import { exportToICS } from '@/lib/engine/content-planner';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -14,12 +15,22 @@ const PRIORITY_COLORS: Record<ContentSlot['priority'], string> = {
   low: 'var(--accent-blue)',
 };
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+function getMonthNames(): string[] {
+  return [
+    t('ui.calendar.month1'), t('ui.calendar.month2'), t('ui.calendar.month3'),
+    t('ui.calendar.month4'), t('ui.calendar.month5'), t('ui.calendar.month6'),
+    t('ui.calendar.month7'), t('ui.calendar.month8'), t('ui.calendar.month9'),
+    t('ui.calendar.month10'), t('ui.calendar.month11'), t('ui.calendar.month12'),
+  ];
+}
 
-const DAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+function getDayHeaders(): string[] {
+  return [
+    t('ui.calendar.dayMon'), t('ui.calendar.dayTue'), t('ui.calendar.dayWed'),
+    t('ui.calendar.dayThu'), t('ui.calendar.dayFri'), t('ui.calendar.daySat'),
+    t('ui.calendar.daySun'),
+  ];
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -195,7 +206,7 @@ function SlotDetail({ slot, onToggleStatus, onClose }: SlotDetailProps) {
           }}
           onClick={() => onToggleStatus(slot.id)}
         >
-          {isAccepted ? 'Accepted' : 'Accept'}
+          {isAccepted ? t('ui.calendar.accepted') : t('ui.calendar.accept')}
         </button>
         <button
           type="button"
@@ -210,7 +221,7 @@ function SlotDetail({ slot, onToggleStatus, onClose }: SlotDetailProps) {
             )
           }
         >
-          {isDismissed ? 'Dismissed' : 'Dismiss'}
+          {isDismissed ? t('ui.calendar.dismissed') : t('ui.calendar.dismiss')}
         </button>
       </div>
     </div>
@@ -360,7 +371,7 @@ export default function CalendarClient({ plan }: CalendarClientProps) {
           <span
             className="min-w-[10rem] text-center text-sm font-semibold tracking-tight text-[var(--text-primary)]"
           >
-            {MONTH_NAMES[viewMonth]} {viewYear}
+            {getMonthNames()[viewMonth]} {viewYear}
           </span>
           <button
             type="button"
@@ -398,7 +409,7 @@ export default function CalendarClient({ plan }: CalendarClientProps) {
         <div className="hidden md:block">
           {/* Day-of-week headers */}
           <div className="mb-1 grid grid-cols-7 gap-px">
-            {DAY_HEADERS.map((d) => (
+            {getDayHeaders().map((d) => (
               <div
                 key={d}
                 className="py-1.5 text-center text-xs font-medium text-[var(--text-subtle)]"
@@ -474,7 +485,7 @@ export default function CalendarClient({ plan }: CalendarClientProps) {
             if (daySlots.length === 0) return null;
 
             const isToday = dateStr === todayStr;
-            const dayLabel = `${DAY_HEADERS[(date.getUTCDay() + 6) % 7]} ${date.getUTCDate()}`;
+            const dayLabel = `${getDayHeaders()[(date.getUTCDay() + 6) % 7]} ${date.getUTCDate()}`;
 
             return (
               <div key={dateStr}>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
 import { generateContentPlan } from '@/lib/engine';
@@ -74,22 +75,21 @@ export default async function CalendarPage({
           &larr; Dashboard
         </Link>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Need More Data
+          {t('ui.calendar.needMoreData')}
         </h1>
         <p
           className="max-w-md text-center text-sm leading-6"
           style={{ color: 'var(--text-secondary)' }}
         >
-          The content calendar needs at least 10 posts to generate meaningful
-          scheduling recommendations. You currently have{' '}
-          <strong>{plan.dataPoints}</strong> post
-          {plan.dataPoints === 1 ? '' : 's'}.
+          {t('ui.calendar.needMoreDataPre')}{' '}
+          <strong>{plan.dataPoints}</strong>
+          {' '}{t('ui.calendar.needMoreDataPost', { plural: plan.dataPoints === 1 ? '' : t('ui.calendar.posts') })}
         </p>
         <p
           className="max-w-sm text-center text-xs"
           style={{ color: 'var(--text-subtle)' }}
         >
-          Keep publishing and check back once you have more content to analyse.
+          {t('ui.calendar.keepPublishing')}
         </p>
       </div>
     );
@@ -107,11 +107,10 @@ export default async function CalendarPage({
           &larr; Dashboard
         </Link>
         <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-          Content Calendar
+          {t('ui.calendar.title')}
         </h1>
         <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-          {plan.dataPoints} posts analysed &middot; {plan.slots.length} slots
-          generated
+          {t('ui.calendar.subtitle', { dataPoints: plan.dataPoints, slots: plan.slots.length })}
         </p>
       </header>
 

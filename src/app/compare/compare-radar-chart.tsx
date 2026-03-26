@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { t } from '@/lib/i18n';
 import {
   RadarChart,
   PolarGrid,
@@ -54,27 +55,27 @@ function normalizeToRadar(summaries: PlatformSummary[]): RadarDimension[] {
   const dimensions = [
     {
       key: 'followers',
-      label: 'Followers',
+      label: t('ui.compare.radarFollowers'),
       extract: (s: PlatformSummary) => s.followers,
     },
     {
       key: 'engagementRate',
-      label: 'Engagement',
+      label: t('ui.compare.radarEngagement'),
       extract: (s: PlatformSummary) => s.overallEngagementRate * 100,
     },
     {
       key: 'postCount',
-      label: 'Posts',
+      label: t('ui.compare.radarPosts'),
       extract: (s: PlatformSummary) => s.postCount,
     },
     {
       key: 'totalViews',
-      label: 'Views',
+      label: t('ui.compare.radarViews'),
       extract: (s: PlatformSummary) => s.totalViews,
     },
     {
       key: 'totalEngagement',
-      label: 'Total Eng.',
+      label: t('ui.compare.radarTotalEng'),
       extract: (s: PlatformSummary) => s.totalEngagement,
     },
   ];
@@ -116,7 +117,7 @@ export default function CompareRadarChart({ summaries }: CompareRadarChartProps)
       <h3
         className="mb-4 text-sm font-semibold text-[var(--text-primary)]"
       >
-        Multi-Dimensional Comparison
+        {t('ui.compare.multiDimensional')}
       </h3>
       <ResponsiveContainer width="100%" height={320}>
         <RadarChart data={data} cx="50%" cy="50%" outerRadius="75%">

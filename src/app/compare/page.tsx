@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
 import {
@@ -122,17 +123,17 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           &larr; Dashboard
         </Link>
         <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-          Cross-Platform Comparison
+          {t('ui.compare.title')}
         </h1>
         <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-          Persona: {personaType}
+          {t('ui.compare.persona', { type: personaType })}
         </p>
       </header>
 
       {/* b) Key metrics comparison table */}
       <section aria-labelledby="metrics-heading">
         <h2 id="metrics-heading" className="kicker mb-3">
-          Key Metrics
+          {t('ui.compare.keyMetrics')}
         </h2>
         <CompareTable
           metricRows={metricRows}
@@ -145,7 +146,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       {/* c) Radar chart */}
       <section aria-labelledby="radar-heading">
         <h2 id="radar-heading" className="kicker mb-3">
-          Radar Overview
+          {t('ui.compare.radarOverview')}
         </h2>
         <CompareRadarChart summaries={comparison.summaries} />
       </section>
@@ -154,7 +155,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       {comparison.insights.length > 0 && (
         <section aria-labelledby="insights-heading">
           <h2 id="insights-heading" className="kicker mb-3">
-            Insight Highlights
+            {t('ui.compare.insightHighlights')}
           </h2>
           <div className="flex flex-col gap-3">
             {comparison.insights.map((insight) => (
@@ -183,7 +184,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       {/* d) Content type overlap (server-rendered) */}
       <section aria-labelledby="content-overlap-heading">
         <h2 id="content-overlap-heading" className="kicker mb-3">
-          Content Type Overlap
+          {t('ui.compare.contentTypeOverlap')}
         </h2>
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
@@ -194,7 +195,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                     className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{ color: 'var(--text-subtle)' }}
                   >
-                    Category
+                    {t('ui.compare.category')}
                   </th>
                   {PLATFORMS.map((p) => (
                     <th
@@ -255,7 +256,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       {/* e) Persona score comparison */}
       <section aria-labelledby="scores-heading">
         <h2 id="scores-heading" className="kicker mb-3">
-          Persona Score Comparison
+          {t('ui.compare.personaScoreComparison')}
         </h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
           {scoreEntries.map((entry) => {
@@ -319,7 +320,7 @@ function buildMetricRows(
   const followerWinner = followerValues.reduce((a, b) =>
     b.raw > a.raw ? b : a,
   ).platform;
-  rows.push({ label: 'Followers', values: followerValues, winnerPlatform: followerWinner });
+  rows.push({ label: t('ui.compare.followers'), values: followerValues, winnerPlatform: followerWinner });
 
   // Engagement Rate
   const engValues = PLATFORMS.map((p) => ({
@@ -328,7 +329,7 @@ function buildMetricRows(
     raw: scores[p].engagement.overallRate,
   }));
   const engWinner = engValues.reduce((a, b) => (b.raw > a.raw ? b : a)).platform;
-  rows.push({ label: 'Engagement Rate', values: engValues, winnerPlatform: engWinner });
+  rows.push({ label: t('ui.compare.engagementRate'), values: engValues, winnerPlatform: engWinner });
 
   // Posts analysed
   const postValues = PLATFORMS.map((p) => ({
@@ -337,7 +338,7 @@ function buildMetricRows(
     raw: scores[p].postsAnalysed,
   }));
   const postWinner = postValues.reduce((a, b) => (b.raw > a.raw ? b : a)).platform;
-  rows.push({ label: 'Posts', values: postValues, winnerPlatform: postWinner });
+  rows.push({ label: t('ui.common.posts'), values: postValues, winnerPlatform: postWinner });
 
   // Likes Total
   const likeValues = PLATFORMS.map((p) => ({
@@ -346,7 +347,7 @@ function buildMetricRows(
     raw: profiles[p].profile.likesTotal,
   }));
   const likeWinner = likeValues.reduce((a, b) => (b.raw > a.raw ? b : a)).platform;
-  rows.push({ label: 'Likes Total', values: likeValues, winnerPlatform: likeWinner });
+  rows.push({ label: t('ui.compare.likesTotal'), values: likeValues, winnerPlatform: likeWinner });
 
   // Saves Total (from comparison summaries)
   const saveValues = PLATFORMS.map((p) => {
@@ -359,7 +360,7 @@ function buildMetricRows(
     };
   });
   const saveWinner = saveValues.reduce((a, b) => (b.raw > a.raw ? b : a)).platform;
-  rows.push({ label: 'Saves Total', values: saveValues, winnerPlatform: saveWinner });
+  rows.push({ label: t('ui.compare.savesTotal'), values: saveValues, winnerPlatform: saveWinner });
 
   return rows;
 }

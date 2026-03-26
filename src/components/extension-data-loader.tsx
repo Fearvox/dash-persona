@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { CreatorProfile, FanPortrait } from '@/lib/schema/creator-data';
 import { ExtensionAdapter, ExtensionAdapterError } from '@/lib/adapters/extension-adapter';
+import { t } from '@/lib/i18n';
 
 const STORAGE_KEY = 'dashpersona-extension-profile';
 
@@ -134,14 +135,14 @@ export function FanPortraitCard({ fanPortrait }: FanPortraitCardProps) {
   return (
     <div className="card flex flex-col gap-4 p-4">
       <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-        Fan Portrait
+        {t('ui.components.fanPortrait')}
       </h3>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Gender distribution */}
         {hasGender && fanPortrait.gender && (
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-[var(--text-subtle)]">Gender</p>
+            <p className="text-xs text-[var(--text-subtle)]">{t('ui.components.gender')}</p>
             <div className="flex items-center gap-3">
               <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
                 <div
@@ -156,10 +157,10 @@ export function FanPortraitCard({ fanPortrait }: FanPortraitCardProps) {
             </div>
             <div className="flex justify-between text-[11px]">
               <span className="text-[var(--accent-blue)]">
-                Male {fanPortrait.gender.male.toFixed(1)}%
+                {t('ui.components.male')} {fanPortrait.gender.male.toFixed(1)}%
               </span>
               <span className="text-[var(--accent-red)]">
-                Female {fanPortrait.gender.female.toFixed(1)}%
+                {t('ui.components.female')} {fanPortrait.gender.female.toFixed(1)}%
               </span>
             </div>
           </div>
@@ -168,7 +169,7 @@ export function FanPortraitCard({ fanPortrait }: FanPortraitCardProps) {
         {/* Age groups */}
         {hasAgeGroups && fanPortrait.ageGroups && (
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-[var(--text-subtle)]">Age Groups</p>
+            <p className="text-xs text-[var(--text-subtle)]">{t('ui.components.ageGroups')}</p>
             <DistributionBar
               items={fanPortrait.ageGroups.map((g) => ({ label: g.range, value: g.percentage }))}
               colorVar="--accent-yellow"
@@ -179,7 +180,7 @@ export function FanPortraitCard({ fanPortrait }: FanPortraitCardProps) {
         {/* Interests */}
         {hasInterests && fanPortrait.interests && (
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-[var(--text-subtle)]">Interests</p>
+            <p className="text-xs text-[var(--text-subtle)]">{t('ui.components.interests')}</p>
             <DistributionBar
               items={fanPortrait.interests.map((i) => ({ label: i.name, value: i.percentage }))}
               colorVar="--accent-green"
@@ -190,7 +191,7 @@ export function FanPortraitCard({ fanPortrait }: FanPortraitCardProps) {
         {/* Provinces */}
         {hasProvinces && fanPortrait.provinces && (
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-[var(--text-subtle)]">Top Regions</p>
+            <p className="text-xs text-[var(--text-subtle)]">{t('ui.components.topRegions')}</p>
             <DistributionBar
               items={fanPortrait.provinces.map((p) => ({ label: p.name, value: p.percentage }))}
               colorVar="--accent-blue"

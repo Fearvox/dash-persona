@@ -1,6 +1,7 @@
 'use client';
 
 import type { BenchmarkResult, MetricBenchmark } from '@/lib/engine';
+import { t } from '@/lib/i18n';
 
 interface BenchmarkCardProps {
   benchmarkResult: BenchmarkResult & { niche: string; nicheLabel: string };
@@ -15,7 +16,7 @@ export default function BenchmarkCard({ benchmarkResult }: BenchmarkCardProps) {
         className="kicker mb-4"
         style={{ color: 'var(--text-secondary)' }}
       >
-        vs {nicheLabel} Average
+        {t('ui.components.vsBenchmark', { niche: nicheLabel })}
       </h3>
 
       <div className="flex flex-col gap-3">

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { PersonaScore, StrategySuggestion } from '@/lib/engine';
 import { overallScore } from '@/lib/engine';
 import { PLATFORM_LABELS, scoreColor } from '@/lib/utils/constants';
+import { t } from '@/lib/i18n';
 import PersonaBarChart from './persona-bar-chart';
 
 // ---------------------------------------------------------------------------
@@ -9,13 +10,13 @@ import PersonaBarChart from './persona-bar-chart';
 // ---------------------------------------------------------------------------
 
 const DAY_NAMES = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
+  'ui.common.daySunday',
+  'ui.common.dayMonday',
+  'ui.common.dayTuesday',
+  'ui.common.dayWednesday',
+  'ui.common.dayThursday',
+  'ui.common.dayFriday',
+  'ui.common.daySaturday',
 ];
 
 // ---------------------------------------------------------------------------
@@ -24,10 +25,10 @@ const DAY_NAMES = [
 
 function momentumBadge(momentum: string) {
   const map: Record<string, { label: string; cls: string }> = {
-    accelerating: { label: 'Accelerating', cls: 'badge-green' },
-    steady: { label: 'Steady', cls: 'badge-yellow' },
-    decelerating: { label: 'Decelerating', cls: 'badge-red' },
-    insufficient_data: { label: 'No data', cls: 'badge-yellow' },
+    accelerating: { label: t('momentum.accelerating'), cls: 'badge-green' },
+    steady: { label: t('momentum.steady'), cls: 'badge-yellow' },
+    decelerating: { label: t('momentum.decelerating'), cls: 'badge-red' },
+    insufficient_data: { label: t('momentum.insufficient_data'), cls: 'badge-yellow' },
   };
   const entry = map[momentum] ?? map.insufficient_data;
   return <span className={`badge ${entry.cls}`}>{entry.label}</span>;
@@ -88,8 +89,8 @@ export default function PersonaDetailContent({
       : 'N/A';
   const bestDay =
     score.rhythm.bestDayOfWeek !== null
-      ? DAY_NAMES[score.rhythm.bestDayOfWeek]
-      : 'N/A';
+      ? t(DAY_NAMES[score.rhythm.bestDayOfWeek])
+      : t('ui.common.na');
 
   // Build search params for platform tabs
   function platformHref(p: string) {
@@ -114,7 +115,7 @@ export default function PersonaDetailContent({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-            Persona Detail
+            {t('ui.persona.title')}
           </h1>
 
           {/* Platform selector tabs */}
@@ -164,7 +165,7 @@ export default function PersonaDetailContent({
               className="text-xs font-medium"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Overall Persona Score
+              {t('ui.persona.overallPersonaScore')}
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -173,13 +174,13 @@ export default function PersonaDetailContent({
                 className="text-sm font-medium"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                Momentum
+                {t('ui.persona.momentum')}
               </span>
               {momentumBadge(score.growthHealth.momentum)}
             </div>
             <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
               {PLATFORM_LABELS[platform]} &middot; {personaType} &middot;{' '}
-              {score.postsAnalysed} posts analysed
+              {t('ui.persona.postsAnalysed', { count: score.postsAnalysed })}
             </p>
           </div>
         </div>
@@ -188,7 +189,7 @@ export default function PersonaDetailContent({
       {/* c) 6-dimension detail cards (2x3 grid) */}
       <section aria-labelledby="dimensions-heading">
         <h2 id="dimensions-heading" className="kicker mb-3">
-          Dimension Breakdown
+          {t('ui.persona.dimensionBreakdown')}
         </h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {/* Content Mix */}
@@ -197,7 +198,7 @@ export default function PersonaDetailContent({
               className="text-xs font-medium uppercase tracking-wider"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Content Mix
+              {t('ui.persona.contentMix')}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               {top3.map(([cat, pct]) => (
@@ -232,7 +233,7 @@ export default function PersonaDetailContent({
                 </div>
               ))}
               <p className="mt-1 text-xs" style={{ color: 'var(--text-subtle)' }}>
-                Diversity index: {diversityIndex} categories
+                {t('ui.persona.diversityIndex', { count: diversityIndex })}
               </p>
             </div>
           </div>
@@ -243,11 +244,11 @@ export default function PersonaDetailContent({
               className="text-xs font-medium uppercase tracking-wider"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Engagement Profile
+              {t('ui.persona.engagementProfile')}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>Avg Rate</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{t('ui.persona.avgRate')}</span>
                 <span
                   className="metric-value text-lg font-semibold"
                   style={{
@@ -264,7 +265,7 @@ export default function PersonaDetailContent({
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  Best Category
+                  {t('ui.persona.bestCategory')}
                 </span>
                 <span
                   className="capitalize"
@@ -274,7 +275,7 @@ export default function PersonaDetailContent({
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>Trend</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{t('ui.persona.trend')}</span>
                 <span
                   className="font-medium"
                   style={{
@@ -292,7 +293,7 @@ export default function PersonaDetailContent({
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  Viral Potential
+                  {t('ui.persona.viralPotential')}
                 </span>
                 <span
                   className="metric-value font-semibold"
@@ -310,12 +311,12 @@ export default function PersonaDetailContent({
               className="text-xs font-medium uppercase tracking-wider"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Posting Rhythm
+              {t('ui.persona.postingRhythm')}
             </p>
             <div className="mt-3 flex flex-col gap-3">
               <div className="flex items-center justify-between text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  Posts / Week
+                  {t('ui.persona.postsPerWeek')}
                 </span>
                 <span
                   className="metric-value text-lg font-semibold"
@@ -327,7 +328,7 @@ export default function PersonaDetailContent({
               <div>
                 <div className="flex items-center justify-between text-xs">
                   <span style={{ color: 'var(--text-secondary)' }}>
-                    Consistency
+                    {t('ui.persona.consistency')}
                   </span>
                   <span
                     className="metric-value font-medium"
@@ -353,7 +354,7 @@ export default function PersonaDetailContent({
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  Best Slots
+                  {t('ui.persona.bestSlots')}
                 </span>
                 <span style={{ color: 'var(--text-primary)' }}>
                   {bestDay}, {bestHourLabel}
@@ -368,7 +369,7 @@ export default function PersonaDetailContent({
               className="text-xs font-medium uppercase tracking-wider"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Persona Consistency
+              {t('ui.persona.personaConsistency')}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <p
@@ -382,12 +383,12 @@ export default function PersonaDetailContent({
               </p>
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 {score.consistency.isConsistent
-                  ? 'Stable topical identity'
-                  : 'Diverse topic coverage'}
+                  ? t('ui.persona.stableIdentity')
+                  : t('ui.persona.diverseTopics')}
               </p>
               {score.consistency.dominantCategory && (
                 <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-                  Dominant:{' '}
+                  {t('ui.persona.dominant')}:{' '}
                   <span className="capitalize">
                     {score.consistency.dominantCategory}
                   </span>{' '}
@@ -403,12 +404,12 @@ export default function PersonaDetailContent({
               className="text-xs font-medium uppercase tracking-wider"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Growth Health
+              {t('ui.persona.growthHealth')}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  Follower Growth
+                  {t('ui.persona.followerGrowth')}
                 </span>
                 <span
                   className="metric-value font-semibold"
@@ -427,7 +428,7 @@ export default function PersonaDetailContent({
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  View Growth
+                  {t('ui.persona.viewGrowth')}
                 </span>
                 <span
                   className="metric-value"
@@ -440,7 +441,7 @@ export default function PersonaDetailContent({
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  Momentum
+                  {t('ui.persona.momentum')}
                 </span>
                 {momentumBadge(score.growthHealth.momentum)}
               </div>
@@ -453,7 +454,7 @@ export default function PersonaDetailContent({
               className="text-xs font-medium uppercase tracking-wider"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Strategy
+              {t('ui.persona.strategy')}
             </p>
             <div className="mt-3 flex flex-col gap-3">
               {suggestions.length > 0 ? (
@@ -477,7 +478,7 @@ export default function PersonaDetailContent({
                 ))
               ) : (
                 <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-                  No urgent suggestions. Keep it up!
+                  {t('ui.persona.noSuggestions')}
                 </p>
               )}
             </div>
@@ -489,7 +490,7 @@ export default function PersonaDetailContent({
       {score.tags.length > 0 && (
         <section aria-labelledby="tags-heading">
           <h2 id="tags-heading" className="kicker mb-3">
-            Persona Tags
+            {t('ui.persona.personaTags')}
           </h2>
           <div className="card p-5">
             <div className="flex flex-wrap gap-2">
@@ -520,7 +521,7 @@ export default function PersonaDetailContent({
       {/* e) Content type distribution bar chart */}
       <section aria-labelledby="distribution-heading">
         <h2 id="distribution-heading" className="kicker mb-3">
-          Content Type Distribution
+          {t('ui.persona.contentTypeDistribution')}
         </h2>
         <div className="card p-6">
           <PersonaBarChart data={distEntries} />

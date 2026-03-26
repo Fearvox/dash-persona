@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import { createLearningStore, derivePreferences, type UserPreferences } from '@/lib/learning';
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -51,14 +52,14 @@ export default function SettingsPage() {
           &larr; Dashboard
         </Link>
         <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-          Settings
+          {t('ui.settings.title')}
         </h1>
       </header>
 
       {/* Learning Data Section */}
       <section aria-labelledby="learning-heading">
         <h2 id="learning-heading" className="kicker mb-4">
-          Learning Data
+          {t('ui.settings.learningData')}
         </h2>
         <div className="card p-5">
           {preferences === null ? (
@@ -68,7 +69,7 @@ export default function SettingsPage() {
                 style={{ borderColor: 'var(--accent-green)', borderTopColor: 'transparent' }}
               />
               <span className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-                Loading preferences...
+                {t('ui.settings.loadingPreferences')}
               </span>
             </div>
           ) : (
@@ -76,7 +77,7 @@ export default function SettingsPage() {
               {/* Interaction count */}
               <div className="flex items-center justify-between">
                 <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Total interactions tracked
+                  {t('ui.settings.totalInteractions')}
                 </span>
                 <span
                   className="metric-value text-sm font-semibold"
@@ -92,32 +93,32 @@ export default function SettingsPage() {
                   className="mb-3 text-sm font-medium"
                   style={{ color: 'var(--text-primary)' }}
                 >
-                  Your preferences
+                  {t('ui.settings.yourPreferences')}
                 </h3>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between text-xs">
                     <span style={{ color: 'var(--text-subtle)' }}>
-                      Top sections
+                      {t('ui.settings.topSections')}
                     </span>
                     <span style={{ color: 'var(--text-secondary)' }}>
                       {preferences.topSections.length > 0
                         ? preferences.topSections.slice(0, 3).join(', ')
-                        : 'None yet'}
+                        : t('ui.settings.noneYet')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span style={{ color: 'var(--text-subtle)' }}>
-                      Focus platform
+                      {t('ui.settings.focusPlatform')}
                     </span>
                     <span style={{ color: 'var(--text-secondary)' }}>
                       {preferences.focusPlatform
                         ? (PLATFORM_LABELS[preferences.focusPlatform] ?? preferences.focusPlatform)
-                        : 'None yet'}
+                        : t('ui.settings.noneYet')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span style={{ color: 'var(--text-subtle)' }}>
-                      Preferred time range
+                      {t('ui.settings.preferredTimeRange')}
                     </span>
                     <span style={{ color: 'var(--text-secondary)' }}>
                       {formatTimeRange(preferences.preferredTimeRange)}
@@ -137,7 +138,7 @@ export default function SettingsPage() {
                     color: 'var(--accent-red)',
                   }}
                 >
-                  Clear Learning Data
+                  {t('ui.settings.clearLearningData')}
                 </button>
                 {cleared && (
                   <span
@@ -145,7 +146,7 @@ export default function SettingsPage() {
                     style={{ color: 'var(--accent-green)' }}
                     role="status"
                   >
-                    Cleared successfully
+                    {t('ui.settings.clearedSuccessfully')}
                   </span>
                 )}
               </div>
@@ -157,12 +158,12 @@ export default function SettingsPage() {
       {/* About Section */}
       <section aria-labelledby="about-heading">
         <h2 id="about-heading" className="kicker mb-4">
-          About
+          {t('ui.settings.about')}
         </h2>
         <div className="card p-5">
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: 'var(--text-subtle)' }}>Version</span>
+              <span style={{ color: 'var(--text-subtle)' }}>{t('ui.settings.versionLabel')}</span>
               <span
                 className="metric-value"
                 style={{ color: 'var(--text-secondary)' }}
@@ -171,11 +172,11 @@ export default function SettingsPage() {
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: 'var(--text-subtle)' }}>License</span>
+              <span style={{ color: 'var(--text-subtle)' }}>{t('ui.settings.license')}</span>
               <span style={{ color: 'var(--text-secondary)' }}>BSL 1.1</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: 'var(--text-subtle)' }}>Source</span>
+              <span style={{ color: 'var(--text-subtle)' }}>{t('ui.settings.source')}</span>
               <a
                 href="https://github.com/openclaw/dash-persona"
                 target="_blank"

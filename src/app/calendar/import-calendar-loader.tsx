@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import { generateContentPlan, type ContentPlan } from '@/lib/engine';
 import { loadProfiles } from '@/lib/store/profile-store';
@@ -61,7 +62,7 @@ export default function ImportCalendarLoader() {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Loading imported data...
+          {t('ui.common.loadingImported')}
         </p>
       </div>
     );
@@ -81,26 +82,24 @@ export default function ImportCalendarLoader() {
           &larr; Dashboard
         </Link>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Need More Data
+          {t('ui.calendar.needMoreData')}
         </h1>
         <p
           className="max-w-md text-center text-sm leading-6"
           style={{ color: 'var(--text-secondary)' }}
         >
-          The content calendar needs at least 10 posts to generate meaningful
-          scheduling recommendations. You currently have{' '}
-          <strong>{plan.dataPoints}</strong> post
-          {plan.dataPoints === 1 ? '' : 's'}.
+          {t('ui.calendar.needMoreDataPre')}{' '}
+          <strong>{plan.dataPoints}</strong>
+          {' '}{t('ui.calendar.needMoreDataPost', { plural: plan.dataPoints === 1 ? '' : t('ui.calendar.posts') })}
         </p>
         <p
           className="max-w-sm text-center text-xs"
           style={{ color: 'var(--text-subtle)' }}
         >
-          Import more data from your Creator Centers and check back once you
-          have more content to analyse.
+          {t('ui.calendar.importMoreDesc')}
         </p>
         <Link href="/onboarding" className="nav-pill">
-          Import Data
+          {t('ui.common.import')}
         </Link>
       </div>
     );
@@ -118,11 +117,10 @@ export default function ImportCalendarLoader() {
           &larr; Dashboard
         </Link>
         <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-          Content Calendar
+          {t('ui.calendar.title')}
         </h1>
         <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-          {plan.dataPoints} posts analysed &middot; {plan.slots.length} slots
-          generated
+          {t('ui.calendar.subtitle', { dataPoints: plan.dataPoints, slots: plan.slots.length })}
         </p>
       </header>
 

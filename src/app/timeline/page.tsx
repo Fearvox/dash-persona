@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import type { DemoPersonaType } from '@/lib/adapters/demo-adapter';
 import ImportTimelineLoader from './import-timeline-loader';
@@ -87,13 +88,13 @@ export default async function TimelinePage({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-              Persona Timeline
+              {t('ui.timeline.title')}
             </h1>
             <p
               className="mt-1 text-sm"
               style={{ color: 'var(--text-subtle)' }}
             >
-              Content strategy experiments as a decision tree
+              {t('ui.timeline.subtitle')}
             </p>
           </div>
 
@@ -133,7 +134,7 @@ export default async function TimelinePage({
       {/* Summary stats */}
       <section className="grid gap-4 grid-cols-2 sm:grid-cols-4">
         <div className="card p-4">
-          <p className="kicker">Total Nodes</p>
+          <p className="kicker">{t('ui.timeline.totalNodes')}</p>
           <p
             className="metric-value mt-1 text-xl font-bold"
             style={{ color: 'var(--text-primary)' }}
@@ -142,7 +143,7 @@ export default async function TimelinePage({
           </p>
         </div>
         <div className="card p-4">
-          <p className="kicker">Mainline</p>
+          <p className="kicker">{t('ui.timeline.mainline')}</p>
           <p
             className="metric-value mt-1 text-xl font-bold"
             style={{ color: 'var(--accent-green)' }}
@@ -151,7 +152,7 @@ export default async function TimelinePage({
           </p>
         </div>
         <div className="card p-4">
-          <p className="kicker">Branches</p>
+          <p className="kicker">{t('ui.timeline.branches')}</p>
           <p
             className="metric-value mt-1 text-xl font-bold"
             style={{ color: 'var(--accent-yellow)' }}
@@ -160,7 +161,7 @@ export default async function TimelinePage({
           </p>
         </div>
         <div className="card p-4">
-          <p className="kicker">Boundaries</p>
+          <p className="kicker">{t('ui.timeline.boundaries')}</p>
           <p
             className="metric-value mt-1 text-xl font-bold"
             style={{ color: 'var(--accent-red)' }}
@@ -173,7 +174,7 @@ export default async function TimelinePage({
       {/* Growth History */}
       <section aria-labelledby="growth-history-heading">
         <h2 id="growth-history-heading" className="kicker mb-3">
-          Growth History
+          {t('ui.timeline.growthHistory')}
         </h2>
         <GrowthTrendChart storeKeys={storeKeys} />
       </section>

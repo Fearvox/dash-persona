@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { t } from '@/lib/i18n';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import {
   computePersonaScore,
@@ -96,7 +97,7 @@ export default function ImportPersonaLoader({ platform }: ImportPersonaLoaderPro
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Loading imported data...
+          {t('ui.common.loadingImported')}
         </p>
       </div>
     );
