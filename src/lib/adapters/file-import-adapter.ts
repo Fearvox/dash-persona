@@ -10,7 +10,7 @@
  */
 
 import * as XLSX from 'xlsx';
-import type { CreatorProfile } from '../schema/creator-data';
+import type { CreatorProfile, FanPortrait } from '../schema/creator-data';
 import { validateCreatorProfile } from '../schema/validate';
 import type { DataAdapter } from './types';
 
@@ -239,7 +239,7 @@ function parseCsv(content: string, fileName: string): CreatorProfile[] {
 }
 
 // ---------------------------------------------------------------------------
-// XLSX schema detection — Douyin exports have 4 distinct formats
+// XLSX schema detection — Douyin (4 types) and TikTok Studio (7 types)
 // ---------------------------------------------------------------------------
 
 /**
@@ -251,8 +251,57 @@ function parseCsv(content: string, fileName: string): CreatorProfile[] {
  */
 type DouyinSchemaType = 'post_list' | 'post_analysis' | 'aggregate' | 'timeseries' | 'unknown';
 
-function detectDouyinSchema(columns: string[]): DouyinSchemaType {
+/**
+ * TikTok Studio export schema types:
+ * 1) tiktok_content         — Content.xlsx (post list with English column names)
+ * 2) tiktok_overview        — Overview.xlsx (daily Video Views, Likes, etc.)
+ * 3) tiktok_viewers         — Viewers.xlsx (Total/New/Returning Viewers per day)
+ * 4) tiktok_follower_history — FollowerHistory.xlsx (daily Followers + delta)
+ * 5) tiktok_follower_gender  — FollowerGender.xlsx (Gender + Distribution)
+ * 6) tiktok_follower_territory — FollowerTopTerritories.xlsx (territory + Distribution)
+ * 7) tiktok_follower_activity  — FollowerActivity.xlsx (Date + Hour + Active followers)
+ */
+type TikTokSchemaType =
+  | 'tiktok_content'
+  | 'tiktok_overview'
+  | 'tiktok_viewers'
+  | 'tiktok_follower_history'
+  | 'tiktok_follower_gender'
+  | 'tiktok_follower_territory'
+  | 'tiktok_follower_activity';
+
+/** Union of all recognised XLSX export schema types across platforms. */
+type ExportSchemaType = DouyinSchemaType | TikTokSchemaType;
+
+function detectExportSchema(columns: string[]): ExportSchemaType {
   const colSet = new Set(columns);
+
+  // --- TikTok detection first (English column names — no risk of conflict) ---
+
+  // TikTok Content.xlsx: "Video title" + "Total views"
+  if (colSet.has('Video title') && colSet.has('Total views')) return 'tiktok_content';
+
+  // TikTok Overview.xlsx: "Date" + "Video Views"
+  if (colSet.has('Date') && colSet.has('Video Views')) return 'tiktok_overview';
+
+  // TikTok Viewers.xlsx: "Total Viewers"
+  if (colSet.has('Total Viewers')) return 'tiktok_viewers';
+
+  // TikTok FollowerHistory.xlsx: "Followers" + column containing "Difference"
+  if (colSet.has('Followers') && columns.some((c) => c.includes('Difference'))) {
+    return 'tiktok_follower_history';
+  }
+
+  // TikTok FollowerGender.xlsx: "Gender" + "Distribution"
+  if (colSet.has('Gender') && colSet.has('Distribution')) return 'tiktok_follower_gender';
+
+  // TikTok FollowerTopTerritories.xlsx: "Top territories"
+  if (colSet.has('Top territories')) return 'tiktok_follower_territory';
+
+  // TikTok FollowerActivity.xlsx: "Hour" + "Active followers"
+  if (colSet.has('Hour') && colSet.has('Active followers')) return 'tiktok_follower_activity';
+
+  // --- Douyin detection ---
 
   // Type A: 作品列表 — has 作品名称 + interaction metrics
   if (colSet.has('作品名称') && (colSet.has('点赞量') || colSet.has('收藏量'))) {
@@ -374,16 +423,116 @@ function parseTimeseries(rows: Record<string, unknown>[]): { history: CreatorPro
 }
 
 // ---------------------------------------------------------------------------
+// TikTok Studio parsers
+// ---------------------------------------------------------------------------
+
+/** TikTok Content.xlsx — per-post metrics with English column names */
+function parseTikTokContent(rows: Record<string, unknown>[], fileName: string): { posts: CreatorProfile['posts'] } {
+  void fileName; // reserved for future error context
+  const posts = rows.map((row, i) => {
+    const link = String(row['Video link'] ?? '');
+    const videoIdMatch = link.match(/video\/(\d+)/);
+    return {
+      postId: videoIdMatch ? videoIdMatch[1] : `tiktok-${i + 1}`,
+      desc: String(row['Video title'] ?? ''),
+      publishedAt: undefined, // "Post time" is relative (e.g. "3月28日"), not ISO
+      views: parseDouyinNum(row['Total views']),
+      likes: parseDouyinNum(row['Total likes']),
+      comments: parseDouyinNum(row['Total comments']),
+      shares: parseDouyinNum(row['Total shares']),
+      saves: 0,
+    };
+  });
+  return { posts: posts as CreatorProfile['posts'] };
+}
+
+/** TikTok Overview.xlsx — 365 days of daily aggregate metrics */
+function parseTikTokOverview(rows: Record<string, unknown>[]): { history: CreatorProfile['history'] } {
+  const history: NonNullable<CreatorProfile['history']> = rows
+    .filter((r) => r['Date'])
+    .map((row) => ({
+      fetchedAt: String(row['Date']),
+      profile: {
+        followers: 0, // not in this file — may be backfilled by mergeXlsxResults
+        likesTotal: parseDouyinNum(row['Likes']),
+        videosCount: 0,
+      },
+    }));
+  return { history };
+}
+
+/** TikTok FollowerHistory.xlsx — daily follower counts with delta */
+function parseTikTokFollowerHistory(rows: Record<string, unknown>[]): { history: CreatorProfile['history'] } {
+  const history: NonNullable<CreatorProfile['history']> = rows
+    .filter((r) => r['Date'])
+    .map((row) => ({
+      fetchedAt: String(row['Date']),
+      profile: {
+        followers: parseDouyinNum(row['Followers']),
+        likesTotal: 0,
+        videosCount: 0,
+      },
+    }));
+  return { history };
+}
+
+/** TikTok FollowerGender.xlsx — gender distribution */
+function parseTikTokFollowerGender(rows: Record<string, unknown>[]): { fanPortrait: Partial<FanPortrait> } {
+  let male = 0;
+  let female = 0;
+  for (const row of rows) {
+    const gender = String(row['Gender'] ?? '').toLowerCase();
+    const raw = parseDouyinNum(row['Distribution']);
+    // Handle both decimal (0.77) and percentage (77) representations
+    const pct = raw > 1 ? raw : raw * 100;
+    if (gender === 'male') male = pct;
+    if (gender === 'female') female = pct;
+  }
+  return { fanPortrait: { gender: { male, female } } };
+}
+
+/** TikTok FollowerTopTerritories.xlsx — top audience territories */
+function parseTikTokFollowerTerritory(rows: Record<string, unknown>[]): { fanPortrait: Partial<FanPortrait> } {
+  const provinces = rows
+    .map((row) => ({
+      name: String(row['Top territories'] ?? ''),
+      percentage: Math.round(parseDouyinNum(row['Distribution']) * 100),
+    }))
+    .filter((p) => p.name !== '');
+  return { fanPortrait: { provinces } };
+}
+
+/** TikTok FollowerActivity.xlsx — active followers by hour, aggregated across all dates */
+function parseTikTokFollowerActivity(rows: Record<string, unknown>[]): { fanPortrait: Partial<FanPortrait> } {
+  // Accumulate counts per hour across all dates, then average
+  const hourMap = new Map<number, number[]>();
+  for (const row of rows) {
+    const hour = parseDouyinNum(row['Hour']);
+    const count = parseDouyinNum(row['Active followers']);
+    if (!hourMap.has(hour)) hourMap.set(hour, []);
+    hourMap.get(hour)!.push(count);
+  }
+  const activityLevels = Array.from(hourMap.entries())
+    .map(([hour, counts]) => ({
+      level: `${hour}:00`,
+      percentage: Math.round(counts.reduce((a, b) => a + b, 0) / counts.length),
+    }))
+    .sort((a, b) => parseInt(a.level, 10) - parseInt(b.level, 10));
+  return { fanPortrait: { activityLevels } };
+}
+
+// ---------------------------------------------------------------------------
 // XLSX parsing — schema-aware
 // ---------------------------------------------------------------------------
 
-/** Result from parsing a single XLSX file — may contain posts, history, or aggregate data */
+/** Result from parsing a single XLSX file — may contain posts, history, aggregate, or fan portrait data */
 export interface XlsxParseResult {
-  schema: DouyinSchemaType;
+  schema: ExportSchemaType;
   fileName: string;
   posts?: CreatorProfile['posts'];
   history?: CreatorProfile['history'];
   aggregate?: Record<string, unknown>;
+  fanPortrait?: Partial<FanPortrait>;
 }
 
 export function parseXlsxRaw(content: string, fileName: string): XlsxParseResult {
@@ -406,7 +555,7 @@ export function parseXlsxRaw(content: string, fileName: string): XlsxParseResult
   }
 
   const columns = Object.keys(rows[0]);
-  const schema = detectDouyinSchema(columns);
+  const schema = detectExportSchema(columns);
 
   switch (schema) {
     case 'post_list':
@@ -417,6 +566,21 @@ export function parseXlsxRaw(content: string, fileName: string): XlsxParseResult
       return { schema, fileName, ...parseAggregate(rows) };
     case 'timeseries':
       return { schema, fileName, ...parseTimeseries(rows) };
+    case 'tiktok_content':
+      return { schema, fileName, ...parseTikTokContent(rows, fileName) };
+    case 'tiktok_overview':
+      return { schema, fileName, ...parseTikTokOverview(rows) };
+    case 'tiktok_viewers':
+      // Viewer counts are already captured in tiktok_overview — skip
+      return { schema, fileName };
+    case 'tiktok_follower_history':
+      return { schema, fileName, ...parseTikTokFollowerHistory(rows) };
+    case 'tiktok_follower_gender':
+      return { schema, fileName, ...parseTikTokFollowerGender(rows) };
+    case 'tiktok_follower_territory':
+      return { schema, fileName, ...parseTikTokFollowerTerritory(rows) };
+    case 'tiktok_follower_activity':
+      return { schema, fileName, ...parseTikTokFollowerActivity(rows) };
     default: {
       // Fallback: treat rows as generic post data using COLUMN_MAP
       const posts = rows.map((row, i) => {
@@ -442,14 +606,15 @@ export function parseXlsxRaw(content: string, fileName: string): XlsxParseResult
 
 function parseXlsx(content: string, fileName: string): CreatorProfile[] {
   const result = parseXlsxRaw(content, fileName);
+  const isTikTok = result.schema.startsWith('tiktok_');
 
   const profile: CreatorProfile = {
-    platform: 'douyin',
+    platform: isTikTok ? 'tiktok' : 'douyin',
     profileUrl: '',
     fetchedAt: new Date().toISOString(),
     source: 'manual_import',
     profile: {
-      nickname: 'Douyin Creator',
+      nickname: isTikTok ? 'TikTok Creator' : 'Douyin Creator',
       uniqueId: `import-${Date.now()}`,
       followers: 0,
       likesTotal: (result.posts ?? []).reduce((sum, p) => sum + p.likes, 0),
@@ -457,6 +622,7 @@ function parseXlsx(content: string, fileName: string): CreatorProfile[] {
     },
     posts: result.posts ?? [],
     history: result.history,
+    ...(result.fanPortrait ? { fanPortrait: result.fanPortrait as FanPortrait } : {}),
   };
 
   const validation = validateCreatorProfile(profile);
@@ -477,19 +643,32 @@ function parseXlsx(content: string, fileName: string): CreatorProfile[] {
 
 /**
  * Merge multiple parsed XLSX results into a single CreatorProfile.
- * Posts from post_list take priority over post_analysis (more fields).
- * Timeseries data becomes history snapshots.
- * Aggregate data is stored in the profile for reference.
+ *
+ * Douyin:
+ *   - post_list takes priority over post_analysis (more complete fields).
+ *   - timeseries data becomes history snapshots.
+ *   - aggregate data is stored in the profile bio for reference.
+ *
+ * TikTok Studio:
+ *   - tiktok_content provides posts.
+ *   - tiktok_overview and tiktok_follower_history are merged by date into history.
+ *     FollowerHistory provides real follower counts; Overview provides daily likes.
+ *   - tiktok_follower_gender, _territory, _activity are merged into fanPortrait.
  */
 export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
   let posts: CreatorProfile['posts'] = [];
   let history: CreatorProfile['history'] = [];
   let aggregate: Record<string, unknown> | undefined;
+  let fanPortrait: Partial<FanPortrait> | undefined;
   let hasPostList = false;
 
+  // Detect platform from schema types present
+  const hasTikTok = results.some((r) => r.schema.startsWith('tiktok_'));
+
+  // First pass: collect all data by schema type
   for (const r of results) {
+    // --- Posts ---
     if (r.schema === 'post_list' && r.posts) {
-      // Post list has the most complete data — use it as primary
       if (!hasPostList) {
         posts = r.posts;
         hasPostList = true;
@@ -501,39 +680,79 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
         }
       }
     } else if (r.schema === 'post_analysis' && r.posts && !hasPostList) {
-      // Only use post_analysis if we don't have post_list yet
+      posts = r.posts;
+    } else if (r.schema === 'tiktok_content' && r.posts) {
       posts = r.posts;
     }
 
-    if (r.schema === 'timeseries' && r.history) {
+    // --- History ---
+    if ((r.schema === 'timeseries' || r.schema === 'tiktok_overview' || r.schema === 'tiktok_follower_history') && r.history) {
       history = [...(history ?? []), ...r.history];
     }
 
+    // --- Aggregate (Douyin only) ---
     if (r.schema === 'aggregate' && r.aggregate) {
       aggregate = r.aggregate;
     }
+
+    // --- Fan portrait (TikTok) ---
+    if (r.fanPortrait) {
+      fanPortrait = { ...fanPortrait, ...r.fanPortrait };
+    }
   }
 
-  // Sort history by date
+  // Merge TikTok history: Overview provides likesTotal, FollowerHistory provides followers.
+  // Both are keyed by the same date string — merge them so each snapshot has both values.
+  if (hasTikTok && history && history.length > 0) {
+    const byDate = new Map<string, NonNullable<CreatorProfile['history']>[number]>();
+    for (const snap of history) {
+      const existing = byDate.get(snap.fetchedAt);
+      if (existing) {
+        byDate.set(snap.fetchedAt, {
+          fetchedAt: snap.fetchedAt,
+          profile: {
+            followers: existing.profile.followers || snap.profile.followers,
+            likesTotal: existing.profile.likesTotal || snap.profile.likesTotal,
+            videosCount: existing.profile.videosCount || snap.profile.videosCount,
+          },
+        });
+      } else {
+        byDate.set(snap.fetchedAt, snap);
+      }
+    }
+    history = Array.from(byDate.values());
+  }
+
+  // Sort history chronologically
   if (history && history.length > 1) {
     history.sort((a, b) => a.fetchedAt.localeCompare(b.fetchedAt));
   }
 
+  // Derive current follower count from the most recent follower history snapshot
+  const latestFollowers =
+    hasTikTok && history && history.length > 0
+      ? (history[history.length - 1]?.profile.followers ?? 0)
+      : 0;
+
+  const platform = hasTikTok ? 'tiktok' : 'douyin';
+  const nickname = hasTikTok ? 'TikTok Creator' : 'Douyin Creator';
+
   const profile: CreatorProfile = {
-    platform: 'douyin',
+    platform,
     profileUrl: '',
     fetchedAt: new Date().toISOString(),
     source: 'manual_import',
     profile: {
-      nickname: 'Douyin Creator',
+      nickname,
       uniqueId: `import-${Date.now()}`,
-      followers: 0,
+      followers: latestFollowers,
       likesTotal: posts.reduce((sum, p) => sum + p.likes, 0),
       videosCount: posts.length,
       ...(aggregate ? { bio: `投稿汇总: ${(aggregate.period as string) ?? ''}` } : {}),
     },
     posts,
     ...(history && history.length > 0 ? { history } : {}),
+    ...(fanPortrait ? { fanPortrait: fanPortrait as FanPortrait } : {}),
   };
 
   return profile;

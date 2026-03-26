@@ -324,7 +324,13 @@ export default function OnboardingPage() {
                     </div>
                     <div className="text-xs text-[var(--text-secondary)]">
                       <strong className="text-[var(--text-primary)]">TikTok</strong> —
-                      Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">tiktok.com/tiktokstudio/analytics</code> &rarr; Download Data
+                      Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">tiktok.com/tiktokstudio/analytics</code>:
+                      <ol className="mt-1 ml-3 flex flex-col gap-0.5 text-[var(--text-subtle)]">
+                        <li>1. Overview tab &rarr; Download Data (365 days of views, likes, comments)</li>
+                        <li>2. Content tab &rarr; Download Data (per-video metrics)</li>
+                        <li>3. Followers tab &rarr; Download Data (follower history, demographics, regions)</li>
+                        <li>4. Viewers tab &rarr; Download Data (viewer trends)</li>
+                      </ol>
                     </div>
                     <div className="text-xs text-[var(--text-secondary)]">
                       <strong className="text-[var(--text-primary)]">Red Note</strong> —
