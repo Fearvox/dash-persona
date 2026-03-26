@@ -174,6 +174,22 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** Scroll down repeatedly until page content stops growing. */
+async function scrollUntilStable(
+  target: string,
+  maxScrolls: number = 10,
+  waitMs: number = 2000,
+): Promise<void> {
+  let prevLength = 0;
+  for (let i = 0; i < maxScrolls; i++) {
+    await cdpScroll(target, 'bottom');
+    await sleep(waitMs);
+    const currentLength = await cdpEval(target, 'document.body.innerText.length') as number;
+    if (typeof currentLength === 'number' && currentLength <= prevLength) break;
+    prevLength = currentLength;
+  }
+}
+
 /** Poll until a JS expression returns truthy, or timeout. */
 async function waitForElement(
   target: string,
@@ -322,24 +338,24 @@ interface DouyinProfileRaw {
   likesTotal: number;
 }
 
-const DOUYIN_HOME_JS = `
-(function() {
-  const text = document.body.innerText;
-  const idMatch = text.match(/抖音号[：:]\\s*(\\S+)/);
-  const fansMatch = text.match(/粉丝\\s*([\\d,.万亿]+)/);
-  const likesMatch = text.match(/获赞\\s*([\\d,.万亿]+)/);
-  const titleEl = document.querySelector('h1, .creator-name, [class*="nickname"]');
-  const titleFromMeta = document.querySelector('meta[property="og:title"]')?.content || '';
-  const nickname = titleEl?.textContent?.trim() || titleFromMeta.split('-')[0].trim() || '';
-  return JSON.stringify({
-    nickname,
-    douyinId: idMatch ? idMatch[1] : '',
-    rawFans: fansMatch ? fansMatch[1] : '0',
-    rawLikes: likesMatch ? likesMatch[1] : '0',
-    url: window.location.href,
-  });
-})()
-`;
+const DOUYIN_HOME_JS = [
+  '(function() {',
+  '  var text = document.body.innerText;',
+  '  var idMatch = text.match(/抖音号[：:][ ]*(\\S+)/);',
+  '  var fansMatch = text.match(/粉丝[ ]*([0-9,.万亿]+)/);',
+  '  var likesMatch = text.match(/获赞[ ]*([0-9,.万亿]+)/);',
+  '  var titleEl = document.querySelector("h1, .creator-name, [class*=\'nickname\']");',
+  '  var titleFromMeta = (document.querySelector("meta[property=\'og:title\']") || {content: ""}).content || "";',
+  '  var nickname = (titleEl && titleEl.textContent && titleEl.textContent.trim()) || titleFromMeta.split("-")[0].trim() || "";',
+  '  return JSON.stringify({',
+  '    nickname: nickname,',
+  '    douyinId: idMatch ? idMatch[1] : "",',
+  '    rawFans: fansMatch ? fansMatch[1] : "0",',
+  '    rawLikes: likesMatch ? likesMatch[1] : "0",',
+  '    url: window.location.href',
+  '  });',
+  '})()',
+].join('\n');
 
 // ---------------------------------------------------------------------------
 // Douyin collection
@@ -417,17 +433,17 @@ async function collectDouyin(): Promise<CreatorProfile> {
       // If table didn't load with default date, try selecting "全部" date range
       if (!tableLoaded) {
         // Click the date range area (contains "~" between two dates, or "发布时间")
-        await cdpEval(target, `
-          (() => {
-            const btns = Array.from(document.querySelectorAll('span,div,button'));
-            const dateTrigger = btns.find(e => {
-              const t = e.textContent.trim();
-              return (t === '~' || t.includes('发布时间') || /\\d{4}[-/]\\d{2}/.test(t))
-                && e.offsetParent !== null && e.offsetWidth < 300;
-            });
-            if (dateTrigger) dateTrigger.click();
-          })()
-        `);
+        await cdpEval(target, [
+          '(function() {',
+          '  var btns = Array.from(document.querySelectorAll("span,div,button"));',
+          '  var dateTrigger = btns.find(function(e) {',
+          '    var t = e.textContent.trim();',
+          '    return (t === "~" || t.indexOf("发布时间") >= 0 || /[0-9]{4}[-/][0-9]{2}/.test(t))',
+          '      && e.offsetParent !== null && e.offsetWidth < 300;',
+          '  });',
+          '  if (dateTrigger) dateTrigger.click();',
+          '})()',
+        ].join('\n'));
         await sleep(2000);
 
         // Click "全部" in the quick-select
@@ -451,10 +467,7 @@ async function collectDouyin(): Promise<CreatorProfile> {
     }
 
     // Scroll to load more posts (lazy-loaded entries)
-    await cdpScroll(target, 'bottom');
-    await sleep(2000);
-    await cdpScroll(target, 'bottom');
-    await sleep(1500);
+    await scrollUntilStable(target, 8, 2000);
 
     // Extract full page text for post table parsing
     const pageText = await cdpEval(
@@ -500,48 +513,36 @@ async function collectDouyin(): Promise<CreatorProfile> {
 // XHS profile extractor
 // ---------------------------------------------------------------------------
 
-const XHS_PROFILE_JS = `
-(function() {
-  const text = document.body.innerText;
-  // Nickname: try dedicated selector, fall back to title
-  const nameEl = document.querySelector(
-    '.user-name, [class*="username"], [class*="nickname"], h1'
-  );
-  const nickname = nameEl?.textContent?.trim()
-    || document.title.split('的主页')[0].trim()
-    || '';
-
-  // Metrics from page text using common XHS patterns
-  const fansMatch = text.match(/关注了?(\\s*[\\d,.万亿]+)[\\s\\S]*?粉丝/);
-  const fansMatch2 = text.match(/粉丝[\\s：:]*([\\d,.万亿]+)/);
-  const likesMatch = text.match(/获赞与收藏[\\s：:]*([\\d,.万亿]+)/);
-  const likesMatch2 = text.match(/获赞[\\s：:]*([\\d,.万亿]+)/);
-
-  // Note list items — XHS has consistent card structure
-  const noteCards = Array.from(
-    document.querySelectorAll(
-      '[class*="note-item"], [class*="noteItem"], [class*="feeds-container"] > *, section[class*="note"]'
-    )
-  ).slice(0, 50);
-
-  const notes = noteCards.map((card) => {
-    const titleEl = card.querySelector('[class*="title"], [class*="desc"], span, p');
-    const likeEl = card.querySelector('[class*="like"], [class*="count"]');
-    return {
-      title: titleEl?.textContent?.trim() || '',
-      likes: parseInt((likeEl?.textContent || '0').replace(/[^\\d]/g, ''), 10) || 0,
-    };
-  }).filter((n) => n.title.length > 0);
-
-  return JSON.stringify({
-    nickname,
-    rawFans: (fansMatch2 || fansMatch) ? ((fansMatch2 || fansMatch) || [])[1] || '0' : '0',
-    rawLikes: (likesMatch || likesMatch2) ? ((likesMatch || likesMatch2) || [])[1] || '0' : '0',
-    notes,
-    pageText: text.slice(0, 3000),
-  });
-})()
-`;
+const XHS_PROFILE_JS = [
+  '(function() {',
+  '  var text = document.body.innerText;',
+  '  var nameEl = document.querySelector(".user-name, [class*=\'username\'], [class*=\'nickname\'], h1");',
+  '  var nickname = (nameEl && nameEl.textContent && nameEl.textContent.trim())',
+  '    || document.title.split("的主页")[0].trim()',
+  '    || "";',
+  '  var fansMatch = text.match(/粉丝[  ：:]*([0-9,.万亿]+)/);',
+  '  var likesMatch = text.match(/获赞与收藏[  ：:]*([0-9,.万亿]+)/);',
+  '  var likesMatch2 = text.match(/获赞[  ：:]*([0-9,.万亿]+)/);',
+  '  var noteCards = Array.from(document.querySelectorAll(',
+  '    "[class*=\'note-item\'], [class*=\'noteItem\'], [class*=\'feeds-container\'] > *, section[class*=\'note\']"',
+  '  )).slice(0, 50);',
+  '  var notes = noteCards.map(function(card) {',
+  '    var titleEl = card.querySelector("[class*=\'title\'], [class*=\'desc\'], span, p");',
+  '    var likeEl = card.querySelector("[class*=\'like\'], [class*=\'count\']");',
+  '    return {',
+  '      title: (titleEl && titleEl.textContent && titleEl.textContent.trim()) || "",',
+  '      likes: parseInt(((likeEl && likeEl.textContent) || "0").replace(/[^0-9]/g, ""), 10) || 0',
+  '    };',
+  '  }).filter(function(n) { return n.title.length > 0; });',
+  '  return JSON.stringify({',
+  '    nickname: nickname,',
+  '    rawFans: fansMatch ? fansMatch[1] : "0",',
+  '    rawLikes: (likesMatch || likesMatch2) ? ((likesMatch || likesMatch2) || [])[1] || "0" : "0",',
+  '    notes: notes,',
+  '    pageText: text.slice(0, 3000)',
+  '  });',
+  '})()',
+].join('\n');
 
 // ---------------------------------------------------------------------------
 // XHS collection
@@ -637,9 +638,45 @@ async function collectXhs(profileUrl: string): Promise<CreatorProfile> {
  * creator dashboard — far more accurate than the public profile estimate.
  */
 async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
-  const target = await cdpNew('https://creator.xiaohongshu.com/statistics/account/v2');
+  const target = await cdpNew('https://creator.xiaohongshu.com/new/home');
 
   try {
+    // --- Bug 1 fix: extract real follower count from the creator home page ---
+    await waitForElement(target, `document.body.innerText.includes('粉丝数')`, 20_000);
+
+    const homeJson = await cdpEval(target, [
+      '(function() {',
+      '  var lines = document.body.innerText.split(String.fromCharCode(10));',
+      '  var followers = "0", following = "0", rawTotalLikes = "0", xhsAccount = "";',
+      '  for (var i = 0; i < lines.length; i++) {',
+      '    var t = lines[i].trim();',
+      '    if (t === "关注数" && i > 0) following = lines[i-1].trim();',
+      '    if (t === "粉丝数" && i > 0) followers = lines[i-1].trim();',
+      '    if (t === "获赞与收藏" && i > 0) rawTotalLikes = lines[i-1].trim();',
+      '    if (t.indexOf("小红书账号") >= 0) {',
+      '      var parts = t.split(":");',
+      '      if (parts.length < 2) parts = t.split("：");',
+      '      xhsAccount = (parts[1] || "").trim();',
+      '    }',
+      '  }',
+      '  return JSON.stringify({following: following, followers: followers, rawTotalLikes: rawTotalLikes, xhsAccount: xhsAccount});',
+      '})()',
+    ].join('\n')) as string;
+
+    let homeData: { following: string; followers: string; rawTotalLikes: string; xhsAccount: string };
+    try {
+      homeData = JSON.parse(homeJson);
+    } catch {
+      homeData = { following: '0', followers: '0', rawTotalLikes: '0', xhsAccount: '' };
+    }
+
+    const realFollowers = parseChineseNumber(homeData.followers);
+    const realTotalLikes = parseChineseNumber(homeData.rawTotalLikes);
+    const xhsAccount = homeData.xhsAccount;
+
+    // Navigate to account analytics page
+    await cdpNavigate(target, 'https://creator.xiaohongshu.com/statistics/account/v2');
+
     // Wait for account analytics page to load
     const loaded = await waitForElement(target, `document.body.innerText.includes('账号诊断')`, 20_000);
     if (!loaded) {
@@ -654,39 +691,72 @@ async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
       throw new CDPAdapterError('TIMEOUT', 'XHS Creator Center statistics page did not load (账号诊断 not found)');
     }
 
-    // Extract account-level diagnostics from innerText
-    const diagJson = await cdpEval(target, `
-      (function() {
-        const text = document.body.innerText;
-
-        // 账号诊断 block: "观看数为 5283", "涨粉数为 108", "主页访客数为 592"
-        const viewsMatch = text.match(/观看数为\\s*([\\d,.万亿]+)/);
-        const followerDeltaMatch = text.match(/涨粉数为\\s*([\\d,.万亿]+)/);
-        const profileVisitsMatch = text.match(/主页访客数为\\s*([\\d,.万亿]+)/);
-
-        // 观看数据 tab (default view): 曝光数, 观看数, 封面点击率, 平均观看时长, 完播率
-        const impressionsMatch = text.match(/曝光数[\\s\\n]*([\\d,.万亿]+)/);
-        const watchCountMatch = text.match(/观看数[\\s\\n]*([\\d,.万亿]+)/);
-        const coverClickMatch = text.match(/封面点击率[\\s\\n]*([\\d.]+%)/);
-        const avgWatchMatch = text.match(/平均观看时长[\\s\\n]*([\\d]+秒|[\\d]+分[\\d]+秒)/);
-        const completionMatch = text.match(/完播率[\\s\\n]*([\\d.]+%)/);
-
-        // Sidebar username
-        const usernameEl = document.querySelector('[class*="username"], [class*="nickname"], [class*="user-name"]');
-        const username = usernameEl?.textContent?.trim() || '';
-
-        return JSON.stringify({
-          username,
-          rawViews: viewsMatch ? viewsMatch[1] : (watchCountMatch ? watchCountMatch[1] : '0'),
-          rawFollowerDelta: followerDeltaMatch ? followerDeltaMatch[1] : '0',
-          rawProfileVisits: profileVisitsMatch ? profileVisitsMatch[1] : '0',
-          rawImpressions: impressionsMatch ? impressionsMatch[1] : '0',
-          rawCoverClickRate: coverClickMatch ? coverClickMatch[1] : '0%',
-          rawAvgWatch: avgWatchMatch ? avgWatchMatch[1] : '0秒',
-          rawCompletion: completionMatch ? completionMatch[1] : '0%',
-        });
+    // --- Bug 2 fix: switch to 近30日 for a broader data range before extracting ---
+    await cdpEval(target, `
+      (() => {
+        const el = Array.from(document.querySelectorAll('div'))
+          .find(e => e.textContent.trim() === '近30日' && e.offsetParent !== null);
+        if (el) el.click();
       })()
-    `) as string;
+    `);
+    await sleep(3000); // Wait for data to refresh after period change
+
+    // Extract account-level diagnostics from innerText
+    const diagJson = await cdpEval(target, [
+      '(function() {',
+      '  var text = document.body.innerText;',
+      '  var lines = text.split(String.fromCharCode(10));',
+      '  var rawViews = "0", rawFollowerDelta = "0", rawProfileVisits = "0";',
+      '  var rawImpressions = "0", rawCoverClickRate = "0%", rawAvgWatch = "0秒", rawCompletion = "0%";',
+      '  for (var i = 0; i < lines.length; i++) {',
+      '    var t = lines[i];',
+      '    if (t.indexOf("观看数为") >= 0) {',
+      '      var m = t.match(/观看数为[ ]*([0-9,.万亿]+)/);',
+      '      if (m) rawViews = m[1];',
+      '    }',
+      '    if (t.indexOf("涨粉数为") >= 0) {',
+      '      var m2 = t.match(/涨粉数为[ ]*([0-9,.万亿]+)/);',
+      '      if (m2) rawFollowerDelta = m2[1];',
+      '    }',
+      '    if (t.indexOf("主页访客数为") >= 0) {',
+      '      var m3 = t.match(/主页访客数为[ ]*([0-9,.万亿]+)/);',
+      '      if (m3) rawProfileVisits = m3[1];',
+      '    }',
+      '    if (t.trim() === "曝光数" && i + 1 < lines.length) {',
+      '      var next = lines[i+1].trim();',
+      '      if (/^[0-9,.万亿]+$/.test(next)) rawImpressions = next;',
+      '    }',
+      '    if (t.trim() === "观看数" && rawViews === "0" && i + 1 < lines.length) {',
+      '      var next2 = lines[i+1].trim();',
+      '      if (/^[0-9,.万亿]+$/.test(next2)) rawViews = next2;',
+      '    }',
+      '    if (t.trim() === "封面点击率" && i + 1 < lines.length) {',
+      '      var next3 = lines[i+1].trim();',
+      '      if (next3.indexOf("%") >= 0) rawCoverClickRate = next3;',
+      '    }',
+      '    if (t.trim() === "平均观看时长" && i + 1 < lines.length) {',
+      '      var next4 = lines[i+1].trim();',
+      '      if (next4.indexOf("秒") >= 0 || next4.indexOf("分") >= 0) rawAvgWatch = next4;',
+      '    }',
+      '    if (t.trim() === "完播率" && i + 1 < lines.length) {',
+      '      var next5 = lines[i+1].trim();',
+      '      if (next5.indexOf("%") >= 0) rawCompletion = next5;',
+      '    }',
+      '  }',
+      '  var usernameEl = document.querySelector("[class*=\'username\'], [class*=\'nickname\'], [class*=\'user-name\']");',
+      '  var username = (usernameEl && usernameEl.textContent && usernameEl.textContent.trim()) || "";',
+      '  return JSON.stringify({',
+      '    username: username,',
+      '    rawViews: rawViews,',
+      '    rawFollowerDelta: rawFollowerDelta,',
+      '    rawProfileVisits: rawProfileVisits,',
+      '    rawImpressions: rawImpressions,',
+      '    rawCoverClickRate: rawCoverClickRate,',
+      '    rawAvgWatch: rawAvgWatch,',
+      '    rawCompletion: rawCompletion',
+      '  });',
+      '})()',
+    ].join('\n')) as string;
 
     let diagData: {
       username: string;
@@ -714,21 +784,37 @@ async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
     `);
     await sleep(2000);
 
-    const engJson = await cdpEval(target, `
-      (function() {
-        const text = document.body.innerText;
-        const likesMatch = text.match(/点赞数[\\s\\n]*([\\d,.万亿]+)/);
-        const commentsMatch = text.match(/评论数[\\s\\n]*([\\d,.万亿]+)/);
-        const savesMatch = text.match(/收藏数[\\s\\n]*([\\d,.万亿]+)/);
-        const sharesMatch = text.match(/分享数[\\s\\n]*([\\d,.万亿]+)/);
-        return JSON.stringify({
-          rawLikes: likesMatch ? likesMatch[1] : '0',
-          rawComments: commentsMatch ? commentsMatch[1] : '0',
-          rawSaves: savesMatch ? savesMatch[1] : '0',
-          rawShares: sharesMatch ? sharesMatch[1] : '0',
-        });
-      })()
-    `) as string;
+    const engJson = await cdpEval(target, [
+      '(function() {',
+      '  var lines = document.body.innerText.split(String.fromCharCode(10));',
+      '  var rawLikes = "0", rawComments = "0", rawSaves = "0", rawShares = "0";',
+      '  for (var i = 0; i < lines.length; i++) {',
+      '    var t = lines[i].trim();',
+      '    if ((t === "点赞数" || t === "点赞") && i + 1 < lines.length) {',
+      '      var next = lines[i+1].trim();',
+      '      if (/^[0-9,.万亿]+$/.test(next)) rawLikes = next;',
+      '    }',
+      '    if ((t === "评论数" || t === "评论") && i + 1 < lines.length) {',
+      '      var next2 = lines[i+1].trim();',
+      '      if (/^[0-9,.万亿]+$/.test(next2)) rawComments = next2;',
+      '    }',
+      '    if ((t === "收藏数" || t === "收藏") && i + 1 < lines.length) {',
+      '      var next3 = lines[i+1].trim();',
+      '      if (/^[0-9,.万亿]+$/.test(next3)) rawSaves = next3;',
+      '    }',
+      '    if ((t === "分享数" || t === "分享") && i + 1 < lines.length) {',
+      '      var next4 = lines[i+1].trim();',
+      '      if (/^[0-9,.万亿]+$/.test(next4)) rawShares = next4;',
+      '    }',
+      '  }',
+      '  return JSON.stringify({',
+      '    rawLikes: rawLikes,',
+      '    rawComments: rawComments,',
+      '    rawSaves: rawSaves,',
+      '    rawShares: rawShares',
+      '  });',
+      '})()',
+    ].join('\n')) as string;
 
     let engData: { rawLikes: string; rawComments: string; rawSaves: string; rawShares: string };
     try {
@@ -744,11 +830,10 @@ async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
     await waitForElement(target, `document.body.innerText.includes('全部笔记')`, 20_000);
 
     // Scroll to load more notes
-    await cdpScroll(target, 'bottom');
-    await sleep(2000);
+    await scrollUntilStable(target, 8, 2000);
 
     // Extract per-note data from innerText
-    // Format per note:
+    // Format per note (uses join array to avoid template-literal regex escaping issues):
     //   [title]
     //   发布于 2026年03月15日 18:49
     //   [views]
@@ -757,62 +842,54 @@ async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
     //   [saves]
     //   [shares]
     //   权限设置
-    const notesJson = await cdpEval(target, `
-      (function() {
-        const text = document.body.innerText;
-        const lines = text.split('\\n').map(l => l.trim()).filter(l => l.length > 0);
-        const datePattern = /^发布于\\s*(\\d{4}年\\d{2}月\\d{2}日(?:\\s+\\d{2}:\\d{2})?)/;
-        const numPattern = /^[\\d,]+$/;
-        const posts = [];
-
-        for (let i = 0; i < lines.length; i++) {
-          const dateMatch = lines[i].match(datePattern);
-          if (!dateMatch) continue;
-
-          // Look backwards for title (non-empty line before the date)
-          let title = '';
-          for (let j = i - 1; j >= Math.max(0, i - 5); j--) {
-            const prev = lines[j].trim();
-            if (prev && prev.length > 2 && !datePattern.test(prev) && !/^(权限设置|全部笔记|笔记管理)$/.test(prev)) {
-              title = prev;
-              break;
-            }
-          }
-
-          // Collect up to 5 numbers after date line
-          const nums = [];
-          let j = i + 1;
-          while (j < lines.length && nums.length < 5) {
-            const line = lines[j].trim();
-            if (/^[\\d,]+$/.test(line)) {
-              nums.push(parseInt(line.replace(/,/g, ''), 10));
-            } else if (/^[\\d.]+[万亿]$/.test(line)) {
-              // parseChineseNumber equivalent inline
-              const cn = line.endsWith('亿')
-                ? Math.round(parseFloat(line) * 100000000)
-                : Math.round(parseFloat(line) * 10000);
-              nums.push(cn);
-            } else if (line === '权限设置' || line === '删除' || datePattern.test(line)) {
-              break;
-            }
-            j++;
-          }
-
-          if (nums.length >= 1) {
-            posts.push({
-              title: title || '未命名笔记',
-              date: dateMatch[1],
-              views: nums[0] ?? 0,
-              comments: nums[1] ?? 0,
-              likes: nums[2] ?? 0,
-              saves: nums[3] ?? 0,
-              shares: nums[4] ?? 0,
-            });
-          }
-        }
-        return JSON.stringify(posts);
-      })()
-    `) as string;
+    const notesJson = await cdpEval(target, [
+      '(function() {',
+      '  var text = document.body.innerText;',
+      '  var lines = text.split(String.fromCharCode(10)).map(function(l) { return l.trim(); }).filter(function(l) { return l.length > 0; });',
+      '  var datePattern = /^发布于[ ]*(([0-9]{4}年[0-9]{2}月[0-9]{2}日)([ ]+[0-9]{2}:[0-9]{2})?)/;',
+      '  var posts = [];',
+      '  for (var i = 0; i < lines.length; i++) {',
+      '    var dateMatch = lines[i].match(datePattern);',
+      '    if (!dateMatch) continue;',
+      '    var title = "";',
+      '    for (var j = i - 1; j >= Math.max(0, i - 5); j--) {',
+      '      var prev = lines[j].trim();',
+      '      if (prev && prev.length > 2 && !datePattern.test(prev) && !/^(权限设置|全部笔记|笔记管理)$/.test(prev)) {',
+      '        title = prev;',
+      '        break;',
+      '      }',
+      '    }',
+      '    var nums = [];',
+      '    var k = i + 1;',
+      '    while (k < lines.length && nums.length < 5) {',
+      '      var line = lines[k].trim();',
+      '      if (/^[0-9,]+$/.test(line)) {',
+      '        nums.push(parseInt(line.replace(/,/g, ""), 10));',
+      '      } else if (/^[0-9.]+[万亿]$/.test(line)) {',
+      '        var cn = line.charAt(line.length - 1) === "亿"',
+      '          ? Math.round(parseFloat(line) * 100000000)',
+      '          : Math.round(parseFloat(line) * 10000);',
+      '        nums.push(cn);',
+      '      } else if (line === "权限设置" || line === "删除" || datePattern.test(line)) {',
+      '        break;',
+      '      }',
+      '      k++;',
+      '    }',
+      '    if (nums.length >= 1) {',
+      '      posts.push({',
+      '        title: title || "未命名笔记",',
+      '        date: dateMatch[1],',
+      '        views: nums[0] || 0,',
+      '        comments: nums[1] || 0,',
+      '        likes: nums[2] || 0,',
+      '        saves: nums[3] || 0,',
+      '        shares: nums[4] || 0',
+      '      });',
+      '    }',
+      '  }',
+      '  return JSON.stringify(posts);',
+      '})()',
+    ].join('\n')) as string;
 
     let rawNotes: Array<{
       title: string;
@@ -840,11 +917,12 @@ async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
       shares: note.shares,
     }));
 
-    // Derive follower count: use profile visits as a proxy if followers not found,
-    // but the diagnostics block gives us followerDelta — we don't have total followers
-    // from creator center alone; leave it as 0 if not extractable.
-    const profileVisits = parseChineseNumber(diagData.rawProfileVisits);
-    const username = diagData.username || 'XHS Creator';
+    // Bug 1 fix: use real follower count from home page, real totalLikes from home page,
+    // and real 小红书账号 as uniqueId.
+    const username = diagData.username || xhsAccount || 'XHS Creator';
+    const uniqueId = xhsAccount || username;
+    // Prefer home-page totalLikes (获赞与收藏) over interaction-tab likes if available
+    const resolvedLikes = realTotalLikes > 0 ? realTotalLikes : totalLikes;
 
     return {
       platform: 'xhs',
@@ -853,9 +931,9 @@ async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
       source: 'cdp',
       profile: {
         nickname: username,
-        uniqueId: username,
-        followers: profileVisits, // best proxy available from creator center
-        likesTotal: totalLikes,
+        uniqueId,
+        followers: realFollowers, // real follower count from creator home page
+        likesTotal: resolvedLikes,
         videosCount: posts.length,
       },
       posts,
@@ -869,83 +947,85 @@ async function collectXhsCreatorCenter(): Promise<CreatorProfile> {
 // TikTok collection
 // ---------------------------------------------------------------------------
 
-const TIKTOK_HOME_JS = `
-(function() {
-  const text = document.body.innerText;
-  const nameMatch = text.match(/^[\\s\\S]*?返回 TikTok\\n([^\\n]+)\\n/);
-  const nickname = nameMatch ? nameMatch[1].trim() : '';
-  const bioMatch = text.match(new RegExp(nickname.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\$&') + '\\n([^\\n]+)'));
-  const bio = bioMatch ? bioMatch[1].trim() : '';
+const TIKTOK_HOME_JS = [
+  '(function() {',
+  '  var NL = String.fromCharCode(10);',
+  '  var text = document.body.innerText;',
+  '  var lines = text.split(NL);',
+  '  var nickname = "";',
+  '  for (var i = 0; i < lines.length; i++) {',
+  '    if (lines[i].trim() === "返回 TikTok" && i + 1 < lines.length) {',
+  '      nickname = lines[i + 1].trim();',
+  '      break;',
+  '    }',
+  '  }',
+  '  var bio = "";',
+  '  if (nickname) {',
+  '    for (var i2 = 0; i2 < lines.length; i2++) {',
+  '      if (lines[i2].trim() === nickname && i2 + 1 < lines.length) {',
+  '        bio = lines[i2 + 1].trim();',
+  '        break;',
+  '      }',
+  '    }',
+  '  }',
+  '  var rawLikes = "0", rawFans = "0", rawFollowing = "0";',
+  '  for (var i3 = 0; i3 < lines.length; i3++) {',
+  '    if (lines[i3].trim() === "赞" && i3 + 1 < lines.length) rawLikes = lines[i3 + 1].trim();',
+  '    if (lines[i3].trim() === "粉丝" && i3 + 1 < lines.length) rawFans = lines[i3 + 1].trim();',
+  '    if (lines[i3].trim() === "已关注" && i3 + 1 < lines.length) rawFollowing = lines[i3 + 1].trim();',
+  '  }',
+  '  var recentSection = text.split("最近的发布内容")[1] || "";',
+  '  var recentLines = recentSection.split("最新评论")[0] || recentSection;',
+  '  return JSON.stringify({',
+  '    nickname: nickname,',
+  '    bio: bio,',
+  '    rawLikes: rawLikes,',
+  '    rawFans: rawFans,',
+  '    rawFollowing: rawFollowing,',
+  '    recentText: recentLines.slice(0, 2000)',
+  '  });',
+  '})()',
+].join('\n');
 
-  const likesMatch = text.match(/赞\\n([\\d,.KMB万亿]+)/);
-  const fansMatch = text.match(/粉丝\\n([\\d,.KMB万亿]+)/);
-  const followMatch = text.match(/已关注\\n([\\d,.KMB万亿]+)/);
-
-  // Recent posts from "最近的发布内容" section
-  const recentSection = text.split('最近的发布内容')[1] || '';
-  const recentLines = recentSection.split('最新评论')[0] || recentSection;
-
-  return JSON.stringify({
-    nickname,
-    bio,
-    rawLikes: likesMatch ? likesMatch[1] : '0',
-    rawFans: fansMatch ? fansMatch[1] : '0',
-    rawFollowing: followMatch ? followMatch[1] : '0',
-    recentText: recentLines.slice(0, 2000),
-  });
-})()
-`;
-
-const TIKTOK_CONTENT_JS = `
-(function() {
-  const text = document.body.innerText;
-  // Content tab has a table: rank, title, 7-day views, total views, time, action
-  const contentSection = text.split('操作')[1] || '';
-  const lines = contentSection.split('\\n').map(l => l.trim()).filter(l => l.length > 0);
-
-  const posts = [];
-  let i = 0;
-  while (i < lines.length && posts.length < 50) {
-    // Pattern: rank number, then duration? (00:09), title, 7d-views, total-views, time, 查看数据
-    const rankMatch = lines[i].match(/^(\\d+)$/);
-    if (rankMatch) {
-      let j = i + 1;
-      let duration = '';
-      let title = '';
-      let views7d = '0';
-      let viewsTotal = '0';
-      let timeStr = '';
-
-      // Check if next line is a duration (00:09)
-      if (j < lines.length && /^\\d{2}:\\d{2}$/.test(lines[j])) {
-        duration = lines[j];
-        j++;
-      }
-      // Title line(s) — collect until we hit a number
-      while (j < lines.length && !/^[\\d,.KMB万亿]+$/.test(lines[j]) && lines[j] !== '查看数据') {
-        title += (title ? ' ' : '') + lines[j];
-        j++;
-      }
-      // 7-day views
-      if (j < lines.length) { views7d = lines[j]; j++; }
-      // Total views
-      if (j < lines.length) { viewsTotal = lines[j]; j++; }
-      // Relative time
-      if (j < lines.length && lines[j] !== '查看数据') { timeStr = lines[j]; j++; }
-      // Skip "查看数据"
-      if (j < lines.length && lines[j] === '查看数据') j++;
-
-      if (title) {
-        posts.push({ title, views7d, viewsTotal, timeStr });
-      }
-      i = j;
-    } else {
-      i++;
-    }
-  }
-  return JSON.stringify(posts);
-})()
-`;
+const TIKTOK_CONTENT_JS = [
+  '(function() {',
+  '  var NL = String.fromCharCode(10);',
+  '  var TAB = String.fromCharCode(9);',
+  '  var text = document.body.innerText;',
+  '  var section = text.split("操作")[1] || "";',
+  '  var lines = section.split(NL)',
+  '    .map(function(l) { return l.trim(); })',
+  '    .filter(function(l) { return l.length > 0 && l !== TAB && !/^[\t]+$/.test(l); });',
+  '  var posts = [];',
+  '  var i = 0;',
+  '  while (i < lines.length && posts.length < 50) {',
+  '    if (/^[0-9]+$/.test(lines[i]) && parseInt(lines[i]) === posts.length + 1) {',
+  '      var j = i + 1;',
+  '      var title = "";',
+  '      var views7d = "0";',
+  '      var viewsTotal = "0";',
+  '      var timeStr = "";',
+  '      if (j < lines.length && /^[0-9]{2}:[0-9]{2}$/.test(lines[j])) {',
+  '        j++;',
+  '      }',
+  '      while (j < lines.length && !/^[0-9,.]+[KMBkmb万亿]?$/.test(lines[j]) && lines[j] !== "查看数据") {',
+  '        title += (title ? " " : "") + lines[j]; j++;',
+  '      }',
+  '      if (j < lines.length && lines[j] !== "查看数据") { views7d = lines[j]; j++; }',
+  '      if (j < lines.length && lines[j] !== "查看数据") { viewsTotal = lines[j]; j++; }',
+  '      if (j < lines.length && lines[j] !== "查看数据") { timeStr = lines[j]; j++; }',
+  '      if (j < lines.length && lines[j] === "查看数据") j++;',
+  '      if (title || views7d !== "0") {',
+  '        posts.push({ title: title || "(untitled)", views7d: views7d, viewsTotal: viewsTotal, timeStr: timeStr });',
+  '      }',
+  '      i = j;',
+  '    } else {',
+  '      i++;',
+  '    }',
+  '  }',
+  '  return JSON.stringify(posts);',
+  '})()',
+].join('\n');
 
 /** Parse TikTok K/M/B suffixes. "21K" → 21000, "1.5K" → 1500 */
 function parseTiktokNumber(str: string): number {
@@ -1045,6 +1125,8 @@ async function collectTiktok(): Promise<CreatorProfile> {
     // Navigate to content analytics for full post list
     await cdpNavigate(target, 'https://www.tiktok.com/tiktokstudio/analytics/content');
     await waitForElement(target, `document.body.innerText.includes('总播放量') || document.body.innerText.includes('查看数据')`, 20_000);
+    // Bug 4 fix: scroll until no new content loads
+    await scrollUntilStable(target, 5, 2000);
 
     const contentJson = await cdpEval(target, TIKTOK_CONTENT_JS) as string;
     let contentPosts: Array<{ title: string; views7d: string; viewsTotal: string; timeStr: string }> = [];
@@ -1151,10 +1233,11 @@ export class CDPAdapter implements DataAdapter {
           // Try creator center first (logged-in account, real data)
           try {
             return await collectXhsCreatorCenter();
-          } catch {
+          } catch (creatorErr) {
             // Fall back to public profile if creator center fails
             if (!platformInput) {
-              throw new CDPAdapterError('PARSE_ERROR', 'XHS collection failed. Provide a profile URL or log in to creator.xiaohongshu.com');
+              const msg = creatorErr instanceof Error ? creatorErr.message : String(creatorErr);
+              throw new CDPAdapterError('PARSE_ERROR', `XHS Creator Center failed: ${msg}`);
             }
             return collectXhs(platformInput);
           }
