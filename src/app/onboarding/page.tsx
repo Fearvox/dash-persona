@@ -36,6 +36,45 @@ const platformBadgeColor: Record<string, string> = {
   "Red Note": "badge-yellow",
 };
 
+/** Merge two profiles for the same platform: combine posts (deduplicate by desc),
+ *  keep the newer profile metadata, prefer the one with more followers. */
+function mergeProfile(
+  existing: CreatorProfile | undefined,
+  incoming: CreatorProfile,
+): CreatorProfile {
+  if (!existing) return incoming;
+  if (incoming.posts.length === 0) return existing;
+
+  // Deduplicate posts by desc (title) — keep incoming version if duplicate
+  const seen = new Set<string>();
+  const mergedPosts = [];
+  for (const p of incoming.posts) {
+    seen.add(p.desc);
+    mergedPosts.push(p);
+  }
+  for (const p of existing.posts) {
+    if (!seen.has(p.desc)) {
+      mergedPosts.push(p);
+    }
+  }
+
+  return {
+    ...existing,
+    ...incoming,
+    profile: {
+      ...existing.profile,
+      ...incoming.profile,
+      // Keep the larger follower count (CDP is usually more accurate)
+      followers: Math.max(existing.profile.followers, incoming.profile.followers),
+      likesTotal: Math.max(existing.profile.likesTotal, incoming.profile.likesTotal),
+      videosCount: mergedPosts.length,
+    },
+    posts: mergedPosts,
+    // Preserve history from either source
+    history: [...(existing.history ?? []), ...(incoming.history ?? [])],
+  };
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
@@ -111,18 +150,15 @@ export default function OnboardingPage() {
       ? JSON.parse(existingRaw)
       : {};
     if (mergedProfile) {
-      profilesMap["douyin"] = mergedProfile;
+      profilesMap["douyin"] = mergeProfile(profilesMap["douyin"], mergedProfile);
     }
     for (const p of jsonProfiles) {
-      // Use platform value as key; for unknown platforms, generate a unique key
-      // but also attempt to detect platform from filename patterns in desc
       let key = p.platform;
       if (key === "unknown") {
-        // Deduplicate unknown platforms with index suffix
         const idx = Object.keys(profilesMap).filter((k) => k.startsWith("unknown")).length;
         key = idx === 0 ? "unknown" : `unknown-${idx}`;
       }
-      profilesMap[key] = p;
+      profilesMap[key] = mergeProfile(profilesMap[key], p);
     }
 
     sessionStorage.setItem("dashpersona-import-profiles", JSON.stringify(profilesMap));
