@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
+import { loadProfiles } from '@/lib/store/profile-store';
 import { runAllEngines, type AllEngineResults } from '@/lib/engine';
 import DashboardInteractive from '@/components/dashboard-interactive';
 import PlatformComparison from '@/components/platform-comparison';
@@ -16,21 +17,33 @@ export default function ImportDashboardLoader() {
   const [profiles, setProfiles] = useState<Record<string, CreatorProfile> | null>(null);
 
   useEffect(() => {
+    // Try sessionStorage first (fast, sync)
     const raw = sessionStorage.getItem('dashpersona-import-profiles');
-    if (!raw) {
-      router.replace('/onboarding');
-      return;
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as Record<string, CreatorProfile>;
+        for (const p of Object.values(parsed)) {
+          if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
+        }
+        setProfiles(parsed);
+        return;
+      } catch { /* fall through to IndexedDB */ }
     }
-    try {
-      const parsed = JSON.parse(raw) as Record<string, CreatorProfile>;
-      // Patch any missing profileUrl (Douyin imports have empty string)
-      for (const p of Object.values(parsed)) {
-        if (!p.profileUrl) p.profileUrl = `https://creator.douyin.com`;
+
+    // Fallback: load from IndexedDB (persists across sessions)
+    loadProfiles().then((stored) => {
+      if (Object.keys(stored).length > 0) {
+        for (const p of Object.values(stored)) {
+          if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
+        }
+        sessionStorage.setItem('dashpersona-import-profiles', JSON.stringify(stored));
+        setProfiles(stored);
+      } else {
+        router.replace('/onboarding');
       }
-      setProfiles(parsed);
-    } catch {
+    }).catch(() => {
       router.replace('/onboarding');
-    }
+    });
   }, [router]);
 
   // All hooks must be called unconditionally (Rules of Hooks)

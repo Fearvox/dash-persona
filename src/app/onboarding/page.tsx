@@ -7,6 +7,7 @@ import FileDropZone, { type FileParseResult } from "@/components/file-drop-zone"
 import CDPSetupGuide from "@/components/cdp-setup-guide";
 import { parseFileContent, parseXlsxRaw, mergeXlsxResults, type XlsxParseResult } from "@/lib/adapters/file-import-adapter";
 import type { CreatorProfile } from "@/lib/schema/creator-data";
+import { saveProfiles } from "@/lib/store/profile-store";
 
 type PlatformEntry = {
   id: string;
@@ -104,7 +105,11 @@ export default function OnboardingPage() {
   function handleLaunchImport() {
     if (!hasData) return;
 
-    const profilesMap: Record<string, CreatorProfile> = {};
+    // Merge with existing data (preserve CDP-collected profiles)
+    const existingRaw = sessionStorage.getItem("dashpersona-import-profiles");
+    const profilesMap: Record<string, CreatorProfile> = existingRaw
+      ? JSON.parse(existingRaw)
+      : {};
     if (mergedProfile) {
       profilesMap["douyin"] = mergedProfile;
     }
@@ -121,6 +126,7 @@ export default function OnboardingPage() {
     }
 
     sessionStorage.setItem("dashpersona-import-profiles", JSON.stringify(profilesMap));
+    saveProfiles(profilesMap); // Persist to IndexedDB
     router.push("/dashboard?source=import");
   }
 

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
+import { saveProfiles } from '@/lib/store/profile-store';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -850,13 +851,16 @@ export default function CdpSetupGuide() {
     }
   }, [phase, startPoll, stopPoll]);
 
-  // Keep sessionStorage in sync as profiles are collected (no auto-transition)
+  // Merge collected profiles with existing data and persist
   useEffect(() => {
     if (Object.keys(collectedProfiles).length > 0) {
-      sessionStorage.setItem(
-        'dashpersona-import-profiles',
-        JSON.stringify(collectedProfiles),
-      );
+      const existingRaw = sessionStorage.getItem('dashpersona-import-profiles');
+      const existing: Record<string, CreatorProfile> = existingRaw
+        ? JSON.parse(existingRaw)
+        : {};
+      const merged = { ...existing, ...collectedProfiles };
+      sessionStorage.setItem('dashpersona-import-profiles', JSON.stringify(merged));
+      saveProfiles(merged); // Persist to IndexedDB
     }
   }, [collectedProfiles]);
 
