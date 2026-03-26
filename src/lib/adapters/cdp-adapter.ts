@@ -19,7 +19,7 @@ import type { DataAdapter } from './types';
 
 const CDP_BASE = 'http://127.0.0.1:3458';
 const REQUEST_TIMEOUT_MS = 15_000;
-const COLLECT_TIMEOUT_MS = 150_000;
+const COLLECT_TIMEOUT_MS = 300_000; // 5 min — Douyin needs 15s init + 50x3s scroll
 const MAX_POSTS = 50;
 
 // ---------------------------------------------------------------------------
@@ -409,9 +409,13 @@ async function collectDouyin(): Promise<CreatorProfile> {
         20_000,
       );
 
+      // Wait for initial page content to fully render before scrolling
+      await sleep(15_000);
+
       // Scroll load-more into view repeatedly to trigger IntersectionObserver
       // (requires foreground tab — background tabs don't fire IO callbacks)
-      for (let scrollAttempt = 0; scrollAttempt < 20; scrollAttempt++) {
+      // 78 posts ÷ ~12 per batch = ~7 batches, but allow up to 50 attempts
+      for (let scrollAttempt = 0; scrollAttempt < 50; scrollAttempt++) {
         const hasMore = await cdpEval(target, [
           '(function() {',
           '  var lm = document.querySelector("[class*=load-more]");',
@@ -423,7 +427,7 @@ async function collectDouyin(): Promise<CreatorProfile> {
           '})()',
         ].join('\n'));
         if (!hasMore) break;
-        await sleep(2000);
+        await sleep(3000); // 3s per scroll — Douyin loads slowly
       }
     } catch {
       // Navigation failed — return profile-only
