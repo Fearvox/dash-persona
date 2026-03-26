@@ -446,18 +446,40 @@ function parseTikTokContent(rows: Record<string, unknown>[], fileName: string): 
   return { posts: posts as CreatorProfile['posts'] };
 }
 
+/**
+ * Convert TikTok Chinese date like "3月25日" to ISO "2026-03-25".
+ * Assumes current year if no year is present.
+ */
+function normalizeTikTokDate(raw: unknown): string {
+  const s = String(raw ?? '').trim();
+  // Already ISO? Return as-is
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s;
+  // Chinese format: "3月25日" or "12月1日"
+  const m = s.match(/(\d{1,2})月(\d{1,2})日/);
+  if (m) {
+    const year = new Date().getFullYear();
+    return `${year}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+  }
+  // English format: "Mar 25" etc — try Date.parse
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+  // Fallback — return empty to be filtered out
+  return '';
+}
+
 /** TikTok Overview.xlsx — 365 days of daily aggregate metrics */
 function parseTikTokOverview(rows: Record<string, unknown>[]): { history: CreatorProfile['history'] } {
   const history: NonNullable<CreatorProfile['history']> = rows
     .filter((r) => r['Date'])
     .map((row) => ({
-      fetchedAt: String(row['Date']),
+      fetchedAt: normalizeTikTokDate(row['Date']),
       profile: {
-        followers: 0, // not in this file — may be backfilled by mergeXlsxResults
+        followers: 0,
         likesTotal: parseDouyinNum(row['Likes']),
         videosCount: 0,
       },
-    }));
+    }))
+    .filter((e) => e.fetchedAt.length > 0); // drop unparseable dates
   return { history };
 }
 
@@ -466,13 +488,14 @@ function parseTikTokFollowerHistory(rows: Record<string, unknown>[]): { history:
   const history: NonNullable<CreatorProfile['history']> = rows
     .filter((r) => r['Date'])
     .map((row) => ({
-      fetchedAt: String(row['Date']),
+      fetchedAt: normalizeTikTokDate(row['Date']),
       profile: {
         followers: parseDouyinNum(row['Followers']),
         likesTotal: 0,
         videosCount: 0,
       },
-    }));
+    }))
+    .filter((e) => e.fetchedAt.length > 0);
   return { history };
 }
 
