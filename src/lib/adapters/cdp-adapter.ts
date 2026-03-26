@@ -19,7 +19,7 @@ import type { DataAdapter } from './types';
 
 const CDP_BASE = 'http://127.0.0.1:3458';
 const REQUEST_TIMEOUT_MS = 15_000;
-const COLLECT_TIMEOUT_MS = 90_000;
+const COLLECT_TIMEOUT_MS = 150_000;
 const MAX_POSTS = 50;
 
 // ---------------------------------------------------------------------------
@@ -172,6 +172,24 @@ function parseDuration(str: string): number {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Poll until a JS expression returns truthy, or timeout. */
+async function waitForElement(
+  target: string,
+  checkJs: string,
+  timeoutMs: number = 20_000,
+  intervalMs: number = 1500,
+): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const result = await cdpEval(target, checkJs);
+      if (result) return true;
+    } catch { /* ignore */ }
+    await sleep(intervalMs);
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -359,8 +377,12 @@ async function collectDouyin(): Promise<CreatorProfile> {
   const target = await cdpNew('https://creator.douyin.com');
 
   try {
-    // Wait for redirect and SPA render
-    await sleep(4000);
+    // Wait for SPA render — creator center is slow, poll for page content
+    await waitForElement(
+      target,
+      `document.body.innerText.includes('粉丝') || window.location.href.includes('login')`,
+      20_000,
+    );
 
     // Check if we landed on the home page (login redirect guard)
     const currentUrl = await cdpEval(target, 'window.location.href') as string;
@@ -387,10 +409,16 @@ async function collectDouyin(): Promise<CreatorProfile> {
       likesTotal: parseChineseNumber(profileRaw.rawLikes),
     };
 
-    // Navigate to 投稿列表: direct URL → click "投稿作品" tab → click "投稿列表" sub-tab
+    // Navigate to 投稿列表: direct URL → wait for SPA → click tabs → set date range
     try {
       await cdpNavigate(target, 'https://creator.douyin.com/creator-micro/data-center/content');
-      await sleep(3000);
+
+      // Wait up to 20s for the page tabs to appear (SPA loads slowly)
+      await waitForElement(
+        target,
+        `!!Array.from(document.querySelectorAll('div')).find(e => e.textContent.trim() === '投稿作品' && e.offsetParent !== null)`,
+        20_000,
+      );
 
       // Page defaults to 直播 tab — click "投稿作品" first
       await cdpEval(target, `
@@ -400,9 +428,15 @@ async function collectDouyin(): Promise<CreatorProfile> {
           if (el) el.click();
         })()
       `);
-      await sleep(2000);
 
-      // Then click "投稿列表" sub-tab
+      // Wait for 投稿列表 sub-tab to appear
+      await waitForElement(
+        target,
+        `!!Array.from(document.querySelectorAll('div,span')).find(e => e.textContent.trim() === '投稿列表' && e.offsetParent !== null)`,
+        15_000,
+      );
+
+      // Click "投稿列表" sub-tab
       await cdpEval(target, `
         (() => {
           const el = Array.from(document.querySelectorAll('div,span'))
@@ -410,12 +444,58 @@ async function collectDouyin(): Promise<CreatorProfile> {
           if (el) el.click();
         })()
       `);
-      await sleep(2000);
+
+      // Wait for post table to load (look for "作品名称" or "分析详情")
+      await waitForElement(
+        target,
+        `document.body.innerText.includes('作品名称') || document.body.innerText.includes('分析详情')`,
+        20_000,
+      );
+
+      // Set date range to "全部" — click the calendar icon next to "导出数据"
+      try {
+        await cdpEval(target, `
+          (() => {
+            // Look for the date range trigger (calendar icon / date picker button near 导出数据)
+            const btns = Array.from(document.querySelectorAll('span,div,button'));
+            const dateTrigger = btns.find(e => {
+              const t = e.textContent.trim();
+              return (t === '~' || t.includes('发布时间') || /\\d{4}[-/]\\d{2}/.test(t))
+                && e.offsetParent !== null && e.offsetWidth < 300;
+            });
+            if (dateTrigger) { dateTrigger.click(); return 'opened date picker'; }
+            return 'date picker not found';
+          })()
+        `);
+        await sleep(1500);
+
+        // Click "全部" in the quick-select options
+        await cdpEval(target, `
+          (() => {
+            const el = Array.from(document.querySelectorAll('span,div,a,button'))
+              .find(e => e.textContent.trim() === '全部' && e.offsetParent !== null);
+            if (el) { el.click(); return 'clicked 全部'; }
+            return 'not found';
+          })()
+        `);
+        await sleep(3000); // Wait for filtered data to reload
+
+        // Wait again for table to re-populate after date change
+        await waitForElement(
+          target,
+          `(document.body.innerText.match(/分析详情/g) || []).length > 0`,
+          15_000,
+        );
+      } catch {
+        // Date selection failed — continue with default date range
+      }
     } catch {
       // Navigation failed — return what we have (profile-only, no posts)
     }
 
-    // Scroll to load more posts
+    // Scroll to load more posts (lazy-loaded entries)
+    await cdpScroll(target, 'bottom');
+    await sleep(2000);
     await cdpScroll(target, 'bottom');
     await sleep(1500);
 

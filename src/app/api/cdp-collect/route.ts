@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CDPAdapter, CDPAdapterError } from '@/lib/adapters/cdp-adapter';
 
-const TIMEOUT_MS = 90_000;
+const TIMEOUT_MS = 150_000;
 const CDP_HEALTH_URL = 'http://127.0.0.1:3458/health';
 
 export async function GET() {
