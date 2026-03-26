@@ -231,108 +231,81 @@ interface DouyinRawPost {
 }
 
 /**
- * Parse the innerText of the Douyin 投稿列表 page into structured post data.
+ * Parse the Douyin 投稿列表 page innerText into structured post data.
  *
- * The page text looks like:
- *   作品名称 | 发布时间\t审核状态\t播放量\t...
- *   \n<title>\n<date>\n<genre>\n\t\n<status>\n\tNNNN\t-\t16.67%\t6秒\t749\t35\t12\t28\t0\t30\t
+ * Actual DOM innerText structure per post:
+ *   [title line]
+ *   [date: "2026-03-24 23:24"]
+ *   [genre: "图文" or "1min视频"]
+ *   [tab-only line]
+ *   [status: "通过"]
+ *   ["\tNNNN\t-\t-\t12.5%\t44.26%\t6秒\t894\t60\t18\t30\t0\t36\t"]  ← METRIC LINE
+ *   ["分析详情"]
  *
- * We find the header line, then parse each subsequent post block by splitting
- * on the metric pattern: a sequence of numbers/dashes/percentages/durations
- * separated by tabs that follows a non-numeric title+date block.
+ * Strategy: find each metric line (has many tabs + numbers), then look backwards
+ * for the date and title. This is robust against SPA layout changes.
  */
 function parseDouyinPostTable(pageText: string): DouyinRawPost[] {
-  const lines = pageText.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
-
-  // Find the header line index
-  const headerIdx = lines.findIndex(
-    (l) => l.includes('作品名称') && l.includes('发布时间'),
-  );
-  if (headerIdx === -1) return [];
-
-  const postLines = lines.slice(headerIdx + 1);
+  const lines = pageText.split('\n');
   const posts: DouyinRawPost[] = [];
-
-  // A date pattern like "2024-12-31" or "2025/01/15" that marks the start of a new post block
   const datePattern = /^\d{4}[-/]\d{2}[-/]\d{2}/;
-  // A metric value pattern — number, percentage, duration, or dash
-  const metricPattern = /^[\d.]+[万亿]?%?$|^\d+秒$|^\d+分\d+秒$|^-$/;
 
-  let i = 0;
-  while (i < postLines.length) {
-    const line = postLines[i];
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
 
-    // Skip lines that look like status labels, navigation, or UI chrome
-    if (
-      line.includes('审核状态') ||
-      line.includes('已通过') === false && line.includes('待审核') === false &&
-        line.includes('作品状态') ||
-      line.length === 0
-    ) {
-      // (continue below)
-    }
+    // A metric line: starts with tab, contains many tab-separated values
+    if (!raw.includes('\t')) continue;
+    const parts = raw.split('\t').map((s) => s.trim()).filter((s) => s.length > 0);
+    if (parts.length < 8) continue;
 
-    // If this line looks like a title (not a date, not a pure metric), try to
-    // collect a post block starting here
-    if (!datePattern.test(line) && !metricPattern.test(line) && line.length > 1) {
-      const title = line;
-      let dateStr = '';
-      let metricValues: string[] = [];
+    // Check that most parts are numeric/percentage/duration/dash
+    const numericCount = parts.filter((p) =>
+      /^[\d,.]+[万亿]?%?$/.test(p) || /^\d+秒$/.test(p) || /^\d+分\d+秒$/.test(p) || p === '-',
+    ).length;
+    if (numericCount < 6) continue; // need at least 6 metric-like values
 
-      // Scan forward to find date and metrics
-      let j = i + 1;
-      while (j < postLines.length && j < i + 10) {
-        const candidate = postLines[j];
-        if (datePattern.test(candidate) && !dateStr) {
-          dateStr = candidate;
-          j++;
-          continue;
-        }
-        // Collect tab-separated metric chunks
-        if (candidate.includes('\t')) {
-          const parts = candidate.split('\t').map((s) => s.trim()).filter((s) => s.length > 0);
-          const allMetrics = parts.every((p) => metricPattern.test(p) || p === '-' || p === '');
-          if (allMetrics && parts.length >= 4) {
-            metricValues = parts;
-            j++;
-            break;
-          }
-        }
-        // Check if this line itself is a metric value (single column)
-        if (metricPattern.test(candidate)) {
-          metricValues.push(candidate);
-          j++;
-          continue;
-        }
-        // Looks like the start of another post — stop collecting
-        if (!datePattern.test(candidate) && !metricPattern.test(candidate) && candidate.length > 1 && dateStr) {
-          break;
-        }
-        j++;
-      }
+    // Found a metric line — look backwards for date and title
+    let dateStr = '';
+    let title = '';
 
-      if (dateStr && metricValues.length > 0) {
-        const get = (idx: number): string => metricValues[idx] ?? '-';
-        posts.push({
-          title,
-          date: dateStr,
-          views: parseChineseNumber(get(0)),
-          // skip indices 1 (完播率), 2 (5s完播率)
-          coverClickRate: parsePct(get(3)),
-          // skip index 4 (2s跳出率)
-          avgWatchDuration: parseDuration(get(5)),
-          likes: parseChineseNumber(get(6)),
-          shares: parseChineseNumber(get(7)),
-          comments: parseChineseNumber(get(8)),
-          saves: parseChineseNumber(get(9)),
-          profileViews: parseChineseNumber(get(10)),
-          followerDelta: parseChineseNumber(get(11)),
-        });
-        i = j;
+    for (let j = i - 1; j >= Math.max(0, i - 6); j--) {
+      const prev = lines[j].trim();
+      if (!prev) continue;
+      if (datePattern.test(prev) && !dateStr) {
+        dateStr = prev;
         continue;
       }
+      // Title: longer line, not a date, not a short status/genre word
+      if (
+        dateStr && prev.length > 3 &&
+        !datePattern.test(prev) &&
+        prev !== '通过' && prev !== '待审核' && prev !== '私密' &&
+        prev !== '图文' && prev !== '分析详情' &&
+        !prev.startsWith('\t')
+      ) {
+        title = prev;
+        break;
+      }
     }
-    i++;
+
+    if (!dateStr || !title) continue;
+
+    // Parse metric values: column order is
+    // views, 完播率, 5s完播率, 封面点击率, 2s跳出率, 平均播放时长, 点赞, 分享, 评论, 收藏, 主页访问, 粉丝增量
+    const get = (idx: number): string => parts[idx] ?? '-';
+    posts.push({
+      title,
+      date: dateStr,
+      views: parseChineseNumber(get(0)),
+      coverClickRate: parsePct(get(3)),
+      avgWatchDuration: parseDuration(get(5)),
+      likes: parseChineseNumber(get(6)),
+      shares: parseChineseNumber(get(7)),
+      comments: parseChineseNumber(get(8)),
+      saves: parseChineseNumber(get(9)),
+      profileViews: parseChineseNumber(get(10)),
+      followerDelta: parseChineseNumber(get(11)),
+    });
   }
 
   return posts;
