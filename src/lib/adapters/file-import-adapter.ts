@@ -447,38 +447,48 @@ function parseTikTokContent(rows: Record<string, unknown>[], fileName: string): 
 }
 
 /**
- * Convert TikTok Chinese date like "3月25日" to ISO "2025-03-25".
- * TikTok exports 365 days of historical data with no year indicator.
- * If the resulting date is in the future, subtract one year (it's from last year).
+ * Batch-normalize TikTok Chinese dates like "3月25日" → ISO dates.
+ *
+ * TikTok exports 365 days in chronological order (oldest first) with no year.
+ * We detect year boundaries by watching for month decreases (e.g. Dec→Jan).
+ * Start year = current year - 1 (first entry is ~1 year ago).
  */
-function normalizeTikTokDate(raw: unknown): string {
-  const s = String(raw ?? '').trim();
-  // Already ISO? Return as-is
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s;
-  // Chinese format: "3月25日" or "12月1日"
-  const m = s.match(/(\d{1,2})月(\d{1,2})日/);
-  if (m) {
-    let year = new Date().getFullYear();
-    const iso = `${year}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
-    // If this date is in the future, it's from last year
-    if (new Date(iso).getTime() > Date.now() + 86_400_000) {
-      return `${year - 1}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+function normalizeTikTokDates(rawDates: unknown[]): string[] {
+  const currentYear = new Date().getFullYear();
+  let year = currentYear - 1;
+  let prevMonth = -1;
+
+  return rawDates.map((raw) => {
+    const s = String(raw ?? '').trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s;
+    const m = s.match(/(\d{1,2})月(\d{1,2})日/);
+    if (!m) return '';
+    const month = parseInt(m[1], 10);
+    const day = parseInt(m[2], 10);
+
+    // Detect year boundary: month jumped backwards significantly (Dec→Jan)
+    if (prevMonth >= 10 && month <= 3) {
+      year++;
     }
-    return iso;
-  }
-  // English format: "Mar 25" etc — try Date.parse
-  const d = new Date(s);
-  if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
-  // Fallback — return empty to be filtered out
-  return '';
+    prevMonth = month;
+
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  });
+}
+
+/** Single-date fallback for non-sequential contexts. */
+function normalizeTikTokDate(raw: unknown): string {
+  const results = normalizeTikTokDates([raw]);
+  return results[0] || '';
 }
 
 /** TikTok Overview.xlsx — 365 days of daily aggregate metrics */
 function parseTikTokOverview(rows: Record<string, unknown>[]): { history: CreatorProfile['history'] } {
-  const history: NonNullable<CreatorProfile['history']> = rows
-    .filter((r) => r['Date'])
-    .map((row) => ({
-      fetchedAt: normalizeTikTokDate(row['Date']),
+  const validRows = rows.filter((r) => r['Date']);
+  const dates = normalizeTikTokDates(validRows.map((r) => r['Date']));
+  const history: NonNullable<CreatorProfile['history']> = validRows
+    .map((row, i) => ({
+      fetchedAt: dates[i],
       profile: {
         followers: 0,
         likesTotal: parseDouyinNum(row['Likes']),
@@ -491,10 +501,11 @@ function parseTikTokOverview(rows: Record<string, unknown>[]): { history: Creato
 
 /** TikTok FollowerHistory.xlsx — daily follower counts with delta */
 function parseTikTokFollowerHistory(rows: Record<string, unknown>[]): { history: CreatorProfile['history'] } {
-  const history: NonNullable<CreatorProfile['history']> = rows
-    .filter((r) => r['Date'])
-    .map((row) => ({
-      fetchedAt: normalizeTikTokDate(row['Date']),
+  const validRows = rows.filter((r) => r['Date']);
+  const dates = normalizeTikTokDates(validRows.map((r) => r['Date']));
+  const history: NonNullable<CreatorProfile['history']> = validRows
+    .map((row, i) => ({
+      fetchedAt: dates[i],
       profile: {
         followers: parseDouyinNum(row['Followers']),
         likesTotal: 0,
