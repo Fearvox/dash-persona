@@ -447,8 +447,9 @@ function parseTikTokContent(rows: Record<string, unknown>[], fileName: string): 
 }
 
 /**
- * Convert TikTok Chinese date like "3月25日" to ISO "2026-03-25".
- * Assumes current year if no year is present.
+ * Convert TikTok Chinese date like "3月25日" to ISO "2025-03-25".
+ * TikTok exports 365 days of historical data with no year indicator.
+ * If the resulting date is in the future, subtract one year (it's from last year).
  */
 function normalizeTikTokDate(raw: unknown): string {
   const s = String(raw ?? '').trim();
@@ -457,8 +458,13 @@ function normalizeTikTokDate(raw: unknown): string {
   // Chinese format: "3月25日" or "12月1日"
   const m = s.match(/(\d{1,2})月(\d{1,2})日/);
   if (m) {
-    const year = new Date().getFullYear();
-    return `${year}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+    let year = new Date().getFullYear();
+    const iso = `${year}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+    // If this date is in the future, it's from last year
+    if (new Date(iso).getTime() > Date.now() + 86_400_000) {
+      return `${year - 1}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+    }
+    return iso;
   }
   // English format: "Mar 25" etc — try Date.parse
   const d = new Date(s);
