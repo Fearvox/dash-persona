@@ -16,6 +16,7 @@ import ForYouCard from '@/components/for-you-card';
 import NicheDetectCard from '@/components/niche-detect-card';
 import ImportDashboardLoader from '@/components/import-dashboard-loader';
 import ExportButton from '@/components/export-button';
+import { UpgradeBanner } from '@/components/upgrade-banner';
 import AnalysisDeltaBadge from '@/components/analysis-delta-badge';
 import { extractAnalysisSnapshot } from '@/lib/history/analysis-types';
 import { profileKey } from '@/lib/history/store';
@@ -258,6 +259,13 @@ export default async function DashboardPage({
           </Link>
         </div>
       </header>
+
+      {/* Upgrade banner for demo mode */}
+      {isDemo && (
+        <div className="animate-stagger animate-stagger-0">
+          <UpgradeBanner />
+        </div>
+      )}
 
       {/* 2-zone grid: Main (left) + Sidebar (right) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">

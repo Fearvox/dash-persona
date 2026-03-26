@@ -124,6 +124,13 @@ export default function BootSequence() {
           >
             Get Started
           </Link>
+          <Link
+            href="/install"
+            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-medium transition-colors hover:bg-white/5"
+            style={{ color: 'var(--accent-yellow)' }}
+          >
+            Install Full Version
+          </Link>
         </div>
       </div>
 

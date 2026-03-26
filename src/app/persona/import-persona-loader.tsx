@@ -39,31 +39,15 @@ export default function ImportPersonaLoader({ platform }: ImportPersonaLoaderPro
     let cancelled = false;
 
     async function load() {
-      // Try sessionStorage first (fast, sync)
+      // loadProfiles() already handles sessionStorage-first + IndexedDB fallback
       let profiles: Record<string, CreatorProfile> | null = null;
-
-      const raw = sessionStorage.getItem('dashpersona-import-profiles');
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw) as Record<string, CreatorProfile>;
-          if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-            profiles = parsed;
-          }
-        } catch {
-          // fall through to IndexedDB
+      try {
+        const loaded = await loadProfiles();
+        if (loaded && Object.keys(loaded).length > 0) {
+          profiles = loaded;
         }
-      }
-
-      // Fallback to IndexedDB
-      if (!profiles) {
-        try {
-          const loaded = await loadProfiles();
-          if (loaded && Object.keys(loaded).length > 0) {
-            profiles = loaded;
-          }
-        } catch {
-          // IndexedDB unavailable
-        }
+      } catch {
+        // storage unavailable
       }
 
       if (cancelled) return;
@@ -72,6 +56,11 @@ export default function ImportPersonaLoader({ platform }: ImportPersonaLoaderPro
       if (!profiles || Object.keys(profiles).length === 0) {
         router.replace('/onboarding');
         return;
+      }
+
+      // Ensure profileUrl exists (consistent with sibling loaders)
+      for (const p of Object.values(profiles)) {
+        if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
       }
 
       // Validate platform against available platforms
