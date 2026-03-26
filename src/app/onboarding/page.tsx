@@ -308,6 +308,35 @@ export default function OnboardingPage() {
             {/* File import mode */}
             {mode === "import" && (
               <div className="mt-8">
+                {/* Export guide — teach users how to get the data */}
+                <div className="mb-6 rounded-lg border border-[rgba(210,200,126,0.15)] bg-[rgba(210,200,126,0.06)] px-4 py-3">
+                  <p className="text-xs font-semibold text-[var(--accent-yellow)]">
+                    How to export your data from Creator Centers
+                  </p>
+                  <div className="mt-2 flex flex-col gap-2">
+                    <div className="text-xs text-[var(--text-secondary)]">
+                      <strong className="text-[var(--text-primary)]">Douyin</strong> —
+                      Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">creator.douyin.com</code>:
+                      <ol className="mt-1 ml-3 flex flex-col gap-0.5 text-[var(--text-subtle)]">
+                        <li>1. Data Center &rarr; Account Overview &rarr; select <strong className="text-[var(--text-secondary)]">Last 30 days</strong> &rarr; click each metric tab &rarr; Export Data</li>
+                        <li>2. Data Center &rarr; Content Analysis &rarr; Post List &rarr; click calendar icon &rarr; select <strong className="text-[var(--text-secondary)]">All</strong> (max range) &rarr; Export Data</li>
+                      </ol>
+                    </div>
+                    <div className="text-xs text-[var(--text-secondary)]">
+                      <strong className="text-[var(--text-primary)]">TikTok</strong> —
+                      Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">tiktok.com/tiktokstudio/analytics</code> &rarr; Download Data
+                    </div>
+                    <div className="text-xs text-[var(--text-secondary)]">
+                      <strong className="text-[var(--text-primary)]">Red Note</strong> —
+                      Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">creator.xiaohongshu.com</code> &rarr; Data Dashboard &rarr; Export Data
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[0.65rem] text-[var(--text-subtle)]">
+                    Export as much data as possible — more data means more accurate analysis.
+                    Select the maximum date range available for the best results.
+                  </p>
+                </div>
+
                 <FileDropZone
                   onFilesSelected={handleFilesSelected}
                   results={importResults}

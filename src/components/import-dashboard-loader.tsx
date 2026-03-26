@@ -92,6 +92,16 @@ export default function ImportDashboardLoader() {
         </Link>
       </header>
 
+      {/* Data enrichment prompt */}
+      <div className="animate-stagger animate-stagger-0 rounded-lg border border-[rgba(210,200,126,0.15)] bg-[rgba(210,200,126,0.04)] px-4 py-2.5 flex items-start gap-3">
+        <span className="mt-0.5 text-[var(--accent-yellow)] text-xs shrink-0">Tip</span>
+        <p className="text-xs text-[var(--text-subtle)] leading-relaxed">
+          Want more accurate analysis? Export data from your Creator Center (account metrics, post lists)
+          and click <strong className="text-[var(--text-secondary)]">Import more</strong> to add them.
+          The more data you provide, the better the persona insights.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="flex min-w-0 flex-col gap-6">
           <section className="animate-stagger animate-stagger-1">
