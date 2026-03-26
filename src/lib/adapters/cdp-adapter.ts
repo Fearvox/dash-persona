@@ -409,16 +409,11 @@ async function collectDouyin(): Promise<CreatorProfile> {
       likesTotal: parseChineseNumber(profileRaw.rawLikes),
     };
 
-    // Navigate to 投稿列表: direct URL → wait for SPA → click tabs → set date range
+    // Navigate to 投稿列表: direct URL → generous sleep → click tabs → wait for data
+    // Douyin SPA is slow — use fixed sleeps between clicks, then smart-wait for final result
     try {
       await cdpNavigate(target, 'https://creator.douyin.com/creator-micro/data-center/content');
-
-      // Wait up to 20s for the page tabs to appear (SPA loads slowly)
-      await waitForElement(
-        target,
-        `!!Array.from(document.querySelectorAll('div')).find(e => e.textContent.trim() === '投稿作品' && e.offsetParent !== null)`,
-        20_000,
-      );
+      await sleep(8000); // Douyin SPA needs time to fully render + bind event handlers
 
       // Page defaults to 直播 tab — click "投稿作品" first
       await cdpEval(target, `
@@ -428,13 +423,7 @@ async function collectDouyin(): Promise<CreatorProfile> {
           if (el) el.click();
         })()
       `);
-
-      // Wait for 投稿列表 sub-tab to appear
-      await waitForElement(
-        target,
-        `!!Array.from(document.querySelectorAll('div,span')).find(e => e.textContent.trim() === '投稿列表' && e.offsetParent !== null)`,
-        15_000,
-      );
+      await sleep(5000); // Wait for sub-tabs and content to render
 
       // Click "投稿列表" sub-tab
       await cdpEval(target, `
@@ -445,49 +434,44 @@ async function collectDouyin(): Promise<CreatorProfile> {
         })()
       `);
 
-      // Wait for post table to load (look for "作品名称" or "分析详情")
-      await waitForElement(
+      // Smart-wait for the actual post table to appear (this is the real signal)
+      const tableLoaded = await waitForElement(
         target,
-        `document.body.innerText.includes('作品名称') || document.body.innerText.includes('分析详情')`,
-        20_000,
+        `(document.body.innerText.match(/分析详情/g) || []).length > 0`,
+        25_000,
       );
 
-      // Set date range to "全部" — click the calendar icon next to "导出数据"
-      try {
+      // If table didn't load with default date, try selecting "全部" date range
+      if (!tableLoaded) {
+        // Click the date range area (contains "~" between two dates, or "发布时间")
         await cdpEval(target, `
           (() => {
-            // Look for the date range trigger (calendar icon / date picker button near 导出数据)
             const btns = Array.from(document.querySelectorAll('span,div,button'));
             const dateTrigger = btns.find(e => {
               const t = e.textContent.trim();
               return (t === '~' || t.includes('发布时间') || /\\d{4}[-/]\\d{2}/.test(t))
                 && e.offsetParent !== null && e.offsetWidth < 300;
             });
-            if (dateTrigger) { dateTrigger.click(); return 'opened date picker'; }
-            return 'date picker not found';
+            if (dateTrigger) dateTrigger.click();
           })()
         `);
-        await sleep(1500);
+        await sleep(2000);
 
-        // Click "全部" in the quick-select options
+        // Click "全部" in the quick-select
         await cdpEval(target, `
           (() => {
             const el = Array.from(document.querySelectorAll('span,div,a,button'))
               .find(e => e.textContent.trim() === '全部' && e.offsetParent !== null);
-            if (el) { el.click(); return 'clicked 全部'; }
-            return 'not found';
+            if (el) el.click();
           })()
         `);
-        await sleep(3000); // Wait for filtered data to reload
 
-        // Wait again for table to re-populate after date change
+        // Wait for data to load after date change
         await waitForElement(
           target,
           `(document.body.innerText.match(/分析详情/g) || []).length > 0`,
-          15_000,
+          20_000,
         );
-      } catch {
-        // Date selection failed — continue with default date range
       }
     } catch {
       // Navigation failed — return what we have (profile-only, no posts)
