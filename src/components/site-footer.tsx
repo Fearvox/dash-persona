@@ -29,7 +29,7 @@ export default function SiteFooter() {
         className="text-xs"
         style={{ color: 'var(--text-subtle)' }}
       >
-        v0.1.0
+        v0.4.0
       </span>
     </footer>
   );

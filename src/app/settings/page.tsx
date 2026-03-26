@@ -167,7 +167,7 @@ export default function SettingsPage() {
                 className="metric-value"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                0.1.0
+                0.4.0
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
