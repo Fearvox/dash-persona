@@ -18,7 +18,7 @@
 export type Platform = 'douyin' | 'tiktok' | 'xhs' | (string & {});
 
 /** How the data was ingested. */
-export type DataSource = 'demo' | 'html_parse' | 'manual_import' | 'extension' | 'browser';
+export type DataSource = 'demo' | 'html_parse' | 'manual_import' | 'extension' | 'browser' | 'cdp';
 
 // ---------------------------------------------------------------------------
 // Post

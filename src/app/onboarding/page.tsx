@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import FileDropZone, { type FileParseResult } from "@/components/file-drop-zone";
-import BrowserCollectStatus from "@/components/browser-collect-status";
+import CDPSetupGuide from "@/components/cdp-setup-guide";
 import { parseFileContent, parseXlsxRaw, mergeXlsxResults, type XlsxParseResult } from "@/lib/adapters/file-import-adapter";
 import type { CreatorProfile } from "@/lib/schema/creator-data";
 
@@ -259,7 +259,7 @@ export default function OnboardingPage() {
                     : "bg-transparent text-[var(--text-secondary)]"
                 }`}
               >
-                Browser Collect
+                Auto Collect
               </button>
             </div>
 
@@ -443,9 +443,9 @@ export default function OnboardingPage() {
               </>
             )}
 
-            {/* Browser collect mode */}
+            {/* CDP auto collect mode */}
             {mode === "browser" && (
-              <BrowserCollectStatus />
+              <CDPSetupGuide />
             )}
           </div>
         )}

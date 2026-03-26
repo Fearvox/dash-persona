@@ -17,6 +17,7 @@ import { HTMLParseAdapter } from './html-parse-adapter';
 import { ExtensionAdapter } from './extension-adapter';
 import { FileImportAdapter } from './file-import-adapter';
 import { BrowserAdapter } from './browser-adapter';
+import { CDPAdapter } from './cdp-adapter';
 
 // ---------------------------------------------------------------------------
 // Registry state
@@ -157,3 +158,4 @@ registerAdapter(new HTMLParseAdapter());
 registerAdapter(new ExtensionAdapter());
 registerAdapter(new FileImportAdapter());
 registerAdapter(new BrowserAdapter());
+registerAdapter(new CDPAdapter());
