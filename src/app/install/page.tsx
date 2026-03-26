@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: '安装指南 — DashPersona',
@@ -65,20 +66,6 @@ function CommandBlock({ command }: { command: string }) {
   );
 }
 
-function ScreenshotPlaceholder({ description }: { description: string }) {
-  return (
-    <div
-      className="flex min-h-24 items-center justify-center rounded-lg px-4 py-6"
-      style={{
-        border: '2px dashed var(--border-subtle)',
-      }}
-    >
-      <span className="text-center text-xs" style={{ color: 'var(--text-subtle)' }}>
-        {description}
-      </span>
-    </div>
-  );
-}
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
@@ -224,7 +211,14 @@ export default function InstallPage() {
               安装完成后，打开终端（Terminal）输入以下命令验证：
             </p>
             <CommandBlock command="node --version" />
-            <ScreenshotPlaceholder description="终端显示 Node.js 版本号截图" />
+            <Image
+              src="/screenshots/install-node-version.png"
+              alt="终端显示 node --version 输出 v25.8.0"
+              width={720}
+              height={90}
+              className="rounded-lg"
+              style={{ border: '1px solid var(--border-subtle)' }}
+            />
           </StepCard>
 
           {/* Step 2 */}
@@ -256,7 +250,7 @@ export default function InstallPage() {
           {/* Step 4 */}
           <StepCard step={4} title="开启 Chrome 远程调试">
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              DashPersona 通过 Chrome 的调试接口与浏览器通信。请按以下步骤操作：
+              DashPersona 通过 Chrome 的调试接口读取您的创作者中心数据。只需三步：
             </p>
             <ol
               className="flex flex-col gap-2 text-sm leading-relaxed"
@@ -264,37 +258,32 @@ export default function InstallPage() {
             >
               <li className="flex gap-2">
                 <span className="shrink-0" style={{ color: 'var(--text-subtle)' }}>1.</span>
-                <span>在 Chrome 地址栏输入 <code
+                <span>打开 Chrome，在地址栏输入 <code
                   className="rounded px-1.5 py-0.5 text-xs"
                   style={{
                     fontFamily: 'var(--font-mono)',
                     background: 'var(--bg-secondary)',
                     color: 'var(--text-secondary)',
                   }}
-                >chrome://inspect</code></span>
+                >chrome://inspect/#remote-debugging</code></span>
               </li>
               <li className="flex gap-2">
                 <span className="shrink-0" style={{ color: 'var(--text-subtle)' }}>2.</span>
-                <span>确认 &quot;Discover network targets&quot; 选项已勾选</span>
+                <span>勾选 <strong style={{ color: 'var(--text-primary)' }}>&quot;Allow remote debugging for this browser instance&quot;</strong> 复选框</span>
               </li>
               <li className="flex gap-2">
                 <span className="shrink-0" style={{ color: 'var(--text-subtle)' }}>3.</span>
-                <span>以调试模式启动 Chrome（见下方命令）</span>
+                <span>重启 Chrome（关闭所有窗口后重新打开）</span>
               </li>
             </ol>
-            <div>
-              <p className="mb-1.5 text-xs font-medium" style={{ color: 'var(--text-subtle)' }}>
-                macOS:
-              </p>
-              <CommandBlock command='/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --remote-debugging-port=9222' />
-            </div>
-            <div>
-              <p className="mb-1.5 text-xs font-medium" style={{ color: 'var(--text-subtle)' }}>
-                Windows:
-              </p>
-              <CommandBlock command='chrome.exe --remote-debugging-port=9222' />
-            </div>
-            <ScreenshotPlaceholder description="Chrome inspect 页面截图" />
+            <Image
+              src="/screenshots/install-chrome-debugging.png"
+              alt="Chrome inspect 页面 — 勾选 Allow remote debugging for this browser instance"
+              width={720}
+              height={480}
+              className="rounded-lg"
+              style={{ border: '1px solid var(--border-subtle)' }}
+            />
           </StepCard>
 
           {/* Step 5 */}
