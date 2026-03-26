@@ -398,97 +398,80 @@ async function collectDouyin(): Promise<CreatorProfile> {
       likesTotal: parseChineseNumber(profileRaw.rawLikes),
     };
 
-    // Navigate to 投稿列表: direct URL → generous sleep → click tabs → wait for data
-    // Douyin SPA is slow — use fixed sleeps between clicks, then smart-wait for final result
+    // Navigate to 作品管理 for full post list (78+ posts vs 10 in data center)
     try {
-      await cdpNavigate(target, 'https://creator.douyin.com/creator-micro/data-center/content');
-      await sleep(8000); // Douyin SPA needs time to fully render + bind event handlers
-
-      // Page defaults to 直播 tab — click "投稿作品" first
-      await cdpEval(target, `
-        (() => {
-          const el = Array.from(document.querySelectorAll('div'))
-            .find(e => e.textContent.trim() === '投稿作品' && e.offsetParent !== null);
-          if (el) el.click();
-        })()
-      `);
-      await sleep(5000); // Wait for sub-tabs and content to render
-
-      // Click "投稿列表" sub-tab
-      await cdpEval(target, `
-        (() => {
-          const el = Array.from(document.querySelectorAll('div,span'))
-            .find(e => e.textContent.trim() === '投稿列表' && e.offsetParent !== null);
-          if (el) el.click();
-        })()
-      `);
-
-      // Smart-wait for the actual post table to appear (this is the real signal)
-      const tableLoaded = await waitForElement(
+      await cdpNavigate(target, 'https://creator.douyin.com/creator-micro/content/manage');
+      await waitForElement(
         target,
-        `(document.body.innerText.match(/分析详情/g) || []).length > 0`,
-        25_000,
+        'document.body.innerText.indexOf("个作品") >= 0',
+        20_000,
       );
 
-      // If table didn't load with default date, try selecting "全部" date range
-      if (!tableLoaded) {
-        // Click the date range area (contains "~" between two dates, or "发布时间")
-        await cdpEval(target, [
-          '(function() {',
-          '  var btns = Array.from(document.querySelectorAll("span,div,button"));',
-          '  var dateTrigger = btns.find(function(e) {',
-          '    var t = e.textContent.trim();',
-          '    return (t === "~" || t.indexOf("发布时间") >= 0 || /[0-9]{4}[-/][0-9]{2}/.test(t))',
-          '      && e.offsetParent !== null && e.offsetWidth < 300;',
-          '  });',
-          '  if (dateTrigger) dateTrigger.click();',
-          '})()',
-        ].join('\n'));
-        await sleep(2000);
-
-        // Click "全部" in the quick-select
-        await cdpEval(target, `
-          (() => {
-            const el = Array.from(document.querySelectorAll('span,div,a,button'))
-              .find(e => e.textContent.trim() === '全部' && e.offsetParent !== null);
-            if (el) el.click();
-          })()
-        `);
-
-        // Wait for data to load after date change
-        await waitForElement(
-          target,
-          `(document.body.innerText.match(/分析详情/g) || []).length > 0`,
-          20_000,
-        );
-      }
+      // Scroll to load more posts (infinite scroll with load-more trigger)
+      await scrollUntilStable(target, 15, 2000);
     } catch {
-      // Navigation failed — return what we have (profile-only, no posts)
+      // Navigation failed — return profile-only
     }
 
-    // Scroll to load more posts (lazy-loaded entries)
-    await scrollUntilStable(target, 8, 2000);
+    // Extract posts from 作品管理 page
+    // Format per post: title, date (YYYY年MM月DD日 HH:mm), status, metrics (播放/点赞/评论/收藏或分享)
+    const postsJson = await cdpEval(target, [
+      '(function() {',
+      '  var text = document.body.innerText;',
+      '  var lines = text.split(String.fromCharCode(10));',
+      '  var datePat = /^([0-9]{4})年([0-9]{2})月([0-9]{2})日/;',
+      '  var posts = [];',
+      '  for (var i = 0; i < lines.length; i++) {',
+      '    var dm = lines[i].trim().match(datePat);',
+      '    if (!dm) continue;',
+      '    var date = dm[1] + "-" + dm[2] + "-" + dm[3];',
+      '    var title = "";',
+      '    for (var j = i - 1; j >= Math.max(0, i - 5); j--) {',
+      '      var prev = lines[j].trim();',
+      '      if (prev && prev.length > 3 && prev !== "已发布" && prev !== "私密"',
+      '          && prev.indexOf("编辑作品") < 0 && prev.indexOf("设置权限") < 0',
+      '          && prev.indexOf("置顶") < 0 && prev.indexOf("删除") < 0',
+      '          && !/^[0-9]{2}:[0-9]{2}$/.test(prev)',
+      '          && prev.indexOf("张") < 0) {',
+      '        title = prev; break;',
+      '      }',
+      '    }',
+      '    var metrics = {};',
+      '    for (var k = i + 1; k < Math.min(i + 20, lines.length); k++) {',
+      '      var line = lines[k].trim();',
+      '      if (datePat.test(line)) break;',
+      '      if (line === "播放" && k + 1 < lines.length) { metrics.views = lines[k+1].trim(); k++; }',
+      '      if (line === "点赞" && k + 1 < lines.length) { metrics.likes = lines[k+1].trim(); k++; }',
+      '      if (line === "评论" && k + 1 < lines.length) { metrics.comments = lines[k+1].trim(); k++; }',
+      '      if (line === "收藏" && k + 1 < lines.length) { metrics.saves = lines[k+1].trim(); k++; }',
+      '      if (line === "分享" && k + 1 < lines.length) { metrics.shares = lines[k+1].trim(); k++; }',
+      '    }',
+      '    if (title && (metrics.views || metrics.likes)) {',
+      '      posts.push({title: title, date: date, views: metrics.views || "0",',
+      '        likes: metrics.likes || "0", comments: metrics.comments || "0",',
+      '        saves: metrics.saves || "0", shares: metrics.shares || "0"});',
+      '    }',
+      '  }',
+      '  return JSON.stringify(posts);',
+      '})()',
+    ].join('\n')) as string;
 
-    // Extract full page text for post table parsing
-    const pageText = await cdpEval(
-      target,
-      'document.body.innerText',
-    ) as string;
-
-    const rawPosts = typeof pageText === 'string' ? parseDouyinPostTable(pageText) : [];
+    let rawPosts: Array<{
+      title: string; date: string;
+      views: string; likes: string; comments: string; saves: string; shares: string;
+    }> = [];
+    try { rawPosts = JSON.parse(postsJson); } catch { /* empty */ }
 
     const posts: Post[] = rawPosts.slice(0, MAX_POSTS).map((p, i) => ({
       postId: `douyin-${i + 1}`,
       desc: p.title,
       publishedAt: p.date,
-      views: p.views,
-      likes: p.likes,
-      comments: p.comments,
-      shares: p.shares,
-      saves: p.saves,
-      avgWatchDuration: p.avgWatchDuration || undefined,
-      coverClickRate: p.coverClickRate || undefined,
-    } as Post & { coverClickRate?: number }));
+      views: parseChineseNumber(p.views),
+      likes: parseChineseNumber(p.likes),
+      comments: parseChineseNumber(p.comments),
+      shares: parseChineseNumber(p.shares),
+      saves: parseChineseNumber(p.saves),
+    }));
 
     return {
       platform: 'douyin',
