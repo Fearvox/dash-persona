@@ -226,6 +226,15 @@ function parseCsv(content: string, fileName: string): CreatorProfile[] {
     posts,
   };
 
+  const validation = validateCreatorProfile(profile);
+  if (!validation.valid) {
+    throw new FileImportError(
+      'VALIDATION_ERROR',
+      fileName,
+      `CSV data failed validation: ${validation.errors.join('; ')}`,
+    );
+  }
+
   return [profile];
 }
 
@@ -449,6 +458,15 @@ function parseXlsx(content: string, fileName: string): CreatorProfile[] {
     posts: result.posts ?? [],
     history: result.history,
   };
+
+  const validation = validateCreatorProfile(profile);
+  if (!validation.valid) {
+    throw new FileImportError(
+      'VALIDATION_ERROR',
+      fileName,
+      `XLSX data failed validation: ${validation.errors.join('; ')}`,
+    );
+  }
 
   return [profile];
 }

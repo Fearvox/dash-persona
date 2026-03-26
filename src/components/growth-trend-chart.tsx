@@ -240,6 +240,7 @@ export default function GrowthTrendChart({ storeKeys }: GrowthTrendChartProps) {
                 key={m.key}
                 type="button"
                 onClick={() => toggleMetric(m.key)}
+                aria-pressed={isActive}
                 className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors"
                 style={{
                   background: isActive ? m.bgTint : 'var(--bg-secondary)',

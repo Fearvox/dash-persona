@@ -157,9 +157,9 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
             Insight Highlights
           </h2>
           <div className="flex flex-col gap-3">
-            {comparison.insights.map((insight, i) => (
+            {comparison.insights.map((insight) => (
               <div
-                key={i}
+                key={`${insight.type}-${insight.text.slice(0, 30)}`}
                 className="card px-5 py-4"
               >
                 <p

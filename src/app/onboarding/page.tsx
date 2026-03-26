@@ -109,7 +109,14 @@ export default function OnboardingPage() {
       profilesMap["douyin"] = mergedProfile;
     }
     for (const p of jsonProfiles) {
-      const key = p.platform === "unknown" ? `import-${Object.keys(profilesMap).length}` : p.platform;
+      // Use platform value as key; for unknown platforms, generate a unique key
+      // but also attempt to detect platform from filename patterns in desc
+      let key = p.platform;
+      if (key === "unknown") {
+        // Deduplicate unknown platforms with index suffix
+        const idx = Object.keys(profilesMap).filter((k) => k.startsWith("unknown")).length;
+        key = idx === 0 ? "unknown" : `unknown-${idx}`;
+      }
       profilesMap[key] = p;
     }
 

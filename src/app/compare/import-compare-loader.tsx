@@ -271,7 +271,7 @@ export default function ImportCompareLoader() {
           </h2>
           <div className="flex flex-col gap-3">
             {comparison.insights.map((insight, i) => (
-              <div key={i} className="card px-5 py-4">
+              <div key={`${insight.type}-${insight.text.slice(0, 30)}`} className="card px-5 py-4">
                 <p
                   className="mb-1 text-[0.6875rem] font-medium uppercase tracking-wider text-[var(--accent-highlight)]"
                 >
