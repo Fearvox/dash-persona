@@ -387,23 +387,32 @@ async function collectDouyin(): Promise<CreatorProfile> {
       likesTotal: parseChineseNumber(profileRaw.rawLikes),
     };
 
-    // Navigate to 投稿列表 via sidebar: 作品分析 → 投稿列表
+    // Navigate to 投稿列表: direct URL → click "投稿作品" tab → click "投稿列表" sub-tab
     try {
-      // Click "作品分析" in the sidebar
-      await cdpClick(target, 'span:contains("作品分析"), [class*="menu"] span');
+      await cdpNavigate(target, 'https://creator.douyin.com/creator-micro/data-center/content');
+      await sleep(3000);
+
+      // Page defaults to 直播 tab — click "投稿作品" first
+      await cdpEval(target, `
+        (() => {
+          const el = Array.from(document.querySelectorAll('div'))
+            .find(e => e.textContent.trim() === '投稿作品' && e.offsetParent !== null);
+          if (el) el.click();
+        })()
+      `);
       await sleep(2000);
 
-      // Click "投稿列表" sub-item
-      await cdpClick(target, 'div:contains("投稿列表"), a:contains("投稿列表")');
+      // Then click "投稿列表" sub-tab
+      await cdpEval(target, `
+        (() => {
+          const el = Array.from(document.querySelectorAll('div,span'))
+            .find(e => e.textContent.trim() === '投稿列表' && e.offsetParent !== null);
+          if (el) el.click();
+        })()
+      `);
       await sleep(2000);
     } catch {
-      // If sidebar navigation fails, try direct URL navigation
-      try {
-        await cdpNavigate(target, 'https://creator.douyin.com/creator-micro/content/upload-record');
-        await sleep(3000);
-      } catch {
-        // Navigation failed — return what we have (profile-only, no posts)
-      }
+      // Navigation failed — return what we have (profile-only, no posts)
     }
 
     // Scroll to load more posts

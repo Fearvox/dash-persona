@@ -33,6 +33,14 @@ export default function ImportDashboardLoader() {
     }
   }, [router]);
 
+  // All hooks must be called unconditionally (Rules of Hooks)
+  const [engineResults, setEngineResults] = useState<AllEngineResults | null>(null);
+
+  useEffect(() => {
+    if (!profiles) return;
+    runAllEngines(profiles).then(setEngineResults);
+  }, [profiles]);
+
   if (!profiles) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
@@ -40,14 +48,6 @@ export default function ImportDashboardLoader() {
       </div>
     );
   }
-
-  // Run all engines in parallel
-  const [engineResults, setEngineResults] = useState<AllEngineResults | null>(null);
-
-  useEffect(() => {
-    if (!profiles) return;
-    runAllEngines(profiles).then(setEngineResults);
-  }, [profiles]);
 
   if (!engineResults) {
     return (
