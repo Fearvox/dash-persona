@@ -90,11 +90,15 @@ export default function OnboardingPage() {
   const [jsonProfiles, setJsonProfiles] = useState<CreatorProfile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Compute merged profile from all uploaded files
-  const mergedProfile = xlsxResults.length > 0 ? mergeXlsxResults(xlsxResults) : null;
-  const hasData = mergedProfile !== null || jsonProfiles.length > 0;
-  const totalPosts = (mergedProfile?.posts.length ?? 0) + jsonProfiles.reduce((s, p) => s + p.posts.length, 0);
-  const totalHistory = mergedProfile?.history?.length ?? 0;
+  // Compute merged profiles per platform from all uploaded files
+  const douyinResults = xlsxResults.filter((r) => !r.schema.startsWith("tiktok_"));
+  const tiktokResults = xlsxResults.filter((r) => r.schema.startsWith("tiktok_"));
+  const mergedProfiles: CreatorProfile[] = [];
+  if (douyinResults.length > 0) mergedProfiles.push(mergeXlsxResults(douyinResults));
+  if (tiktokResults.length > 0) mergedProfiles.push(mergeXlsxResults(tiktokResults));
+  const hasData = mergedProfiles.length > 0 || jsonProfiles.length > 0;
+  const totalPosts = mergedProfiles.reduce((s, p) => s + p.posts.length, 0) + jsonProfiles.reduce((s, p) => s + p.posts.length, 0);
+  const totalHistory = mergedProfiles.reduce((s, p) => s + (p.history?.length ?? 0), 0);
   const schemaTypes = [...new Set(xlsxResults.map((r) => r.schema))];
 
   async function handleFilesSelected(files: File[]) {
@@ -149,8 +153,9 @@ export default function OnboardingPage() {
     const profilesMap: Record<string, CreatorProfile> = existingRaw
       ? JSON.parse(existingRaw)
       : {};
-    if (mergedProfile) {
-      profilesMap["douyin"] = mergeProfile(profilesMap["douyin"], mergedProfile);
+    for (const mp of mergedProfiles) {
+      const key = mp.platform || "unknown";
+      profilesMap[key] = mergeProfile(profilesMap[key], mp);
     }
     for (const p of jsonProfiles) {
       let key = p.platform;

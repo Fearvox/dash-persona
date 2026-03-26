@@ -115,16 +115,19 @@ export function findBaselineEntry(
 
   // Entries from today in the target timezone
   const todayEntries = history.filter((e) => {
-    const entryLocal = new Date(new Date(e.fetchedAt).getTime() + offsetMs);
+    const ts = new Date(e.fetchedAt).getTime();
+    if (isNaN(ts)) return false; // skip entries with invalid dates
+    const entryLocal = new Date(ts + offsetMs);
     return entryLocal.toISOString().slice(0, 10) === todayDateStr;
   });
 
   if (todayEntries.length === 0) {
     // No today entries — single-pass min to find oldest (O(n) vs O(n log n) sort)
     let oldest = history[0];
-    let oldestTime = new Date(oldest.fetchedAt).getTime();
+    let oldestTime = new Date(oldest.fetchedAt).getTime() || Infinity;
     for (let i = 1; i < history.length; i++) {
       const t = new Date(history[i].fetchedAt).getTime();
+      if (isNaN(t)) continue; // skip invalid dates
       if (t < oldestTime) {
         oldest = history[i];
         oldestTime = t;
