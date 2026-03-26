@@ -3,6 +3,7 @@
 import { Component, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 import BootSequence from '@/components/landing/boot-sequence';
 import { OutputWall } from '@/components/landing/output-wall';
 import PipelineSkeleton from '@/components/landing/pipeline-skeleton';
@@ -108,14 +109,13 @@ export default function HomePage() {
             id="pipeline-heading"
             className="kicker mb-2"
           >
-            How It Works
+            {t('ui.landing.howItWorks')}
           </h2>
           <p
             className="mb-8 max-w-lg text-sm leading-relaxed"
             style={{ color: 'var(--text-secondary)' }}
           >
-            Your data flows through a deterministic analysis pipeline — no AI,
-            no black boxes. Every insight is traceable to an algorithm.
+            {t('ui.landing.pipelineDesc')}
           </p>
           <PipelineViewer />
         </section>

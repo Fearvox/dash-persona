@@ -862,6 +862,69 @@ const en: Record<string, string> = {
   'ui.components.errorInvalidResponse': 'Server returned an invalid response. Please try again.',
   'ui.components.errorNoProfile': 'No profile data returned',
   'ui.components.errorNetwork': 'Network error',
+
+  // ===========================================================================
+  // Pipeline visualization
+  // ===========================================================================
+  'ui.pipeline.title': 'Algorithm Pipeline',
+  'ui.pipeline.subtitle': 'DashPersona processing architecture — deterministic, AI-free',
+  'ui.landing.howItWorks': 'How It Works',
+  'ui.landing.pipelineDesc': 'Your data flows through a deterministic analysis pipeline — no AI, no black boxes. Every insight is traceable to an algorithm.',
+
+  'pipeline.in-douyin.label': 'Douyin Profile URL',
+  'pipeline.in-douyin.desc': 'Chinese short-video platform',
+  'pipeline.in-tiktok.label': 'TikTok Profile URL',
+  'pipeline.in-tiktok.desc': 'Global short-video platform',
+  'pipeline.in-xhs.label': 'Red Note Profile URL',
+  'pipeline.in-xhs.desc': 'Lifestyle sharing platform',
+  'pipeline.in-manual.label': 'Manual Import',
+  'pipeline.in-manual.desc': 'Upload your own data',
+
+  'pipeline.schema.label': 'Data Validation',
+  'pipeline.schema.desc': 'Validates and normalizes all inputs',
+
+  'pipeline.adapter-demo.label': 'Demo Data',
+  'pipeline.adapter-demo.desc': 'Built-in sample datasets',
+  'pipeline.adapter-html.label': 'Profile Scraper',
+  'pipeline.adapter-html.desc': 'Extracts data from public pages',
+  'pipeline.adapter-manual.label': 'File Importer',
+  'pipeline.adapter-manual.desc': 'Parses uploaded JSON/CSV',
+
+  'pipeline.eng-growth.label': 'Growth Analysis',
+  'pipeline.eng-growth.desc': 'Delta calculations, sparklines, trends',
+  'pipeline.eng-persona.label': 'Persona Scoring',
+  'pipeline.eng-persona.desc': 'Content mix, engagement, rhythm, consistency',
+  'pipeline.eng-comparator.label': 'Cross-Platform Compare',
+  'pipeline.eng-comparator.desc': 'Unified metrics across platforms',
+  'pipeline.eng-benchmark.label': 'Benchmark Analysis',
+  'pipeline.eng-benchmark.desc': 'Compare against reference creators',
+  'pipeline.eng-strategy.label': 'Strategy Engine',
+  'pipeline.eng-strategy.desc': 'Rule-based content suggestions',
+  'pipeline.eng-explain.label': 'Score Explanation',
+  'pipeline.eng-explain.desc': 'Human-readable score breakdowns',
+  'pipeline.eng-planner.label': 'Content Planner',
+  'pipeline.eng-planner.desc': 'Optimal posting schedule',
+  'pipeline.eng-tree.label': 'Persona Timeline',
+  'pipeline.eng-tree.desc': 'Experiment decision tree',
+  'pipeline.eng-ideas.label': 'Idea Generator',
+  'pipeline.eng-ideas.desc': 'Data-driven experiment suggestions',
+
+  'pipeline.out-dashboard.label': 'Dashboard',
+  'pipeline.out-dashboard.desc': 'Growth overview + metrics',
+  'pipeline.out-persona.label': 'Persona Detail',
+  'pipeline.out-persona.desc': 'Dimension breakdown + tags',
+  'pipeline.out-calendar.label': 'Content Calendar',
+  'pipeline.out-calendar.desc': 'Publishing schedule',
+  'pipeline.out-timeline.label': 'Persona Timeline',
+  'pipeline.out-timeline.desc': 'Experiment decision tree',
+  'pipeline.out-compare.label': 'Cross-Platform Compare',
+  'pipeline.out-compare.desc': 'Side-by-side analysis',
+
+  'pipeline.category.input': 'Data Sources',
+  'pipeline.category.schema': 'Validation',
+  'pipeline.category.adapter': 'Adapters',
+  'pipeline.category.engine': 'Analysis Engine',
+  'pipeline.category.output': 'Output Views',
 };
 
 export default en;

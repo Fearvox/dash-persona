@@ -859,6 +859,75 @@ const zh: Record<string, string> = {
   'ui.components.errorInvalidResponse': '服务器返回了无效响应，请重试。',
   'ui.components.errorNoProfile': '未返回主页数据',
   'ui.components.errorNetwork': '网络错误',
+
+  // ===========================================================================
+  // Pipeline 可视化
+  // ===========================================================================
+  'ui.pipeline.title': '算法流水线',
+  'ui.pipeline.subtitle': 'DashPersona 处理架构 — 确定性算法，零 AI',
+  'ui.landing.howItWorks': '工作原理',
+  'ui.landing.pipelineDesc': '你的数据流经确定性分析流水线 — 无 AI，无黑箱。每一项洞察都可追溯至具体算法。',
+
+  // Pipeline 节点 — 数据源
+  'pipeline.in-douyin.label': '抖音主页链接',
+  'pipeline.in-douyin.desc': '中国短视频平台',
+  'pipeline.in-tiktok.label': 'TikTok 主页链接',
+  'pipeline.in-tiktok.desc': '全球短视频平台',
+  'pipeline.in-xhs.label': '小红书主页链接',
+  'pipeline.in-xhs.desc': '生活方式分享平台',
+  'pipeline.in-manual.label': '手动导入',
+  'pipeline.in-manual.desc': '上传你的数据文件',
+
+  // Pipeline 节点 — 数据验证
+  'pipeline.schema.label': '数据验证',
+  'pipeline.schema.desc': '验证并标准化所有输入数据',
+
+  // Pipeline 节点 — 适配器
+  'pipeline.adapter-demo.label': '演示数据',
+  'pipeline.adapter-demo.desc': '内置示例数据集',
+  'pipeline.adapter-html.label': '主页抓取',
+  'pipeline.adapter-html.desc': '从公开页面提取数据',
+  'pipeline.adapter-manual.label': '文件导入',
+  'pipeline.adapter-manual.desc': '解析上传的 JSON/CSV 文件',
+
+  // Pipeline 节点 — 分析引擎
+  'pipeline.eng-growth.label': '增长分析',
+  'pipeline.eng-growth.desc': '增量计算、趋势图、变化追踪',
+  'pipeline.eng-persona.label': '人设评分',
+  'pipeline.eng-persona.desc': '内容构成、互动、节奏、一致性',
+  'pipeline.eng-comparator.label': '跨平台对比',
+  'pipeline.eng-comparator.desc': '跨平台统一指标',
+  'pipeline.eng-benchmark.label': '基准分析',
+  'pipeline.eng-benchmark.desc': '与参考创作者对比',
+  'pipeline.eng-strategy.label': '策略引擎',
+  'pipeline.eng-strategy.desc': '基于规则的内容建议',
+  'pipeline.eng-explain.label': '分数解释',
+  'pipeline.eng-explain.desc': '可读的分数拆解',
+  'pipeline.eng-planner.label': '内容规划',
+  'pipeline.eng-planner.desc': '最优发布时间表',
+  'pipeline.eng-tree.label': '人设时间线',
+  'pipeline.eng-tree.desc': '实验决策树',
+  'pipeline.eng-ideas.label': '灵感生成',
+  'pipeline.eng-ideas.desc': '数据驱动的实验建议',
+
+  // Pipeline 节点 — 输出视图
+  'pipeline.out-dashboard.label': '仪表盘',
+  'pipeline.out-dashboard.desc': '增长概览 + 核心指标',
+  'pipeline.out-persona.label': '人设详情',
+  'pipeline.out-persona.desc': '维度拆解 + 标签',
+  'pipeline.out-calendar.label': '内容日历',
+  'pipeline.out-calendar.desc': '发布时间表',
+  'pipeline.out-timeline.label': '人设时间线',
+  'pipeline.out-timeline.desc': '实验决策树',
+  'pipeline.out-compare.label': '跨平台对比',
+  'pipeline.out-compare.desc': '并排分析',
+
+  // Pipeline 类别标签
+  'pipeline.category.input': '数据来源',
+  'pipeline.category.schema': '数据验证',
+  'pipeline.category.adapter': '适配器',
+  'pipeline.category.engine': '分析引擎',
+  'pipeline.category.output': '输出视图',
 };
 
 export default zh;

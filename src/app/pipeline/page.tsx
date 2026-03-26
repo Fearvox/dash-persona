@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { t } from '@/lib/i18n';
 import PipelineSkeleton from '@/components/landing/pipeline-skeleton';
 
 const PipelineViewer = dynamic(
@@ -16,10 +17,10 @@ export default function PipelineStandalonePage() {
           className="text-xl font-bold tracking-tight sm:text-2xl"
           style={{ color: 'var(--text-primary)' }}
         >
-          Algorithm Pipeline
+          {t('ui.pipeline.title')}
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--text-subtle)' }}>
-          DashPersona processing architecture — deterministic, AI-free
+          {t('ui.pipeline.subtitle')}
         </p>
       </header>
       <PipelineViewer standalone />

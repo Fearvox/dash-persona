@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 export interface PipelineModule {
   id: string;
   label: string;           // Human-readable (e.g., "Collects your profile")
@@ -13,39 +15,49 @@ export interface PipelineRoute {
   color: string;
 }
 
-export const PIPELINE_MODULES: PipelineModule[] = [
-  // Inputs (4)
-  { id: 'in-douyin', label: 'Douyin Profile URL', codeName: 'Douyin', category: 'input', description: 'Chinese short-video platform', color: 'var(--accent-blue)' },
-  { id: 'in-tiktok', label: 'TikTok Profile URL', codeName: 'TikTok', category: 'input', description: 'Global short-video platform', color: 'var(--accent-blue)' },
-  { id: 'in-xhs', label: 'Red Note Profile URL', codeName: 'Red Note', category: 'input', description: 'Lifestyle sharing platform', color: 'var(--accent-blue)' },
-  { id: 'in-manual', label: 'Manual Import', codeName: 'JSON / CSV', category: 'input', description: 'Upload your own data', color: 'var(--accent-blue)' },
+/** Build pipeline modules with localized labels/descriptions. */
+function buildModules(): PipelineModule[] {
+  const m = (id: string, codeName: string, category: PipelineModule['category'], color: string): PipelineModule => ({
+    id,
+    label: t(`pipeline.${id}.label`),
+    codeName,
+    category,
+    description: t(`pipeline.${id}.desc`),
+    color,
+  });
 
-  // Schema validation (1)
-  { id: 'schema', label: 'Data Validation', codeName: 'CreatorDataSchema', category: 'schema', description: 'Validates and normalizes all inputs', color: 'var(--accent-highlight)' },
+  return [
+    // Inputs (4)
+    m('in-douyin', 'Douyin', 'input', 'var(--accent-blue)'),
+    m('in-tiktok', 'TikTok', 'input', 'var(--accent-blue)'),
+    m('in-xhs', 'Red Note', 'input', 'var(--accent-blue)'),
+    m('in-manual', 'JSON / CSV', 'input', 'var(--accent-blue)'),
+    // Schema validation (1)
+    m('schema', 'CreatorDataSchema', 'schema', 'var(--accent-highlight)'),
+    // Adapters (3)
+    m('adapter-demo', 'DemoAdapter', 'adapter', 'var(--accent-yellow)'),
+    m('adapter-html', 'HTMLParseAdapter', 'adapter', 'var(--accent-yellow)'),
+    m('adapter-manual', 'ManualImportAdapter', 'adapter', 'var(--accent-yellow)'),
+    // Engine modules (9) — must match src/lib/engine/index.ts exports
+    m('eng-growth', 'growth.ts', 'engine', 'var(--accent-green)'),
+    m('eng-persona', 'persona.ts', 'engine', 'var(--accent-green)'),
+    m('eng-comparator', 'comparator.ts', 'engine', 'var(--accent-green)'),
+    m('eng-benchmark', 'benchmark.ts', 'engine', 'var(--accent-green)'),
+    m('eng-strategy', 'strategy.ts', 'engine', 'var(--accent-green)'),
+    m('eng-explain', 'explain.ts', 'engine', 'var(--accent-green)'),
+    m('eng-planner', 'content-planner.ts', 'engine', 'var(--accent-green)'),
+    m('eng-tree', 'persona-tree.ts', 'engine', 'var(--accent-green)'),
+    m('eng-ideas', 'idea-generator.ts', 'engine', 'var(--accent-green)'),
+    // Outputs (5)
+    m('out-dashboard', '/dashboard', 'output', 'var(--accent-highlight)'),
+    m('out-persona', '/persona', 'output', 'var(--accent-highlight)'),
+    m('out-calendar', '/calendar', 'output', 'var(--accent-highlight)'),
+    m('out-timeline', '/timeline', 'output', 'var(--accent-highlight)'),
+    m('out-compare', '/compare', 'output', 'var(--accent-highlight)'),
+  ];
+}
 
-  // Adapters (3)
-  { id: 'adapter-demo', label: 'Demo Data', codeName: 'DemoAdapter', category: 'adapter', description: 'Built-in sample datasets', color: 'var(--accent-yellow)' },
-  { id: 'adapter-html', label: 'Profile Scraper', codeName: 'HTMLParseAdapter', category: 'adapter', description: 'Extracts data from public pages', color: 'var(--accent-yellow)' },
-  { id: 'adapter-manual', label: 'File Importer', codeName: 'ManualImportAdapter', category: 'adapter', description: 'Parses uploaded JSON/CSV', color: 'var(--accent-yellow)' },
-
-  // Engine modules (9) — must match src/lib/engine/index.ts exports
-  { id: 'eng-growth', label: 'Growth Analysis', codeName: 'growth.ts', category: 'engine', description: 'Delta calculations, sparklines, trends', color: 'var(--accent-green)' },
-  { id: 'eng-persona', label: 'Persona Scoring', codeName: 'persona.ts', category: 'engine', description: 'Content mix, engagement, rhythm, consistency', color: 'var(--accent-green)' },
-  { id: 'eng-comparator', label: 'Cross-Platform Compare', codeName: 'comparator.ts', category: 'engine', description: 'Unified metrics across platforms', color: 'var(--accent-green)' },
-  { id: 'eng-benchmark', label: 'Benchmark Analysis', codeName: 'benchmark.ts', category: 'engine', description: 'Compare against reference creators', color: 'var(--accent-green)' },
-  { id: 'eng-strategy', label: 'Strategy Engine', codeName: 'strategy.ts', category: 'engine', description: 'Rule-based content suggestions', color: 'var(--accent-green)' },
-  { id: 'eng-explain', label: 'Score Explanation', codeName: 'explain.ts', category: 'engine', description: 'Human-readable score breakdowns', color: 'var(--accent-green)' },
-  { id: 'eng-planner', label: 'Content Planner', codeName: 'content-planner.ts', category: 'engine', description: 'Optimal posting schedule', color: 'var(--accent-green)' },
-  { id: 'eng-tree', label: 'Persona Timeline', codeName: 'persona-tree.ts', category: 'engine', description: 'Experiment decision tree', color: 'var(--accent-green)' },
-  { id: 'eng-ideas', label: 'Idea Generator', codeName: 'idea-generator.ts', category: 'engine', description: 'Data-driven experiment suggestions', color: 'var(--accent-green)' },
-
-  // Outputs (5)
-  { id: 'out-dashboard', label: 'Dashboard', codeName: '/dashboard', category: 'output', description: 'Growth overview + metrics', color: 'var(--accent-highlight)' },
-  { id: 'out-persona', label: 'Persona Detail', codeName: '/persona', category: 'output', description: 'Dimension breakdown + tags', color: 'var(--accent-highlight)' },
-  { id: 'out-calendar', label: 'Content Calendar', codeName: '/calendar', category: 'output', description: 'Publishing schedule', color: 'var(--accent-highlight)' },
-  { id: 'out-timeline', label: 'Persona Timeline', codeName: '/timeline', category: 'output', description: 'Experiment decision tree', color: 'var(--accent-highlight)' },
-  { id: 'out-compare', label: 'Cross-Platform Compare', codeName: '/compare', category: 'output', description: 'Side-by-side analysis', color: 'var(--accent-highlight)' },
-];
+export const PIPELINE_MODULES: PipelineModule[] = buildModules();
 
 // Routes: input->schema, schema->adapters, adapters->engines, engines->outputs
 export const PIPELINE_ROUTES: PipelineRoute[] = [
@@ -76,9 +88,9 @@ export const PIPELINE_ROUTES: PipelineRoute[] = [
 
 // Category metadata for visual grouping
 export const CATEGORY_META: Record<string, { label: string; color: string }> = {
-  input: { label: 'Data Sources', color: 'var(--accent-blue)' },
-  schema: { label: 'Validation', color: 'var(--accent-highlight)' },
-  adapter: { label: 'Adapters', color: 'var(--accent-yellow)' },
-  engine: { label: 'Analysis Engine', color: 'var(--accent-green)' },
-  output: { label: 'Output Views', color: 'var(--accent-highlight)' },
+  input: { label: t('pipeline.category.input'), color: 'var(--accent-blue)' },
+  schema: { label: t('pipeline.category.schema'), color: 'var(--accent-highlight)' },
+  adapter: { label: t('pipeline.category.adapter'), color: 'var(--accent-yellow)' },
+  engine: { label: t('pipeline.category.engine'), color: 'var(--accent-green)' },
+  output: { label: t('pipeline.category.output'), color: 'var(--accent-highlight)' },
 };
