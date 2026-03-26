@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Output view data
@@ -15,54 +16,56 @@ interface OutputView {
   span?: number;
 }
 
-const OUTPUT_VIEWS: readonly OutputView[] = [
-  {
-    name: 'Dashboard',
-    href: '/dashboard?source=demo&persona=tutorial',
-    description: 'Growth overview, metrics, and strategy suggestions',
-    icon: 'M3 12h4l3 8 4-16 3 8h4', // sparkline/pulse
-    gradientFrom: '#7ed29a',
-    gradientTo: '#7eb8d2',
-    noiseOpacity: 0.12,
-    span: 2,
-  },
-  {
-    name: 'Persona Detail',
-    href: '/persona?source=demo&persona=tutorial',
-    description: 'Dimension breakdown, tags, and scoring',
-    icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4v6l4 2', // clock/score
-    gradientFrom: '#7ed29a',
-    gradientTo: '#d2c87e',
-    noiseOpacity: 0.10,
-  },
-  {
-    name: 'Content Calendar',
-    href: '/calendar?source=demo&persona=tutorial',
-    description: 'AI-free publishing schedule',
-    icon: 'M4 4h16v16H4zM4 9h16M9 4v16', // calendar grid
-    gradientFrom: '#d2c87e',
-    gradientTo: '#f0f545',
-    noiseOpacity: 0.08,
-  },
-  {
-    name: 'Persona Timeline',
-    href: '/timeline?source=demo&persona=tutorial',
-    description: 'Experiment decision tree',
-    icon: 'M6 3v18M6 9h6v6H6M12 12h6v6h-6', // tree branches
-    gradientFrom: '#7eb8d2',
-    gradientTo: '#7ed29a',
-    noiseOpacity: 0.10,
-  },
-  {
-    name: 'Cross-Platform',
-    href: '/compare?source=demo&persona=tutorial',
-    description: 'Side-by-side platform analysis',
-    icon: 'M4 4h6v6H4zM14 4h6v6h-6zM9 14h6v6H9', // grid compare
-    gradientFrom: '#f0f545',
-    gradientTo: '#7ed29a',
-    noiseOpacity: 0.12,
-  },
-];
+function getOutputViews(): readonly OutputView[] {
+  return [
+    {
+      name: t('ui.landing.viewDashboard'),
+      href: '/dashboard?source=demo&persona=tutorial',
+      description: t('ui.landing.viewDashboardDesc'),
+      icon: 'M3 12h4l3 8 4-16 3 8h4', // sparkline/pulse
+      gradientFrom: '#7ed29a',
+      gradientTo: '#7eb8d2',
+      noiseOpacity: 0.12,
+      span: 2,
+    },
+    {
+      name: t('ui.landing.viewPersona'),
+      href: '/persona?source=demo&persona=tutorial',
+      description: t('ui.landing.viewPersonaDesc'),
+      icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4v6l4 2', // clock/score
+      gradientFrom: '#7ed29a',
+      gradientTo: '#d2c87e',
+      noiseOpacity: 0.10,
+    },
+    {
+      name: t('ui.landing.viewCalendar'),
+      href: '/calendar?source=demo&persona=tutorial',
+      description: t('ui.landing.viewCalendarDesc'),
+      icon: 'M4 4h16v16H4zM4 9h16M9 4v16', // calendar grid
+      gradientFrom: '#d2c87e',
+      gradientTo: '#f0f545',
+      noiseOpacity: 0.08,
+    },
+    {
+      name: t('ui.landing.viewTimeline'),
+      href: '/timeline?source=demo&persona=tutorial',
+      description: t('ui.landing.viewTimelineDesc'),
+      icon: 'M6 3v18M6 9h6v6H6M12 12h6v6h-6', // tree branches
+      gradientFrom: '#7eb8d2',
+      gradientTo: '#7ed29a',
+      noiseOpacity: 0.10,
+    },
+    {
+      name: t('ui.landing.viewCompare'),
+      href: '/compare?source=demo&persona=tutorial',
+      description: t('ui.landing.viewCompareDesc'),
+      icon: 'M4 4h6v6H4zM14 4h6v6h-6zM9 14h6v6H9', // grid compare
+      gradientFrom: '#f0f545',
+      gradientTo: '#7ed29a',
+      noiseOpacity: 0.12,
+    },
+  ];
+}
 
 // ---------------------------------------------------------------------------
 // Inline SVG noise pattern (deterministic, no external assets)
@@ -92,23 +95,23 @@ function NoiseFilter({ id }: { id: string }) {
 // ---------------------------------------------------------------------------
 
 export function OutputWall() {
+  const outputViews = getOutputViews();
   return (
     <div className="flex flex-col gap-16">
       {/* Output view cards */}
       <section aria-labelledby="output-wall-heading">
         <h2 id="output-wall-heading" className="kicker mb-2">
-          Output Views
+          {t('ui.landing.outputViews')}
         </h2>
         <p
           className="mb-6 max-w-lg text-sm leading-relaxed"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Every insight derived from deterministic algorithms — no AI, no black
-          boxes.
+          {t('ui.landing.outputDescription')}
         </p>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {OUTPUT_VIEWS.map((view) => (
+          {outputViews.map((view) => (
             <Link
               key={view.name}
               href={view.href}
@@ -182,7 +185,7 @@ export function OutputWall() {
               color: 'var(--bg-primary)',
             }}
           >
-            Try Demo
+            {t('ui.landing.tryDemo')}
           </Link>
           <Link
             href="/onboarding"
@@ -192,7 +195,7 @@ export function OutputWall() {
               color: 'var(--text-primary)',
             }}
           >
-            Get Started
+            {t('ui.landing.getStarted')}
           </Link>
         </div>
       </div>
@@ -207,7 +210,7 @@ export function OutputWall() {
             className="text-sm font-semibold tracking-tight"
             style={{ color: 'var(--text-subtle)' }}
           >
-            Powered by
+            {t('ui.common.poweredBy')}
           </span>
           {/* DASH Symbol: horizontal dash + diagonal slash */}
           <svg
@@ -230,7 +233,7 @@ export function OutputWall() {
           className="text-xs"
           style={{ color: 'var(--text-subtle)' }}
         >
-          Custom Digital Systems
+          {t('ui.common.customDigitalSystems')}
         </p>
       </footer>
     </div>

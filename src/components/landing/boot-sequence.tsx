@@ -17,6 +17,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import CodeArtBackground from './code-art-background';
 import { detectDeviceTier, TIER_CONFIG } from '@/lib/pipeline/device-tier';
+import { t } from '@/lib/i18n';
 
 /** Mulberry32 PRNG — produces a deterministic count from min/max range */
 function mulberry32(seed: number): () => number {
@@ -91,7 +92,7 @@ export default function BootSequence() {
           className="text-lg font-medium sm:text-xl"
           style={{ color: 'var(--accent-green)' }}
         >
-          Data-Agnostic Creator Intelligence Engine
+          {t('ui.landing.tagline')}
         </p>
 
         {/* Sub-tagline */}
@@ -99,7 +100,7 @@ export default function BootSequence() {
           className="mt-2 text-sm sm:text-base"
           style={{ color: 'var(--text-subtle)' }}
         >
-          Zero AI. Pure algorithms.
+          {t('ui.landing.subTagline')}
         </p>
 
         {/* CTA buttons */}
@@ -112,7 +113,7 @@ export default function BootSequence() {
               color: 'var(--bg-primary)',
             }}
           >
-            Try Demo
+            {t('ui.landing.tryDemo')}
           </Link>
           <Link
             href="/onboarding"
@@ -122,14 +123,14 @@ export default function BootSequence() {
               color: 'var(--text-primary)',
             }}
           >
-            Get Started
+            {t('ui.landing.getStarted')}
           </Link>
           <Link
             href="/install"
             className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-medium transition-colors hover:bg-white/5"
             style={{ color: 'var(--accent-yellow)' }}
           >
-            Install Full Version
+            {t('ui.landing.installFull')}
           </Link>
         </div>
       </div>
@@ -140,7 +141,7 @@ export default function BootSequence() {
           className="text-xs"
           style={{ color: 'var(--text-subtle)' }}
         >
-          Scroll to explore
+          {t('ui.landing.scrollToExplore')}
         </span>
         <svg
           aria-hidden="true"

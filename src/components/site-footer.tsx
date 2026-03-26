@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 
 export default function SiteFooter() {
   const pathname = usePathname();
@@ -16,20 +17,20 @@ export default function SiteFooter() {
     >
       <div className="flex items-center justify-center gap-6">
         <Link href="/" className="nav-pill">
-          Home
+          {t('ui.common.home')}
         </Link>
         <Link href="/dashboard?source=demo&persona=tutorial" className="nav-pill">
-          Dashboard
+          {t('ui.common.dashboard')}
         </Link>
         <Link href="/settings" className="nav-pill">
-          Settings
+          {t('ui.common.settings')}
         </Link>
       </div>
       <span
         className="text-xs"
         style={{ color: 'var(--text-subtle)' }}
       >
-        v0.4.0
+        {t('ui.common.version')}
       </span>
     </footer>
   );

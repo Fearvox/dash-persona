@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { exportToPNG, exportToPDF, exportToCSV, buildPostsCSV, buildPersonaScoreCSV, combineSections } from '@/lib/export';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -100,7 +101,7 @@ export default function ExportButton({
             <span
               className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
             />
-            <span>Exporting</span>
+            <span>{t('ui.components.exporting')}</span>
           </>
         ) : (
           <>
@@ -120,7 +121,7 @@ export default function ExportButton({
                 strokeLinejoin="round"
               />
             </svg>
-            <span>Export</span>
+            <span>{t('ui.components.export')}</span>
           </>
         )}
       </button>
@@ -161,7 +162,7 @@ export default function ExportButton({
                 strokeLinejoin="round"
               />
             </svg>
-            Export as PNG
+            {t('ui.components.exportPng')}
           </button>
           <button
             type="button"
@@ -190,7 +191,7 @@ export default function ExportButton({
                 strokeLinecap="round"
               />
             </svg>
-            Export as PDF
+            {t('ui.components.exportPdf')}
           </button>
           <button
             type="button"
@@ -218,7 +219,7 @@ export default function ExportButton({
                 strokeOpacity="0.4"
               />
             </svg>
-            Export as CSV
+            {t('ui.components.exportCsv')}
           </button>
         </div>
       )}

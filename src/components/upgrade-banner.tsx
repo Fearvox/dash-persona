@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { t } from '@/lib/i18n';
 
 interface UpgradeBannerProps {
   compact?: boolean;
@@ -12,10 +13,10 @@ export function UpgradeBanner({ compact = false }: UpgradeBannerProps) {
         className="block rounded-lg border border-[rgba(210,200,126,0.15)] bg-[rgba(210,200,126,0.04)] px-4 py-3 hover:bg-[rgba(210,200,126,0.08)] transition-colors"
       >
         <p className="text-xs font-medium text-[var(--accent-yellow)] mb-1">
-          Unlock full analysis
+          {t('ui.banner.unlockFull')}
         </p>
         <p className="text-xs text-[var(--text-subtle)] leading-relaxed">
-          Install the CLI to collect real-time data from your Creator Centers.
+          {t('ui.banner.installCli')}
         </p>
       </Link>
     );
@@ -43,18 +44,16 @@ export function UpgradeBanner({ compact = false }: UpgradeBannerProps) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-[var(--text-primary)] mb-1">
-          You&apos;re viewing demo data
+          {t('ui.banner.viewingDemo')}
         </p>
         <p className="text-xs text-[var(--text-subtle)] leading-relaxed mb-2.5">
-          The web version uses simulated data for preview. Install the CLI tool
-          to collect real data from your Creator Centers (Douyin, TikTok, Red
-          Note) and get accurate persona analysis.
+          {t('ui.banner.demoDesc')}
         </p>
         <Link
           href="/install"
           className="inline-block rounded px-3 py-1 text-xs font-medium bg-[var(--accent-yellow)] text-[var(--bg-primary)] hover:opacity-90 transition-opacity"
         >
-          View installation guide →
+          {t('ui.banner.viewInstallGuide')}
         </Link>
       </div>
     </div>

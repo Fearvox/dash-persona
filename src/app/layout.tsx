@@ -15,16 +15,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DashPersona — Creator Intelligence Engine",
+  title: "DashPersona — 创作者智能引擎",
   description:
-    "Data-agnostic creator intelligence engine. Analyze your social media presence across Douyin, TikTok, and Red Note with deterministic, AI-free algorithms.",
+    "数据驱动的创作者智能引擎。通过确定性、零 AI 算法分析你在抖音、TikTok 和小红书上的社媒表现。",
   icons: {
     icon: '/favicon.svg',
   },
   openGraph: {
-    title: "DashPersona — Creator Intelligence Engine",
+    title: "DashPersona — 创作者智能引擎",
     description:
-      "Analyze your social media presence across Douyin, TikTok, and Red Note with deterministic, AI-free algorithms.",
+      "通过确定性、零 AI 算法分析你在抖音、TikTok 和小红书上的社媒表现。",
     type: "website",
     url: "https://dash-persona.vercel.app",
     siteName: "DashPersona",
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DashPersona — Creator Intelligence Engine",
+    title: "DashPersona — 创作者智能引擎",
     description:
-      "Analyze your social media presence across Douyin, TikTok, and Red Note with deterministic, AI-free algorithms.",
+      "通过确定性、零 AI 算法分析你在抖音、TikTok 和小红书上的社媒表现。",
   },
 };
 
@@ -45,7 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="zh"
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
