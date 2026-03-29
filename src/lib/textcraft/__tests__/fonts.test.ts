@@ -57,3 +57,18 @@ describe('dash-brand font', () => {
     }
   })
 })
+
+import '../fonts/block-digits'
+
+describe('block-digits font', () => {
+  it('is auto-registered', () => {
+    expect(getFont('block-digits')).toBeDefined()
+  })
+
+  it('covers 0-9 and %', () => {
+    const font = getFont('block-digits')!
+    for (const char of '0123456789%') {
+      expect(font.charMap[char], `missing: "${char}"`).toBeDefined()
+    }
+  })
+})
