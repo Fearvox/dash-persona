@@ -925,6 +925,21 @@ const en: Record<string, string> = {
   'pipeline.category.adapter': 'Adapters',
   'pipeline.category.engine': 'Analysis Engine',
   'pipeline.category.output': 'Output Views',
+
+  // ===========================================================================
+  // Data Portrait
+  // ===========================================================================
+  'ui.portrait.title': 'Data Portrait',
+  'ui.portrait.creatorId': 'CREATOR ID',
+  'ui.portrait.performanceMatrix': 'PERFORMANCE MATRIX',
+  'ui.portrait.trend30d': '30D TREND',
+  'ui.portrait.tags': 'TAGS',
+  'ui.portrait.copyText': 'Copy Text',
+  'ui.portrait.exportPng': 'Export PNG',
+  'ui.portrait.copied': 'Copied to clipboard',
+  'ui.portrait.exported': 'PNG saved',
+  'ui.portrait.noData': 'Import creator data first',
+  'ui.portrait.hover': 'Hover a metric for details',
 };
 
 export default en;

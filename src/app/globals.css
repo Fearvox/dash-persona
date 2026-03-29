@@ -131,6 +131,16 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   transform: translateY(1px) scale(0.98);
 }
 
+/* ── Portrait monospace container ── */
+.portrait-mono,
+.portrait-mono pre {
+  font-family: var(--font-mono);
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-ligatures: none;
+  white-space: pre;
+}
+
 /* ── Modal backdrop ── */
 .modal-backdrop {
   position: fixed;

@@ -928,6 +928,21 @@ const zh: Record<string, string> = {
   'pipeline.category.adapter': '适配器',
   'pipeline.category.engine': '分析引擎',
   'pipeline.category.output': '输出视图',
+
+  // ===========================================================================
+  // 数据画像
+  // ===========================================================================
+  'ui.portrait.title': '数据画像',
+  'ui.portrait.creatorId': '创作者 ID',
+  'ui.portrait.performanceMatrix': '表现矩阵',
+  'ui.portrait.trend30d': '30天趋势',
+  'ui.portrait.tags': '标签',
+  'ui.portrait.copyText': '复制文本',
+  'ui.portrait.exportPng': '导出 PNG',
+  'ui.portrait.copied': '已复制到剪贴板',
+  'ui.portrait.exported': 'PNG 已保存',
+  'ui.portrait.noData': '请先导入创作者数据',
+  'ui.portrait.hover': '悬停查看指标详情',
 };
 
 export default zh;
