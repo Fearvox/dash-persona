@@ -51,7 +51,7 @@ export default function CanvasTextField({ keywords, options }: CanvasTextFieldPr
       let x = ((kw.x + driftX) % width + width) % width
       let y = ((kw.y + driftY) % height + height) % height
 
-      ctx.font = `700 ${kw.size}px var(--font-mono, monospace)`
+      ctx.font = `700 ${kw.size}px "Geist Mono", monospace`
       ctx.fillStyle = `rgba(${KEYWORD_COLOR_RGB}, ${alpha})`
       ctx.fillText(kw.text, x, y)
     }

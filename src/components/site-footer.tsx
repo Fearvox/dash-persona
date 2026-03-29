@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { t } from '@/lib/i18n';
+import { LocaleToggle } from '@/components/locale-toggle';
 
 export default function SiteFooter() {
   const pathname = usePathname();
@@ -25,6 +26,7 @@ export default function SiteFooter() {
         <Link href="/settings" className="nav-pill">
           {t('ui.common.settings')}
         </Link>
+        <LocaleToggle />
       </div>
       <span
         className="text-xs"

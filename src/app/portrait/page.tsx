@@ -209,16 +209,16 @@ export default function PortraitPage() {
           borderColor: 'var(--border-subtle)',
         }}
       >
-        {/* Identity Box */}
-        <pre className="text-xs" style={{ color: 'var(--text-primary)' }}>
-          {'\u250F' + '\u2501'.repeat(18) + '\u2513\n'}
-          {'\u2503  ' + t('ui.portrait.creatorId').padEnd(16) + '\u2503\n'}
-          {'\u2523' + '\u2501'.repeat(18) + '\u252B\n'}
-          {'\u2503  \u2588\u2588 ' + nickname.slice(0, 12).padEnd(12) + '\u2503\n'}
-          {'\u2503' + ' '.repeat(18) + '\u2503\n'}
-          {'\u2503  \u25B8 ' + platform.padEnd(13) + '\u2503\n'}
-          {'\u2503  \u25B8 ' + window.padEnd(13) + '\u2503\n'}
-          {'\u2517' + '\u2501'.repeat(18) + '\u251B'}
+        {/* Identity Box — all ASCII, no CJK inside box to avoid width mismatch */}
+        <pre className="text-sm leading-snug" style={{ color: 'var(--accent-green)' }}>
+{`\u250F\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513
+\u2503  CREATOR ID                 \u2503
+\u2523\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u252B
+\u2503  \u2588\u2588 ${nickname.slice(0, 22).padEnd(22)} \u2503
+\u2503                             \u2503
+\u2503  \u25B8 ${platform.padEnd(24)}\u2503
+\u2503  \u25B8 ${window.padEnd(24)}\u2503
+\u2517\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u251B`}
         </pre>
 
         {/* Tags */}
@@ -274,7 +274,7 @@ export default function PortraitPage() {
                     {m.label}
                   </span>
                   <pre
-                    className="text-xs"
+                    className="text-sm"
                     style={{ color: m.color }}
                   >
                     {renderProgressBar(m.value, 10)}
@@ -307,7 +307,7 @@ export default function PortraitPage() {
               {t('ui.portrait.trend30d')}
             </p>
             <pre
-              className="text-xs"
+              className="text-base leading-none"
               style={{ color: 'var(--accent-green)' }}
             >
               {renderBrailleLine(trendData)}

@@ -17,6 +17,7 @@ import Image from 'next/image';
 import CodeArtBackground from './code-art-background';
 import { t } from '@/lib/i18n';
 import { renderAsciiText } from '@/lib/textcraft';
+import { LocaleToggle } from '@/components/locale-toggle';
 
 export default function BootSequence() {
   const [mounted, setMounted] = useState(false);
@@ -60,18 +61,24 @@ export default function BootSequence() {
           </h1>
         </div>
 
-        {/* Tagline */}
+        {/* ASCII art tagline — always English (brand element) */}
         <pre
-          className="font-mono text-center leading-none tracking-wider whitespace-pre text-[5.5px] ascii-glow"
+          className="font-mono text-center leading-none tracking-wider whitespace-pre text-[6px] sm:text-[7px] ascii-glow"
           style={{ color: 'var(--accent-green)' }}
           aria-label={t('ui.landing.tagline')}
         >
-          {renderAsciiText(t('ui.landing.tagline'), 'dash-brand')}
+          {renderAsciiText('CREATOR INTELLIGENCE ENGINE', 'dash-brand')}
         </pre>
 
-        {/* Sub-tagline */}
+        {/* Localized tagline + sub-tagline */}
         <p
-          className="mt-2 text-sm sm:text-base"
+          className="mt-3 text-sm font-medium sm:text-base"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {t('ui.landing.tagline')}
+        </p>
+        <p
+          className="mt-1 text-xs sm:text-sm"
           style={{ color: 'var(--text-subtle)' }}
         >
           {t('ui.landing.subTagline')}
@@ -107,6 +114,11 @@ export default function BootSequence() {
             {t('ui.landing.installFull')}
           </Link>
         </div>
+      </div>
+
+      {/* Locale toggle — top right */}
+      <div className="absolute top-4 right-6 z-10">
+        <LocaleToggle />
       </div>
 
       {/* Layer 2: Scroll indicator */}
