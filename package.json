@@ -13,6 +13,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@chenglou/pretext": "0.0.2",
     "@xyflow/react": "^12.10.1",
     "elkjs": "^0.11.1",
     "html2canvas-pro": "^2.0.2",
