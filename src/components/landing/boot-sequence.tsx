@@ -16,6 +16,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import CodeArtBackground from './code-art-background';
 import { t } from '@/lib/i18n';
+import { renderAsciiText } from '@/lib/textcraft';
 
 export default function BootSequence() {
   const [mounted, setMounted] = useState(false);
@@ -60,12 +61,13 @@ export default function BootSequence() {
         </div>
 
         {/* Tagline */}
-        <p
-          className="text-lg font-medium sm:text-xl"
+        <pre
+          className="font-mono text-center leading-none tracking-wider whitespace-pre text-[5.5px] ascii-glow"
           style={{ color: 'var(--accent-green)' }}
+          aria-label={t('ui.landing.tagline')}
         >
-          {t('ui.landing.tagline')}
-        </p>
+          {renderAsciiText(t('ui.landing.tagline'), 'dash-brand')}
+        </pre>
 
         {/* Sub-tagline */}
         <p

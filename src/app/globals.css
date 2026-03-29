@@ -232,6 +232,8 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   50% { opacity: 0.4; }
 }
 
+.ascii-glow { text-shadow: 0 0 12px rgba(126, 210, 154, 0.25); }
+
 /* ── Staggered fade-in on mount ── */
 .animate-stagger {
   opacity: 0;
