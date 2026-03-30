@@ -4,8 +4,9 @@
   "private": true,
   "main": "dist/main.js",
   "scripts": {
-    "dev": "electron .",
-    "build": "tsc && electron-builder"
+    "dev": "tsc && electron .",
+    "start": "electron dist/main.js",
+    "build": "tsc && electron-builder --mac"
   },
   "dependencies": {
     "electron-updater": "^6.3.0",
