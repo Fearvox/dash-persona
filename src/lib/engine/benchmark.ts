@@ -13,6 +13,7 @@ import { detectNiche } from './niche-detect';
 import { generateBenchmarkProfiles, NICHE_BENCHMARKS, type BenchmarkNiche } from './benchmark-data';
 import type { PersonaScore } from './persona';
 import { t } from '@/lib/i18n';
+import { empiricalPercentile } from './stats';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,8 +35,8 @@ export interface MetricBenchmark {
   /** How the user ranks relative to the benchmark set. */
   rank: BenchmarkRank;
   /**
-   * Percentile position (0-100). Placeholder: computed as a rough linear
-   * interpolation in MVP; v2 will use proper distribution fitting.
+   * Percentile position (0-100). Uses Hazen plotting position
+   * (empiricalPercentile) -- never exactly 0 or 100.
    */
   percentile: number;
 }
@@ -84,24 +85,6 @@ function rankAgainst(userValue: number, benchMean: number): BenchmarkRank {
   return 'at';
 }
 
-/**
- * Rough percentile estimation via linear interpolation among the
- * benchmark values. Returns 0-100.
- */
-function roughPercentile(userValue: number, sorted: number[]): number {
-  if (sorted.length === 0) return 50;
-  if (userValue <= sorted[0]) return 0;
-  if (userValue >= sorted[sorted.length - 1]) return 100;
-  // Binary search: count elements <= userValue in O(log n)
-  let lo = 0;
-  let hi = sorted.length;
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1;
-    if (sorted[mid] <= userValue) lo = mid + 1;
-    else hi = mid;
-  }
-  return Math.round((lo / sorted.length) * 100);
-}
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -159,7 +142,7 @@ export function compareToBenchmark(
     benchmarkMean: meanFollowers,
     benchmarkMedian: median(benchFollowers),
     rank: rankAgainst(userFollowers, meanFollowers),
-    percentile: roughPercentile(userFollowers, benchFollowers),
+    percentile: empiricalPercentile(userFollowers, benchFollowers),
   };
 
   const engRateBench: MetricBenchmark = {
@@ -168,7 +151,7 @@ export function compareToBenchmark(
     benchmarkMean: Math.round(meanEngRate * 10000) / 10000,
     benchmarkMedian: Math.round(median(benchEngRates) * 10000) / 10000,
     rank: rankAgainst(userEngRate, meanEngRate),
-    percentile: roughPercentile(userEngRate, benchEngRates),
+    percentile: empiricalPercentile(userEngRate, benchEngRates),
   };
 
   const postCountBench: MetricBenchmark = {
@@ -177,7 +160,7 @@ export function compareToBenchmark(
     benchmarkMean: meanPostCount,
     benchmarkMedian: median(benchPostCounts),
     rank: rankAgainst(userPostCount, meanPostCount),
-    percentile: roughPercentile(userPostCount, benchPostCounts),
+    percentile: empiricalPercentile(userPostCount, benchPostCounts),
   };
 
   const metrics = [followersBench, engRateBench, postCountBench];
