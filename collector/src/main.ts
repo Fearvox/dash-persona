@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import { BrowserManager } from './browser';
 import { startServer, stopServer } from './server';
-// import { TrayManager } from './tray'; // TODO: uncomment when tray is implemented
+import { TrayManager } from './tray';
 
 // ── Constants ────────────────────────────────────────────────
 const API_PORT = 3458;
@@ -9,6 +9,7 @@ const MAX_BROWSER_RETRIES = 3;
 
 // ── State ────────────────────────────────────────────────────
 let browserManager: BrowserManager;
+let trayManager: TrayManager | null = null;
 let browserRetries = 0;
 
 // ── Single instance lock ─────────────────────────────────────
@@ -40,9 +41,10 @@ if (!gotLock) {
       await startServer(browserManager, API_PORT);
       console.log(`[collector] Server started on port ${API_PORT}`);
 
-      // 3. Init tray (placeholder until tray.ts is implemented)
-      // const tray = new TrayManager(browserManager);
-      // tray.init();
+      // 3. Init tray
+      trayManager = new TrayManager(browserManager);
+      trayManager.init();
+      console.log('[collector] Tray initialized');
 
       console.log('[collector] Ready');
     } catch (err) {
@@ -70,6 +72,7 @@ if (!gotLock) {
     e.preventDefault();
     try {
       console.log('[collector] Shutting down…');
+      trayManager?.destroy();
       await stopServer();
       console.log('[collector] Server stopped');
       await browserManager?.shutdown();
@@ -110,7 +113,7 @@ async function handleBrowserCrash(): Promise<void> {
     console.error(
       `[collector] Browser crashed ${MAX_BROWSER_RETRIES} times. Giving up.`
     );
-    // TODO: update tray status to 'error' when tray is implemented
+    trayManager?.updateStatus('error');
     return;
   }
 
@@ -123,9 +126,10 @@ async function handleBrowserCrash(): Promise<void> {
     await browserManager?.shutdown();
     await browserManager?.init();
     browserRetries = 0; // Reset on successful restart
+    trayManager?.updateStatus('active');
     console.log('[collector] Browser restarted successfully');
   } catch (err) {
     console.error('[collector] Browser restart failed:', err);
-    // TODO: update tray status to 'error' when tray is implemented
+    trayManager?.updateStatus('error');
   }
 }
