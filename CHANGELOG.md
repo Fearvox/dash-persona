@@ -6,6 +6,47 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ---
 
+## [0.6.0] - 2026-03-30
+
+### Added
+
+- **Statistical foundation** (`src/lib/engine/stats/`) — Four pure-function modules powering all analysis: Hazen plotting-position percentiles (no more tail collapse), OLS linear regression with t-test significance (p-value gating), adaptive sample-size thresholds (small datasets no longer trigger false alarms), and rank-based normalization (comparable scoring across mixed scales).
+- **Signal collector** — 18 standardized signals across 5 categories (engagement, rhythm, growth, content, audience). Each signal carries raw value, normalized 0-100 score, confidence level, and platform-specific weight. Integrated into `runAllEngines()` for dashboard consumption.
+- **Platform-specific signal weights** — Douyin weights completion rate at 8x (core algorithm signal). XHS weights save/bookmark at 6x (high-intent signal). TikTok weights viral post ratio at 7x. Derived from Twitter/X UUA production patterns.
+- **Engagement velocity signal** — Measures what percentage of total engagement arrived in the most recent 30% of the posting period. Higher velocity = better content quality.
+- **Freshness decay signal** — Exponential decay with 30-day half-life, averaging across all posts. Newer content corpus = higher freshness.
+- **Data completeness signal** — Quantifies how many optional high-value fields (history, fanPortrait, completionRate, publishedAt) are populated in a profile.
+- **Post quality scoring** — Three-factor penalty system: short descriptions (<5 chars: 0.3x, <20 chars: 0.7x), zero engagement with views (0.5x), impossibly high engagement ratios suggesting bot activity (0.6x). Integrated into persona engagement computation.
+- **Persistent SiteHeader** — Global top navigation visible on all pages except landing. Dashboard, Portrait, Pipeline, Settings links always accessible.
+- **Portrait demo mode** — `/portrait?source=demo` loads from demo adapter instead of IndexedDB. Demo users can now explore the data portrait feature.
+- **Calendar cold-start CTA** — "Import More Data" button linking to onboarding when calendar has insufficient posts.
+- **Extension timeout feedback** — 10-second countdown timer with explicit failure message and fallback CTAs when Data Passport extension is not detected.
+- **Timeline cold-start fix** — Demo mode now passes history snapshots to GrowthTrendChart as fallback data.
+
+### Changed
+
+- **Benchmark percentile** — Replaced `roughPercentile()` (rank/N with tail collapse at 0 and 100) with Hazen plotting position `(rank - 0.5) / N * 100`. Power-law engagement data now gets accurate percentile ranking.
+- **Persona trend analysis** — Replaced difference-of-means (newer half vs older half) with OLS linear regression. Added `trendReliable: boolean` field gated by p < 0.05. Strategy and idea engines suppress trend-based suggestions when trend is not statistically significant.
+- **Comparator thresholds** — Fixed 1.5x engagement gap and 2.0x audience gap replaced with `adaptiveThreshold()` that scales with sample size. Fewer than 5 posts: insight suppressed entirely.
+- **Next-content scoring** — Step-quantized nicheRelevance (0/25/50/75/95) recalibrated to continuous 0-100 via `recalibrateSteps()`. All 4 scoring dimensions rank-normalized across suggestion batch for comparable confidence.
+- **Idea generator thresholds** — Fixed 15% content gap and 2x cross-platform gap replaced with adaptive thresholds. Small datasets no longer produce spurious experiment ideas.
+- **Consistency window** — Hardcoded window size of 5 replaced with adaptive formula: `max(5, ceil(posts / 10))`. Gives window=5 for 30 posts, 10 for 100, 20 for 200.
+- **Onboarding** — Removed Step 2 (benchmarks) UI that was permanently disabled. Direct flow from import to dashboard.
+
+### Performance
+
+- **Keyword overlap dedup** — Pre-computed `postKeywords()` and `countOverlap()` once per trending post, shared across all 7 rules. Previously computed 4x per post. ~75% reduction in next-content rule execution.
+- **topUserCategories cache** — Computed once at top of `generateNextContent()`, passed to all rules. Previously called 6+ times.
+- **classifyContent cache** — Content planner now skips classification if posts already have `contentType` from persona engine.
+- **Flaky benchmark test fixed** — `generateBenchmarkProfiles()` now uses deterministic timestamp instead of `new Date()`.
+
+### Fixed
+
+- **TikTok date boundary** — Relative dates like "3月25日" crossing year boundaries (Dec → Jan) now correctly subtract a year when the inferred date is >30 days in the future.
+- **CJK column alignment** — Portrait page identity box and tags use `charWidth/strWidth/sliceCols/padEndCols` helpers that account for CJK fullwidth characters (2-column width).
+
+---
+
 ## [0.5.0] - 2026-03-30
 
 ### Added

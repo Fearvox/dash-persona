@@ -2,7 +2,7 @@
 
 **Understand your creator persona across Douyin, TikTok, and Red Note — with zero AI.**
 
-[![v0.4.0](https://img.shields.io/badge/version-0.4.0-green.svg)](./CHANGELOG.md)
+[![v0.6.0](https://img.shields.io/badge/version-0.6.0-green.svg)](./CHANGELOG.md)
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](./LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6.svg)](https://www.typescriptlang.org/)
@@ -29,7 +29,7 @@ Content creators manage multiple platforms but have no unified view of their per
 
 ## How DashPersona Solves It
 
-DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Note**, normalizes it into a unified schema, and runs it through **11 deterministic analysis engines**. Every score, tag, and recommendation is computed with transparent algorithms — no LLM calls, no API keys, no subscription fees. You can trace any number back to the formula that produced it.
+DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Note**, normalizes it into a unified schema, and runs it through **11 deterministic analysis engines** backed by an **18-signal intelligence framework**. Every score, tag, and recommendation is computed with statistically validated algorithms — Hazen percentile ranking, OLS regression with significance testing, adaptive sample-size thresholds, and platform-specific signal weighting. No LLM calls, no API keys, no subscription fees. You can trace any number back to the formula that produced it.
 
 ---
 
@@ -57,6 +57,7 @@ claude skill install --global github.com/eze-is/web-access
 | Real-time CDP data collection | — | Yes |
 | Trending topic analysis | — | Yes |
 | Persistent data across sessions | — | Yes |
+| 18-signal intelligence framework | Yes | Yes |
 | All 11 analysis engines | Yes | Yes |
 
 ---
@@ -95,13 +96,16 @@ Side-by-side metrics across all your platforms. Automatically surfaces insights 
 
 | Feature | What it does |
 |---------|-------------|
-| **Persona Score** | Composite 0–100 score across 6 dimensions with explainable formulas |
-| **Niche Detection** | Auto-detects your niche from 10 benchmark categories with confidence scores |
-| **Strategy Engine** | Actionable recommendations based on your actual engagement patterns |
+| **Persona Score** | Composite 0-100 score across 6 dimensions with OLS trend analysis and statistical significance testing |
+| **Signal Framework** | 18 standardized signals with platform-specific weights (Douyin: completion rate 8x, XHS: save rate 6x, TikTok: viral ratio 7x) |
+| **Niche Detection** | Auto-detects your niche from 10 benchmark categories with Hazen percentile ranking |
+| **Strategy Engine** | Actionable recommendations with adaptive thresholds that scale with your data volume |
 | **Content Calendar** | AI-free publishing schedule optimized from your best-performing time slots |
 | **Persona Timeline** | Decision tree for tracking strategy experiments and pivots |
-| **Next Content Engine** | 7 deterministic rules combining persona data with trending analysis for content suggestions |
-| **Cross-Platform** | Unified radar comparison across Douyin, TikTok, and Red Note |
+| **Next Content Engine** | 7 deterministic rules with rank-normalized scoring and engagement velocity signals |
+| **Post Quality Filter** | Automatically down-weights low-quality and bot-like posts in analysis |
+| **Cross-Platform** | Unified radar comparison across Douyin, TikTok, and Red Note with adaptive gap detection |
+| **Data Portrait** | ASCII art profile card with CJK-aware alignment, 30-day trend sparkline, and PNG export |
 
 ### Data Collection
 
@@ -141,37 +145,50 @@ For real data collection, see the [installation guide](https://dash-persona.verc
 ## How It Works
 
 ```
-  Your Data                    Analysis Engines                  What You See
- ───────────                  ──────────────────                ──────────────
- CDP proxy (Douyin,           ┌─ Persona Score                  Dashboard
-   TikTok, XHS) ──┐          ├─ Growth Tracker                 Persona Detail
- JSON / CSV ───────┤          ├─ Niche Detection                Compare View + Radar
- XLSX (11 schemas) ┼─ Schema ─┼─ Niche Benchmark                Content Calendar
- Chrome extension ─┤  Check   ├─ Strategy Engine                Persona Timeline
- Manual import ────┘    │     ├─ Content Planner                Pipeline View
-                    Profile   ├─ Cross-Platform Comparator      Export (PNG/PDF/CSV)
-                    Store     ├─ Idea Generator
-                  (IndexedDB) ├─ Content Analyzer
-                              └─ Next Content Engine
+  Your Data                    Analysis Pipeline                   What You See
+ ───────────                  ──────────────────                  ──────────────
+ CDP proxy (Douyin,           ┌─ stats/ library ──────────┐       Dashboard
+   TikTok, XHS) ──┐          │  (percentile, regression, │       Persona Detail
+ JSON / CSV ───────┤          │   normalize, threshold)   │       Compare View + Radar
+ XLSX (11 schemas) ┼─ Quality ┼─ Persona Score            │       Content Calendar
+ Chrome extension ─┤  Filter  ├─ Growth Tracker           ├──┐    Persona Timeline
+ Manual import ────┘    │     ├─ Niche Detection          │  │    Data Portrait
+                    Profile   ├─ Niche Benchmark          │  │    Pipeline View
+                    Store     ├─ Strategy Engine           │  │    Export (PNG/PDF/CSV)
+                  (IndexedDB) ├─ Content Planner           │  │
+                              ├─ Cross-Platform Comparator │  │
+                              ├─ Idea Generator            │  │
+                              ├─ Content Analyzer          │  │
+                              ├─ Next Content Engine       │  │
+                              └─ Signal Collector (18) ────┘  │
+                                 Platform weights:            │
+                                 Douyin: 完播率 8x            │
+                                 XHS: 收藏 6x                │
+                                 TikTok: 病毒率 7x ──────────┘
 ```
 
 **All engines are deterministic.** Same input always produces the same output. No randomness, no model weights, no external API calls.
 
 ### Under the Hood
 
-- **Content classification** — inverted-index keyword matching across 31 categories
-- **Engagement scoring** — weighted formula (comments x5, shares x3, saves x2) modelled on production ranking systems
-- **Persona consistency** — sliding-window cosine similarity between content periods
-- **Niche detection** — maps content distribution to 10 benchmark niches with synthetic cohort comparison
-- **Growth analysis** — delta computation over IndexedDB-persisted historical snapshots
+- **Signal framework** — 18 standardized signals across 5 categories (engagement, rhythm, growth, content, audience) with platform-specific weights derived from Twitter/X UUA patterns
+- **Statistical foundation** — `stats/` library with Hazen plotting-position percentiles, OLS linear regression with t-test p-values, adaptive sample-size thresholds, and rank-based normalization
+- **Content classification** — inverted-index keyword matching across 31 categories with cached results
+- **Engagement scoring** — weighted formula with post quality filtering (short text, zero engagement, and bot activity down-weighting)
+- **Persona consistency** — adaptive sliding-window cosine similarity (window auto-scales: 5 for 30 posts, 20 for 200 posts)
+- **Trend analysis** — OLS regression replaces naive difference-of-means, with `trendReliable` flag gated by p < 0.05
+- **Niche detection** — maps content distribution to 10 benchmark niches with Hazen percentile ranking (no tail collapse)
+- **Growth analysis** — delta computation over IndexedDB-persisted historical snapshots with engagement velocity signal
 - **Engine memoization** — FNV-1a content hashing with LRU eviction (maxSize=64)
-- **XLSX schema detection** — auto-classifies 11 export formats (4 Douyin + 7 TikTok Studio) with year-boundary date normalization
+- **XLSX schema detection** — auto-classifies 11 export formats (4 Douyin + 7 TikTok Studio) with cross-year date boundary fix
 - **Profile persistence** — IndexedDB storage with sessionStorage sync cache, merge-on-import for cross-session data retention
+- **Algorithm optimization** — pre-computed keyword overlaps (-75% rule execution ops), cached category lookups, deterministic benchmark data
 
 ### Architecture
 
 ```
-src/lib/engine/         — 11 analysis engines (persona, growth, niche, benchmark, strategy, planner, comparator, ideas, explain, content-analyzer, next-content)
+src/lib/engine/         — 11 analysis engines + stats/ library + signal-collector (18 signals)
+src/lib/engine/stats/   — statistical primitives (percentile, regression, normalize, threshold)
 src/lib/adapters/       — 7 data adapters (CDP, Demo, FileImport, Manual, Extension, HTMLParse, Browser)
 src/lib/store/          — IndexedDB profile persistence with sessionStorage sync
 src/lib/collectors/     — CDP client, trending collector, video analyzer, temp storage
@@ -225,7 +242,7 @@ DashPersona was built across **20+ sessions** using [EverMemOS](https://github.c
 
 This project is a living case study: 11 analysis engines, 7 data adapters, a Chrome extension, and a cinematic landing page — all designed across separate sessions but maintaining consistent interfaces. Architecture decisions made in Session 1 were correctly recalled and enforced in Session 20. Every non-obvious choice is traceable through structured memory.
 
-> **11 analysis engines. 7 data adapters. 15 E2E tests. 189 unit tests. 1 Chrome extension. Zero context lost between sessions.**
+> **11 analysis engines. 18 intelligence signals. 7 data adapters. 308 tests. 1 Chrome extension. Statistically validated. Zero AI.**
 
 ---
 
@@ -253,7 +270,16 @@ This project is a living case study: 11 analysis engines, 7 data adapters, a Chr
 - [x] Persistent profile storage (IndexedDB with merge-on-import)
 - [x] Demo/real data separation across all detail pages
 - [x] CLI installation guide for non-technical users
-- [ ] i18n support (Chinese)
+- [x] i18n support (Chinese/English, 700+ keys, pipeline visualization, detail pages)
+- [x] Textcraft ASCII art engine with brand typography and data portrait
+- [x] Statistical foundation: Hazen percentile, OLS regression, adaptive thresholds
+- [x] 18-signal intelligence framework with platform-specific weights
+- [x] Post quality scoring (bot detection, low-effort filtering)
+- [x] Persistent navigation with SiteHeader across all pages
+- [x] Portrait page with demo mode and CJK-aware column alignment
+- [ ] Signal dashboard with 18-signal radar visualization
+- [ ] Audience demographic insights (fanPortrait integration)
+- [ ] Two-stage ranking pipeline (candidate generation + scoring)
 
 ---
 
