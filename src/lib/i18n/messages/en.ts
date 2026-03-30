@@ -29,7 +29,7 @@ const en: Record<string, string> = {
   'ui.common.tip': 'Tip',
   'ui.common.posts': 'Posts',
   'ui.common.followers': 'followers',
-  'ui.common.version': 'v0.4.0',
+  'ui.common.version': 'v0.6.0',
   'ui.common.poweredBy': 'Powered by',
   'ui.common.customDigitalSystems': 'Custom Digital Systems',
   'ui.common.launchDashboard': 'Launch Dashboard',

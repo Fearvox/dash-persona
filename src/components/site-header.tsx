@@ -30,17 +30,16 @@ export default function SiteHeader() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-1.5 text-sm font-bold tracking-tight transition-opacity hover:opacity-80"
-          style={{ color: 'var(--text-primary)' }}
+          className="flex items-center transition-opacity hover:opacity-80"
           aria-label={t('ui.common.backToHome')}
         >
-          <span>DASH</span>
-          <span
-            className="font-mono text-xs font-normal"
-            style={{ color: 'var(--accent-green)' }}
-          >
-            &mdash;/
-          </span>
+          <img
+            src="/dash-logo.svg"
+            alt="DASH"
+            width={90}
+            height={20}
+            className="block"
+          />
         </Link>
 
         {/* Navigation */}
