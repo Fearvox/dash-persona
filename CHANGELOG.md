@@ -6,6 +6,35 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ---
 
+## [0.5.0] - 2026-03-30
+
+### Added
+
+- **Textcraft engine** — ASCII art rendering system with font registry (dash-brand, block-digits), effects (drift, assemble, compose), composers (ascii-logo, char-chart, braille-line, data-portrait, text-field), and canvas/DOM renderers. Powers brand typography across landing and portrait pages.
+- **Data Portrait page** (`/portrait`) — Visual data card with performance matrix, 30-day trend sparkline, and tag display. Supports copy-to-clipboard and PNG export.
+- **TextcraftDivider component** — Section divider used between landing page acts (Boot → Pipeline → Output).
+- **Canvas text field** — Custom canvas renderer for ASCII art with Geist Mono font and animation support.
+- **LocaleInitializer** — Reads localStorage post-hydration to avoid SSR/client locale mismatch.
+- **Locale toggle** — Language switch button (EN/中文) with accessible aria-label.
+- **28 new i18n keys** — Full coverage for error page, 404 page, pipeline skeleton, and accessibility labels in both zh and en.
+
+### Fixed
+
+- **4 unit test failures** — benchmark.test.ts and explain.test.ts expected English strings but i18n defaults to zh. Added locale setup in test files.
+- **NICHE_BENCHMARKS label baked at import time** — Labels resolved via `t()` at module load always returned Chinese. Changed `niche-detect.ts` to resolve labels at call time.
+- **Vitest scanning external files** — Config had no `include` pattern, picking up 43 `.golutra/` bun:test files and 5 Playwright e2e specs. Scoped to `src/**/*.test.{ts,tsx}`.
+- **metadataBase not set** — OG/Twitter image URLs fell back to `localhost:3000`. Added `metadataBase` to layout.tsx.
+- **Hydration mismatch** — Locale read from localStorage during SSR caused React hydration error. Moved to post-hydration via useEffect.
+- **error.tsx / not-found.tsx** — Hardcoded English strings replaced with i18n-keyed translations.
+- **pipeline-skeleton.tsx** — Hardcoded row labels and aria-label replaced with i18n keys.
+
+### Changed
+
+- Boot sequence ASCII art uses English brand text (CJK fonts incompatible with ASCII art rendering).
+- Code-art-background simplified from complex particle system to clean dot-matrix pattern.
+
+---
+
 ## [0.4.0] - 2026-03-26
 
 ### Added
