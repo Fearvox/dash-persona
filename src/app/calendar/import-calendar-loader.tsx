@@ -92,8 +92,7 @@ export default function ImportCalendarLoader() {
           {' '}{t('ui.calendar.needMoreDataPost', { plural: plan.dataPoints === 1 ? '' : t('ui.calendar.posts') })}
         </p>
         <p
-          className="max-w-sm text-center text-xs"
-          style={{ color: 'var(--text-subtle)' }}
+          className="max-w-sm text-center text-xs text-[var(--text-subtle)]"
         >
           {t('ui.calendar.importMoreDesc')}
         </p>
@@ -118,7 +117,7 @@ export default function ImportCalendarLoader() {
         <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
           {t('ui.calendar.title')}
         </h1>
-        <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
+        <p className="text-sm text-[var(--text-subtle)]">
           {t('ui.calendar.subtitle', { dataPoints: plan.dataPoints, slots: plan.slots.length })}
         </p>
       </header>

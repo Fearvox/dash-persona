@@ -104,10 +104,10 @@ export default function DashboardInteractive({
         </button>
         <button
           type="button"
-          className="nav-pill"
+          className="nav-pill text-[var(--accent-blue)]"
           onClick={collectNow}
           disabled={historyLoading}
-          style={{ color: 'var(--accent-blue)', opacity: historyLoading ? 0.5 : 1 }}
+          style={{ opacity: historyLoading ? 0.5 : 1 }}
         >
           {historyLoading ? t('ui.components.collecting') : t('ui.components.collectNow')}
         </button>

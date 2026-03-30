@@ -48,7 +48,7 @@ export default function TimeRangeSelector({
             type="button"
             onClick={() => onChange(hours)}
             aria-pressed={isSelected}
-            className="rounded-full px-3 py-1 text-xs font-medium"
+            className="rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-[background,color] duration-150 ease-in-out"
             style={{
               background: isSelected
                 ? 'var(--accent-green)'
@@ -59,8 +59,6 @@ export default function TimeRangeSelector({
               border: isSelected
                 ? '1px solid var(--accent-green)'
                 : '1px solid var(--border-subtle)',
-              cursor: 'pointer',
-              transition: 'background 0.15s ease, color 0.15s ease',
             }}
           >
             {getLabel(hours)}

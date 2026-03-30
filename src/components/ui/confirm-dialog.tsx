@@ -106,12 +106,11 @@ export default function ConfirmDialog({
             ref={confirmRef}
             type="button"
             onClick={onConfirm}
-            className="rounded-lg px-4 py-2 text-sm font-medium"
+            className="rounded-lg px-4 py-2 text-sm font-medium text-[var(--bg-primary)]"
             style={{
               background: isDanger
                 ? 'var(--accent-red)'
                 : 'var(--accent-green)',
-              color: 'var(--bg-primary)',
             }}
           >
             {confirmLabel}
