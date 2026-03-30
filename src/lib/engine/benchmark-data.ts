@@ -187,6 +187,10 @@ export function generateBenchmarkProfiles(
 
   const rng = createRng(hashSeed(`benchmark-${niche}-${count}`));
 
+  // Use a deterministic timestamp so that identical inputs always produce
+  // identical output (previously used Date.now() which broke determinism).
+  const deterministicDate = '2025-01-01T00:00:00.000Z';
+
   const profiles: BenchmarkProfile[] = [];
 
   for (let i = 0; i < count; i++) {
@@ -231,7 +235,7 @@ export function generateBenchmarkProfiles(
       role: 'benchmark',
       platform: 'douyin' as Platform,
       profileUrl: `https://benchmark.example/${niche}/${i}`,
-      fetchedAt: new Date().toISOString(),
+      fetchedAt: deterministicDate,
       source: 'demo',
       profile: {
         nickname: `${avg.label} Creator ${i + 1}`,

@@ -466,8 +466,10 @@ export function computeRhythm(posts: Post[]): RhythmAnalysis {
  */
 export function computePersonaConsistency(
   posts: Post[],
-  windowSize = 5,
+  windowSize?: number,
 ): ConsistencyScore {
+  // Auto-tune: scale window with dataset size (5 for 30 posts, 10 for 100, 20 for 200)
+  const effectiveWindow = windowSize ?? Math.max(5, Math.ceil(posts.length / 10));
   const noData: ConsistencyScore = {
     score: 0,
     isConsistent: false,
@@ -475,28 +477,28 @@ export function computePersonaConsistency(
     dominantCategoryPct: 0,
   };
 
-  if (posts.length < windowSize) return noData;
+  if (posts.length < effectiveWindow) return noData;
 
   // Sparse sliding window: O(P) total instead of O(P × W × C)
   const vectors: Map<string, number>[] = [];
   const win = new Map<string, number>();
 
   // Build first window
-  for (let j = 0; j < windowSize; j++) {
+  for (let j = 0; j < effectiveWindow; j++) {
     const cat = posts[j].contentType;
     if (cat) win.set(cat, (win.get(cat) ?? 0) + 1);
   }
   vectors.push(new Map(win));
 
   // Slide: remove outgoing, add incoming — O(1) per step
-  for (let i = 1; i <= posts.length - windowSize; i++) {
+  for (let i = 1; i <= posts.length - effectiveWindow; i++) {
     const outCat = posts[i - 1].contentType;
     if (outCat) {
       const c = (win.get(outCat) ?? 1) - 1;
       if (c === 0) win.delete(outCat);
       else win.set(outCat, c);
     }
-    const inCat = posts[i + windowSize - 1].contentType;
+    const inCat = posts[i + effectiveWindow - 1].contentType;
     if (inCat) win.set(inCat, (win.get(inCat) ?? 0) + 1);
     vectors.push(new Map(win));
   }

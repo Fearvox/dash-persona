@@ -449,6 +449,35 @@ function confidenceToPriority(confidence: number): 'high' | 'medium' | 'low' {
 // Generation rules
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Pre-computed post overlap data (shared across rules)
+// ---------------------------------------------------------------------------
+
+/** Pre-computed keyword and overlap data for a single trending post. */
+interface PostOverlapData {
+  post: TrendingPost;
+  keywords: string[];
+  overlapCount: number;
+}
+
+/**
+ * Pre-compute keyword overlaps for all trending posts against user categories.
+ * Called once in generateNextContent() and passed to all rules that need it.
+ */
+function precomputePostOverlaps(
+  posts: TrendingPost[],
+  userCategories: string[],
+): PostOverlapData[] {
+  return posts.map((post) => {
+    const keywords = postKeywords(post);
+    return {
+      post,
+      keywords,
+      overlapCount: countOverlap(keywords, userCategories),
+    };
+  });
+}
+
 /**
  * Rule 1: Trend + Niche Match.
  *
@@ -461,24 +490,24 @@ function ruleNicheMatch(
   analysis: ContentAnalysisResult | null,
   existingPosts: Post[],
   ts: number,
+  userCategories: string[],
+  postOverlaps: PostOverlapData[],
 ): NextContentSuggestion | null {
-  const userCategories = topUserCategories(personaScore);
   if (userCategories.length === 0) return null;
 
-  let bestPost: TrendingPost | null = null;
+  let bestEntry: PostOverlapData | null = null;
   let bestOverlap = 0;
 
-  for (const post of trending.posts) {
-    const kws = postKeywords(post);
-    const overlap = countOverlap(kws, userCategories);
-    if (overlap > bestOverlap) {
-      bestOverlap = overlap;
-      bestPost = post;
+  for (const entry of postOverlaps) {
+    if (entry.overlapCount > bestOverlap) {
+      bestOverlap = entry.overlapCount;
+      bestEntry = entry;
     }
   }
 
-  if (!bestPost || bestOverlap < MIN_KEYWORD_OVERLAP) return null;
+  if (!bestEntry || bestOverlap < MIN_KEYWORD_OVERLAP) return null;
 
+  const bestPost = bestEntry.post;
   const topic = bestPost.title.slice(0, 50) || userCategories[0];
   const angle = `Adapt the trending "${bestPost.title.slice(0, 30)}" angle to your ${userCategories[0]} niche`;
   const hashtags = mergeHashtags(bestPost.hashtags, userCategories, 10);
@@ -526,6 +555,8 @@ function ruleContentGapFill(
   analysis: ContentAnalysisResult | null,
   existingPosts: Post[],
   ts: number,
+  userCategories: string[],
+  postOverlaps: PostOverlapData[],
 ): NextContentSuggestion | null {
   const userRatios = userFormatRatios(existingPosts);
 
@@ -551,18 +582,21 @@ function ruleContentGapFill(
   if (trendingVideos.length === 0) return null;
 
   const refPost = trendingVideos[0];
-  const userCategories = topUserCategories(personaScore);
   const topic = userCategories[0] ?? 'your niche';
   const angle = `Switch to video format for your ${topic} content — trending videos get ${(videoDelta * 100).toFixed(0)}% more share than images in this niche right now`;
 
   const hashtags = mergeHashtags(refPost.hashtags, userCategories, 10);
   const hooks = buildHooks(topic, analysis);
 
+  // Use pre-computed overlap for the reference post
+  const refOverlap = postOverlaps.find((e) => e.post === refPost);
+  const overlapCount = refOverlap ? refOverlap.overlapCount : countOverlap(postKeywords(refPost), userCategories);
+
   const scoring = calculateScoring(
     refPost,
     personaScore,
     analysis,
-    countOverlap(postKeywords(refPost), userCategories),
+    overlapCount,
     personaScore.contentDistribution[topic] ?? 0,
   );
   // Boost gap opportunity: user rarely uses this format
@@ -604,6 +638,8 @@ function ruleViralReplication(
   analysis: ContentAnalysisResult | null,
   existingPosts: Post[],
   ts: number,
+  userCategories: string[],
+  postOverlaps: PostOverlapData[],
 ): NextContentSuggestion | null {
   if (trending.posts.length === 0) return null;
 
@@ -615,14 +651,15 @@ function ruleViralReplication(
   // Only fire when top post is >5x above corpus average
   if (avgEr === 0 || topEr / avgEr < VIRAL_MULTIPLIER) return null;
 
-  const userCategories = topUserCategories(personaScore);
   const topic = userCategories[0] ?? topPost.title.slice(0, 40);
   const angle = `Replicate the hook-and-format pattern of this viral post (${(topEr / avgEr).toFixed(1)}x avg ER) for your ${topic} content`;
 
   const hashtags = mergeHashtags(topPost.hashtags, userCategories, 10);
   const hooks = buildHooks(topic, analysis);
 
-  const overlapCount = countOverlap(postKeywords(topPost), userCategories);
+  // Use pre-computed overlap for the top post
+  const topOverlap = postOverlaps.find((e) => e.post === topPost);
+  const overlapCount = topOverlap ? topOverlap.overlapCount : countOverlap(postKeywords(topPost), userCategories);
   const scoring = calculateScoring(
     topPost,
     personaScore,
@@ -667,8 +704,8 @@ function ruleHashtagRiding(
   analysis: ContentAnalysisResult | null,
   existingPosts: Post[],
   ts: number,
+  userCategories: string[],
 ): NextContentSuggestion | null {
-  const userCategories = topUserCategories(personaScore);
 
   // Filter for rising topics only; prefer those with niche overlap
   const rising = trending.topics.filter((t) => t.trend === 'rising');
@@ -761,12 +798,12 @@ function ruleCrossPlatformTransfer(
   analysis: ContentAnalysisResult | null,
   existingPosts: Post[],
   ts: number,
+  userCategories: string[],
 ): NextContentSuggestion | null {
   if (trending.topics.length === 0) return null;
 
   // Best topic on this platform by heat
   const topTopic = [...trending.topics].sort((a, b) => b.heat - a.heat)[0];
-  const userCategories = topUserCategories(personaScore);
 
   // Check if user already posts about this topic
   const overlapCount = countOverlap(topicKeywords(topTopic), userCategories);
@@ -836,6 +873,7 @@ function ruleAudienceQuestion(
   analysis: ContentAnalysisResult | null,
   existingPosts: Post[],
   ts: number,
+  userCategories: string[],
 ): NextContentSuggestion | null {
   if (!analysis) return null;
 
@@ -850,8 +888,6 @@ function ruleAudienceQuestion(
         : null;
 
   if (!theme) return null;
-
-  const userCategories = topUserCategories(personaScore);
   const topic = theme;
   const angle = `Answer your audience's most common question: "${theme}" — this signals high demand from existing followers`;
 
@@ -931,12 +967,12 @@ function ruleEngagementOptimisation(
   analysis: ContentAnalysisResult | null,
   existingPosts: Post[],
   ts: number,
+  userCategories: string[],
 ): NextContentSuggestion | null {
   if (!analysis) return null;
 
   const { hookPatterns, ctaPatterns, hashtagStrategy } = analysis.copy;
   const avgHashtagCount = hashtagStrategy.avgCount;
-  const userCategories = topUserCategories(personaScore);
 
   // Identify the most impactful optimisation opportunity
   type OpType = 'hook' | 'cta' | 'hashtag';
@@ -1040,6 +1076,10 @@ export function generateNextContent(
   // Use a single stable timestamp per call for deterministic IDs
   const ts = Date.now();
 
+  // Pre-compute shared data once for all rules (Change 1 & 2)
+  const userCategories = topUserCategories(personaScore);
+  const postOverlaps = precomputePostOverlaps(trending.posts, userCategories);
+
   const insufficientData = personaScore.status === 'insufficient_data';
 
   // Run all applicable rules
@@ -1048,20 +1088,20 @@ export function generateNextContent(
         // Only trending-only rules fire when user data is sparse
         null,                                                            // Rule 1 — needs niche
         null,                                                            // Rule 2 — needs format data
-        ruleViralReplication(personaScore, trending, analysis, existingPosts, ts),
-        ruleHashtagRiding(personaScore, trending, analysis, existingPosts, ts),
+        ruleViralReplication(personaScore, trending, analysis, existingPosts, ts, userCategories, postOverlaps),
+        ruleHashtagRiding(personaScore, trending, analysis, existingPosts, ts, userCategories),
         null,                                                            // Rule 5 — needs categories
         null,                                                            // Rule 6 — needs analysis
         null,                                                            // Rule 7 — needs analysis
       ]
     : [
-        ruleNicheMatch(personaScore, trending, analysis, existingPosts, ts),
-        ruleContentGapFill(personaScore, trending, analysis, existingPosts, ts),
-        ruleViralReplication(personaScore, trending, analysis, existingPosts, ts),
-        ruleHashtagRiding(personaScore, trending, analysis, existingPosts, ts),
-        ruleCrossPlatformTransfer(personaScore, trending, analysis, existingPosts, ts),
-        ruleAudienceQuestion(personaScore, trending, analysis, existingPosts, ts),
-        ruleEngagementOptimisation(personaScore, trending, analysis, existingPosts, ts),
+        ruleNicheMatch(personaScore, trending, analysis, existingPosts, ts, userCategories, postOverlaps),
+        ruleContentGapFill(personaScore, trending, analysis, existingPosts, ts, userCategories, postOverlaps),
+        ruleViralReplication(personaScore, trending, analysis, existingPosts, ts, userCategories, postOverlaps),
+        ruleHashtagRiding(personaScore, trending, analysis, existingPosts, ts, userCategories),
+        ruleCrossPlatformTransfer(personaScore, trending, analysis, existingPosts, ts, userCategories),
+        ruleAudienceQuestion(personaScore, trending, analysis, existingPosts, ts, userCategories),
+        ruleEngagementOptimisation(personaScore, trending, analysis, existingPosts, ts, userCategories),
       ];
 
   // Filter nulls, deduplicate by rule slug
@@ -1094,9 +1134,9 @@ export function generateNextContent(
   suggestions.sort((a, b) => b.confidence - a.confidence);
   suggestions.splice(MAX_SUGGESTIONS);
 
-  // Build input summary for the result envelope
+  // Build input summary for the result envelope (reuse cached userCategories)
   const personaTags = personaScore.tags.map((t) => t.label);
-  const topCategories = topUserCategories(personaScore);
+  const topCategories = userCategories;
 
   return {
     suggestions,
