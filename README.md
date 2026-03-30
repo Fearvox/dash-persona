@@ -2,7 +2,7 @@
 
 **Understand your creator persona across Douyin, TikTok, and Red Note — with zero AI.**
 
-[![v0.4.0](https://img.shields.io/badge/version-0.4.0-green.svg)](./CHANGELOG.md)
+[![v0.5.0](https://img.shields.io/badge/version-0.5.0-green.svg)](./CHANGELOG.md)
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](./LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6.svg)](https://www.typescriptlang.org/)
@@ -225,7 +225,7 @@ DashPersona was built across **20+ sessions** using [EverMemOS](https://github.c
 
 This project is a living case study: 11 analysis engines, 7 data adapters, a Chrome extension, and a cinematic landing page — all designed across separate sessions but maintaining consistent interfaces. Architecture decisions made in Session 1 were correctly recalled and enforced in Session 20. Every non-obvious choice is traceable through structured memory.
 
-> **11 analysis engines. 7 data adapters. 15 E2E tests. 189 unit tests. 1 Chrome extension. Zero context lost between sessions.**
+> **11 analysis engines. 7 data adapters. 15 E2E tests. 220 unit tests. 1 Chrome extension. Zero context lost between sessions.**
 
 ---
 
@@ -253,7 +253,9 @@ This project is a living case study: 11 analysis engines, 7 data adapters, a Chr
 - [x] Persistent profile storage (IndexedDB with merge-on-import)
 - [x] Demo/real data separation across all detail pages
 - [x] CLI installation guide for non-technical users
-- [ ] i18n support (Chinese)
+- [x] i18n support (Chinese/English with locale toggle)
+- [x] Textcraft ASCII art engine (fonts, effects, composers, canvas/DOM renderers)
+- [x] Data Portrait page (/portrait) with performance matrix and PNG export
 
 ---
 
