@@ -177,21 +177,22 @@ export class TrayManager {
 
     return Menu.buildFromTemplate([
       {
-        label: this.douyinLoggedIn && this.xhsLoggedIn
-          ? '登录窗口（已登录，已隐藏）'
-          : '打开登录窗口',
+        label: this.douyinLoggedIn
+          ? 'Douyin 已登录 ✓'
+          : '打开 Douyin 登录',
+        enabled: !this.douyinLoggedIn,
         click: () => {
-          void this.browserManager.showLoginWindow();
+          void this.browserManager.showLoginWindow('douyin');
         },
       },
-      { type: 'separator' },
       {
-        label: douyinLabel,
-        enabled: false,
-      },
-      {
-        label: xhsLabel,
-        enabled: false,
+        label: this.xhsLoggedIn
+          ? 'XHS 已登录 ✓'
+          : '打开 XHS 登录',
+        enabled: !this.xhsLoggedIn,
+        click: () => {
+          void this.browserManager.showLoginWindow('xhs');
+        },
       },
       { type: 'separator' },
       {

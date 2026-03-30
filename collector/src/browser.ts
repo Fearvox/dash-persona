@@ -11,7 +11,7 @@ export class BrowserManager {
   private context: BrowserContext | null = null;
   private pages: Map<string, Page> = new Map();
   private status: BrowserStatus = 'standby';
-  private loginWindowPage: Page | null = null;
+  private loginPages: Map<'douyin' | 'xhs', Page> = new Map();
 
   private constructor() {}
 
@@ -107,40 +107,66 @@ export class BrowserManager {
 
     if (platform === 'xhs') {
       return cookies.some(
-        (c) => c.domain.includes('.xiaohongshu.com') && c.name === 'customer-sesi-v1'
+        (c) => c.domain.includes('.xiaohongshu.com') && c.name === 'a1'
       );
     }
 
     return false;
   }
 
-  async showLoginWindow(): Promise<void> {
+  async showLoginWindow(platform?: 'douyin' | 'xhs'): Promise<void> {
     if (!this.context) return;
 
-    const page = await this.context.newPage();
-    await page.goto('https://creator.douyin.com', { waitUntil: 'domcontentloaded' });
-    this.loginWindowPage = page;
+    const targets: Array<{ platform: 'douyin' | 'xhs'; url: string }> = platform
+      ? [{ platform, url: platform === 'douyin' ? 'https://creator.douyin.com' : 'https://www.xiaohongshu.com/user/profile/' }]
+      : [
+          { platform: 'douyin', url: 'https://creator.douyin.com' },
+          { platform: 'xhs', url: 'https://www.xiaohongshu.com/user/profile/' },
+        ];
 
-    page.once('close', () => {
-      if (this.loginWindowPage === page) {
-        this.loginWindowPage = null;
-      }
-    });
+    for (const target of targets) {
+      const existing = this.loginPages.get(target.platform);
+      if (existing && !existing.isClosed()) continue;
+
+      const page = await this.context.newPage();
+      await page.goto(target.url, { waitUntil: 'domcontentloaded' });
+      this.loginPages.set(target.platform, page);
+
+      page.once('close', () => {
+        if (this.loginPages.get(target.platform) === page) {
+          this.loginPages.delete(target.platform);
+        }
+      });
+    }
   }
 
   async checkAndHideLoginWindow(): Promise<void> {
-    if (!this.loginWindowPage) return;
+    if (this.loginPages.size === 0) return;
 
     const [douyin, xhs] = await Promise.all([
       this.isLoggedIn('douyin'),
       this.isLoggedIn('xhs'),
     ]);
 
-    if (douyin && xhs) {
-      const page = this.loginWindowPage;
-      this.loginWindowPage = null;
-      await page.close();
+    const closePromises: Promise<void>[] = [];
+
+    if (douyin) {
+      const page = this.loginPages.get('douyin');
+      if (page && !page.isClosed()) {
+        this.loginPages.delete('douyin');
+        closePromises.push(page.close());
+      }
     }
+
+    if (xhs) {
+      const page = this.loginPages.get('xhs');
+      if (page && !page.isClosed()) {
+        this.loginPages.delete('xhs');
+        closePromises.push(page.close());
+      }
+    }
+
+    await Promise.all(closePromises);
   }
 
   async hideWindow(): Promise<void> {
