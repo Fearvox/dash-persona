@@ -16,9 +16,9 @@ describe('signal-collector', () => {
     expect(Array.isArray(vector.signals)).toBe(true);
   });
 
-  it('produces >= 12 signals from demo data', () => {
+  it('produces >= 13 signals from demo data', () => {
     const vector = collectSignals(profile, score);
-    expect(vector.signals.length).toBeGreaterThanOrEqual(12);
+    expect(vector.signals.length).toBeGreaterThanOrEqual(13);
   });
 
   it('all signals have valid bounds', () => {
@@ -57,5 +57,27 @@ describe('signal-collector', () => {
     const vector = collectSignals(profile, score);
     const aq = vector.signals.find((s) => s.id === 'audienceQuality');
     expect(aq).toBeUndefined();
+  });
+
+  it('all signals have weight field >= 0', () => {
+    const vector = collectSignals(profile, score);
+    for (const signal of vector.signals) {
+      expect(signal.weight).toBeGreaterThanOrEqual(0);
+      expect(typeof signal.weight).toBe('number');
+    }
+  });
+
+  it('douyin profile has higher completionRate weight than default', () => {
+    // Demo profile is douyin — completionRate weight should be 8 (douyin override)
+    const vector = collectSignals(profile, score);
+    const cr = vector.signals.find((s) => s.id === 'completionRate');
+    // completionRate may be absent if no posts have completionRate data
+    if (cr) {
+      expect(cr.weight).toBe(8); // douyin override
+    }
+    // Verify douyin engagementRate uses default (5) since douyin overrides it to 5
+    const er = vector.signals.find((s) => s.id === 'engagementRate');
+    expect(er).toBeDefined();
+    expect(er!.weight).toBe(5);
   });
 });

@@ -280,6 +280,39 @@ export function classifyContent(posts: Post[]): Map<string, number> {
 }
 
 // ---------------------------------------------------------------------------
+// Post quality scoring
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute a 0-1 quality score for a post based on observable signals.
+ * Low-quality posts are down-weighted (not removed) in engagement analysis.
+ */
+function postQualityScore(post: Post): number {
+  let score = 1.0;
+
+  // Text length penalty: very short descriptions suggest low effort
+  const descLen = post.desc?.length ?? 0;
+  if (descLen < 5) score *= 0.3;
+  else if (descLen < 20) score *= 0.7;
+
+  // Zero-engagement penalty: if views > 0 but no engagement at all
+  if (post.views > 100 && post.likes === 0 && post.comments === 0) {
+    score *= 0.5;
+  }
+
+  // Engagement ratio sanity check: impossibly high ratios suggest bot activity
+  if (post.views > 0) {
+    const engRate = (post.likes + post.comments + post.shares) / post.views;
+    if (engRate > 0.5) score *= 0.6; // > 50% engagement rate is suspicious
+  }
+
+  return score;
+}
+
+// Expose for testing
+export { postQualityScore as _postQualityScore };
+
+// ---------------------------------------------------------------------------
 // computeEngagementProfile
 // ---------------------------------------------------------------------------
 
@@ -289,6 +322,8 @@ export function classifyContent(posts: Post[]): Map<string, number> {
  *
  * Engagement rate = (likes + comments + shares + saves) / views.
  * Posts with 0 views are assigned an engagement rate of 0.
+ * Each rate is multiplied by the post's quality score to down-weight
+ * low-quality content without removing it entirely.
  */
 export function computeEngagementProfile(posts: Post[]): EngagementProfile {
   if (posts.length === 0) {
@@ -306,6 +341,7 @@ export function computeEngagementProfile(posts: Post[]): EngagementProfile {
   // Per-post engagement rates — Twitter/Douyin weighted formula
   // Weights reflect signal strength: completion rate > comments > shares > saves > likes
   // Source: Twitter unified-user-actions signal taxonomy + Douyin 完播率 priority
+  // Each rate is multiplied by the post's quality score to down-weight low-quality content.
   const rates = posts.map((p) => {
     if (p.views === 0) return 0;
     const baseEngagement =
@@ -316,7 +352,8 @@ export function computeEngagementProfile(posts: Post[]): EngagementProfile {
     // Douyin-specific signals (when available from extension/xlsx import)
     const completionBonus = (p.completionRate ?? 0) * 8.0 * p.views;
     const retentionBonus = (1 - (p.bounceRate ?? 1)) * 4.0 * p.views;
-    return (baseEngagement + completionBonus + retentionBonus) / p.views;
+    const rawRate = (baseEngagement + completionBonus + retentionBonus) / p.views;
+    return rawRate * postQualityScore(p);
   });
 
   const overallRate = rates.reduce((s, r) => s + r, 0) / rates.length;

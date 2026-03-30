@@ -23,6 +23,7 @@ export interface CreatorSignal {
   rawValue: number;
   normalizedValue: number; // 0-100
   confidence: number; // 0-1
+  weight: number; // platform-specific importance weight (0-10)
   source: string;
 }
 
@@ -70,10 +71,42 @@ function minMaxNormalize(values: number[]): number[] {
 }
 
 // ---------------------------------------------------------------------------
+// Platform-specific signal weights (derived from Twitter UUA patterns)
+// ---------------------------------------------------------------------------
+
+const PLATFORM_WEIGHTS: Record<string, Record<string, number>> = {
+  // Default weights (Twitter UUA baseline)
+  default: {
+    engagementRate: 5, engagementTrend: 4, saveRate: 2, completionRate: 3,
+    postingFrequency: 3, consistencyScore: 4, bestPostingHour: 2,
+    followerGrowthRate: 5, growthMomentum: 4,
+    contentDiversity: 3, topCategoryShare: 3, hookUsageRate: 2, hashtagCoverage: 2, viralPostRatio: 4,
+    audienceQuality: 3,
+    engagementVelocity: 3, freshnessDecay: 2,
+  },
+  // Douyin: completion rate is THE core signal (完播率)
+  douyin: { completionRate: 8, engagementRate: 5, saveRate: 3, viralPostRatio: 6 },
+  // XHS: save/bookmark is unusually strong signal (收藏)
+  xhs: { saveRate: 6, completionRate: 2, hashtagCoverage: 4, contentDiversity: 5 },
+  // TikTok: engagement velocity and virality matter most
+  tiktok: { viralPostRatio: 7, engagementRate: 6, hookUsageRate: 4 },
+};
+
+/**
+ * Resolve the weight for a signal on a given platform.
+ * Merges platform-specific overrides on top of the default baseline.
+ */
+function resolveWeight(platform: string, signalId: string): number {
+  const platformOverrides = PLATFORM_WEIGHTS[platform.toLowerCase()] ?? {};
+  const defaultWeights = PLATFORM_WEIGHTS.default;
+  return platformOverrides[signalId] ?? defaultWeights[signalId] ?? 1;
+}
+
+// ---------------------------------------------------------------------------
 // Signal extractors
 // ---------------------------------------------------------------------------
 
-type RawSignal = Omit<CreatorSignal, 'normalizedValue'>;
+type RawSignal = Omit<CreatorSignal, 'normalizedValue' | 'weight'>;
 
 function extractEngagementSignals(
   profile: CreatorProfile,
@@ -338,10 +371,92 @@ function extractAudienceSignals(profile: CreatorProfile): RawSignal[] {
 }
 
 // ---------------------------------------------------------------------------
+// New derived signals
+// ---------------------------------------------------------------------------
+
+/**
+ * Engagement velocity: what percentage of total engagement came from
+ * the most recent 30% of the posting period. Higher = faster accumulation.
+ */
+function extractEngagementVelocity(profile: CreatorProfile): RawSignal[] {
+  const posts = profile.posts;
+  const dated = posts
+    .filter((p) => p.publishedAt != null)
+    .map((p) => ({
+      ts: new Date(p.publishedAt!).getTime(),
+      engagement: p.likes + p.comments + p.shares + p.saves,
+    }))
+    .filter((p) => Number.isFinite(p.ts))
+    .sort((a, b) => a.ts - b.ts);
+
+  if (dated.length < 3) return [];
+
+  const totalEngagement = dated.reduce((s, p) => s + p.engagement, 0);
+  if (totalEngagement === 0) return [];
+
+  const minTs = dated[0].ts;
+  const maxTs = dated[dated.length - 1].ts;
+  const span = maxTs - minTs;
+  if (span === 0) return [];
+
+  // Engagement from the most recent 30% of the time window
+  const cutoff = maxTs - span * 0.3;
+  const recentEngagement = dated
+    .filter((p) => p.ts >= cutoff)
+    .reduce((s, p) => s + p.engagement, 0);
+
+  const velocity = recentEngagement / totalEngagement; // 0-1
+
+  return [{
+    id: 'engagementVelocity',
+    category: 'content',
+    rawValue: velocity,
+    confidence: clamp(dated.length / 15, 0, 1),
+    source: 'computed: engagement_velocity',
+  }];
+}
+
+/**
+ * Freshness decay: average freshness of posts using exponential decay
+ * with 30-day half-life. Newer content corpus = higher freshness signal.
+ */
+function extractFreshnessDecay(profile: CreatorProfile): RawSignal[] {
+  const posts = profile.posts;
+  if (posts.length === 0) return [];
+
+  const now = new Date(profile.fetchedAt).getTime();
+  const HALF_LIFE_MS = 30 * 86_400_000; // 30 days in ms
+
+  let totalFreshness = 0;
+  let counted = 0;
+
+  for (const p of posts) {
+    const ts = p.publishedAt ? new Date(p.publishedAt).getTime() : undefined;
+    const ageDays = ts && Number.isFinite(ts)
+      ? Math.max(0, (now - ts) / 86_400_000)
+      : 60; // default to 60 days if no timestamp (moderate decay)
+    totalFreshness += Math.pow(0.5, ageDays / 30);
+    counted++;
+  }
+
+  if (counted === 0) return [];
+
+  const avgFreshness = totalFreshness / counted;
+
+  return [{
+    id: 'freshnessDecay',
+    category: 'engagement',
+    rawValue: avgFreshness,
+    confidence: clamp(posts.length / 10, 0, 1),
+    source: 'computed: avg(0.5^(ageDays/30))',
+  }];
+}
+
+// ---------------------------------------------------------------------------
 // Normalisation pass
 // ---------------------------------------------------------------------------
 
-function normalizeSignals(raw: RawSignal[]): CreatorSignal[] {
+function normalizeSignals(raw: RawSignal[], platform: string): CreatorSignal[] {
   // Group by category
   const grouped = new Map<string, RawSignal[]>();
   for (const s of raw) {
@@ -358,6 +473,7 @@ function normalizeSignals(raw: RawSignal[]): CreatorSignal[] {
       result.push({
         ...group[i],
         normalizedValue: Math.round(normalized[i] * 100) / 100,
+        weight: resolveWeight(platform, group[i].id),
       });
     }
   }
@@ -379,15 +495,19 @@ export function collectSignals(
   profile: CreatorProfile,
   score: PersonaScore,
 ): SignalVector {
+  const platform = profile.platform as string;
+
   const raw: RawSignal[] = [
     ...extractEngagementSignals(profile, score),
     ...extractRhythmSignals(profile, score),
     ...extractGrowthSignals(profile, score),
     ...extractContentSignals(profile, score),
     ...extractAudienceSignals(profile),
+    ...extractEngagementVelocity(profile),
+    ...extractFreshnessDecay(profile),
   ];
 
-  const signals = normalizeSignals(raw);
+  const signals = normalizeSignals(raw, platform);
 
   // Sort alphabetically by category, then by id
   signals.sort((a, b) => {
