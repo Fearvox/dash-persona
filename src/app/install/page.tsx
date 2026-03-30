@@ -3,11 +3,9 @@ import Link from 'next/link';
 import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: '安装指南 — DashPersona',
-  description: '使用 DASH Collector 桌面应用采集创作者中心数据',
+  title: 'Install Guide — DashPersona',
+  description: 'Use the DASH Collector desktop app to collect real creator center data.',
 };
-// Note: metadata strings are hardcoded Chinese as they are static server-side metadata
-// and cannot use the runtime t() function
 
 /* ── Local helper components ────────────────────────────── */
 
