@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
   title: '安装指南 — DashPersona',
-  description: 'DashPersona CLI 安装教程 — 获取完整数据分析功能',
+  description: '使用 DASH Collector 桌面应用采集创作者中心数据',
 };
 // Note: metadata strings are hardcoded Chinese as they are static server-side metadata
 // and cannot use the runtime t() function
@@ -190,109 +189,65 @@ export default function InstallPage() {
         </div>
       </section>
 
-      {/* ── 5-step guide ── */}
-      <section aria-labelledby="steps-heading">
-        <h2 id="steps-heading" className="kicker mb-4">
-          {t('ui.install.stepsHeading')}
+      {/* ── Recommended: DASH Collector (3 steps) ── */}
+      <section aria-labelledby="recommended-heading">
+        <h2 id="recommended-heading" className="kicker mb-1">
+          {t('ui.install.recommendedHeading')}
         </h2>
+        <p className="mb-4 text-xs" style={{ color: 'var(--text-subtle)' }}>
+          {t('ui.install.recommendedDesc')}
+        </p>
         <div className="flex flex-col gap-4">
-          {/* Step 1 */}
+          {/* Step 1 — Download */}
           <StepCard step={1} title={t('ui.install.step1Title')}>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {t('ui.install.step1Desc')}
             </p>
-            <a
-              href="https://nodejs.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-medium transition-colors hover:opacity-80"
-              style={{ color: 'var(--accent-green)' }}
-            >
-              nodejs.org &rarr;
-            </a>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {t('ui.install.step1VerifyDesc')}
-            </p>
-            <CommandBlock command="node --version" />
-            <Image
-              src="/screenshots/install-node-version.png"
-              alt={t('ui.install.step1ImgAlt')}
-              width={720}
-              height={90}
-              className="rounded-lg"
-              style={{ border: '1px solid var(--border-subtle)' }}
-            />
+            <div className="flex flex-wrap gap-2">
+              <span
+                className="inline-flex items-center rounded-lg px-4 py-2 text-xs font-medium"
+                style={{
+                  background: 'rgba(126, 210, 154, 0.1)',
+                  color: 'var(--accent-green)',
+                  border: '1px solid rgba(126, 210, 154, 0.2)',
+                }}
+              >
+                {t('ui.install.step1DownloadMac')}
+              </span>
+              <span
+                className="inline-flex items-center rounded-lg px-4 py-2 text-xs font-medium"
+                style={{
+                  background: 'rgba(126, 184, 210, 0.1)',
+                  color: 'var(--accent-blue)',
+                  border: '1px solid rgba(126, 184, 210, 0.2)',
+                }}
+              >
+                {t('ui.install.step1DownloadWin')}
+              </span>
+              <span
+                className="inline-flex items-center rounded-lg px-4 py-2 text-xs font-medium"
+                style={{
+                  background: 'rgba(210, 200, 126, 0.1)',
+                  color: 'var(--accent-yellow)',
+                  border: '1px solid rgba(210, 200, 126, 0.2)',
+                }}
+              >
+                {t('ui.install.step1DownloadLinux')}
+              </span>
+            </div>
           </StepCard>
 
-          {/* Step 2 */}
+          {/* Step 2 — Launch & Login */}
           <StepCard step={2} title={t('ui.install.step2Title')}>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {t('ui.install.step2Desc')}
             </p>
-            <CommandBlock command="npm install -g @anthropic-ai/claude-code" />
-            <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-              {t('ui.install.step2VerifyPre')} <code
-                className="rounded px-1.5 py-0.5 text-xs"
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-secondary)',
-                }}
-              >claude --version</code> {t('ui.install.step2VerifyPost')}
-            </p>
           </StepCard>
 
-          {/* Step 3 */}
+          {/* Step 3 — Collect */}
           <StepCard step={3} title={t('ui.install.step3Title')}>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {t('ui.install.step3Desc')}
-            </p>
-            <CommandBlock command="claude skill install --global github.com/eze-is/web-access" />
-          </StepCard>
-
-          {/* Step 4 */}
-          <StepCard step={4} title={t('ui.install.step4Title')}>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              {t('ui.install.step4Desc')}
-            </p>
-            <ol
-              className="flex flex-col gap-2 text-sm leading-relaxed"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              <li className="flex gap-2">
-                <span className="shrink-0" style={{ color: 'var(--text-subtle)' }}>1.</span>
-                <span>{t('ui.install.step4Sub1Pre')} <code
-                  className="rounded px-1.5 py-0.5 text-xs"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    background: 'var(--bg-secondary)',
-                    color: 'var(--text-secondary)',
-                  }}
-                >chrome://inspect/#remote-debugging</code></span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0" style={{ color: 'var(--text-subtle)' }}>2.</span>
-                <span>{t('ui.install.step4Sub2Pre')} <strong style={{ color: 'var(--text-primary)' }}>&quot;Allow remote debugging for this browser instance&quot;</strong> {t('ui.install.step4Sub2Post')}</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0" style={{ color: 'var(--text-subtle)' }}>3.</span>
-                <span>{t('ui.install.step4Sub3')}</span>
-              </li>
-            </ol>
-            <Image
-              src="/screenshots/install-chrome-debugging.png"
-              alt={t('ui.install.step4ImgAlt')}
-              width={720}
-              height={480}
-              className="rounded-lg"
-              style={{ border: '1px solid var(--border-subtle)' }}
-            />
-          </StepCard>
-
-          {/* Step 5 */}
-          <StepCard step={5} title={t('ui.install.step5Title')}>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              {t('ui.install.step5Desc')}
             </p>
             <Link
               href="/onboarding"
@@ -302,10 +257,74 @@ export default function InstallPage() {
                 color: 'var(--bg-primary)',
               }}
             >
-              {t('ui.install.step5Cta')} &rarr;
+              {t('ui.install.step3Cta')} &rarr;
             </Link>
           </StepCard>
         </div>
+      </section>
+
+      {/* ── CLI fallback (collapsible) ── */}
+      <section aria-labelledby="cli-heading">
+        <h2 id="cli-heading" className="kicker mb-1">
+          {t('ui.install.cliHeading')}
+        </h2>
+        <p className="mb-4 text-xs" style={{ color: 'var(--text-subtle)' }}>
+          {t('ui.install.cliDesc')}
+        </p>
+        <details
+          className="card"
+          style={{ border: '1px solid var(--border-subtle)' }}
+        >
+          <summary
+            className="cursor-pointer px-5 py-4 text-sm font-medium"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            {t('ui.install.cliToggle')}
+          </summary>
+          <div className="flex flex-col gap-4 px-5 pb-5">
+            {/* CLI Step 1 */}
+            <div>
+              <h4 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                1. {t('ui.install.cliStep1Title')}
+              </h4>
+              <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {t('ui.install.cliStep1Desc')}
+              </p>
+            </div>
+
+            {/* CLI Step 2 */}
+            <div>
+              <h4 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                2. {t('ui.install.cliStep2Title')}
+              </h4>
+              <p className="mt-1 mb-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {t('ui.install.cliStep2Desc')}
+              </p>
+              <CommandBlock command="npm install -g @anthropic-ai/claude-code" />
+            </div>
+
+            {/* CLI Step 3 */}
+            <div>
+              <h4 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                3. {t('ui.install.cliStep3Title')}
+              </h4>
+              <p className="mt-1 mb-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {t('ui.install.cliStep3Desc')}
+              </p>
+              <CommandBlock command="claude skill install --global github.com/eze-is/web-access" />
+            </div>
+
+            {/* CLI Step 4 */}
+            <div>
+              <h4 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                4. {t('ui.install.cliStep4Title')}
+              </h4>
+              <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {t('ui.install.cliStep4Desc')}
+              </p>
+            </div>
+          </div>
+        </details>
       </section>
 
       {/* ── Troubleshooting FAQ ── */}

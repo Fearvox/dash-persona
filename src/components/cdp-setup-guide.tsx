@@ -295,6 +295,26 @@ function TroubleshootSection({ title, items }: { title: string; items: string[] 
 function SetupInstructions({ onRecheck, isChecking }: { onRecheck: () => void; isChecking: boolean }) {
   return (
     <div className="flex flex-col gap-5">
+      {/* Recommend DASH Collector */}
+      <div className="rounded-lg border border-[rgba(126,210,154,0.2)] bg-[rgba(126,210,154,0.06)] px-4 py-4">
+        <p className="text-xs font-semibold text-[var(--accent-green)]">
+          {t('ui.components.cdpCollectorRecommend')}
+        </p>
+        <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
+          {t('ui.components.cdpCollectorRecommendDesc')}
+        </p>
+        <a
+          href="/install"
+          className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[var(--accent-green)] transition-colors hover:opacity-80"
+        >
+          {t('ui.components.cdpCollectorRecommendLink')} &rarr;
+        </a>
+      </div>
+
+      <p className="text-xs text-[var(--text-subtle)]">
+        {t('ui.components.cdpManualSetupTitle')}
+      </p>
+
       <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-subtle)]">
           {t('ui.components.cdpStep1Header')}
