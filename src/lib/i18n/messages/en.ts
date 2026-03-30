@@ -35,6 +35,7 @@ const en: Record<string, string> = {
   'ui.common.launchDashboard': 'Launch Dashboard',
   'ui.common.goToOnboarding': 'Go to Onboarding',
   'ui.common.insufficientData': 'Insufficient data',
+  'ui.common.importMoreData': 'Import More Data',
 
   // ===========================================================================
   // Platform labels

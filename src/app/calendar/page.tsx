@@ -91,6 +91,17 @@ export default async function CalendarPage({
         >
           {t('ui.calendar.keepPublishing')}
         </p>
+        <Link
+          href="/onboarding"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-md border px-4 py-2 text-xs font-medium transition-colors hover:opacity-80"
+          style={{
+            borderColor: 'var(--accent-green)',
+            color: 'var(--accent-green)',
+            background: 'transparent',
+          }}
+        >
+          {t('ui.common.importMoreData')}
+        </Link>
       </div>
     );
   }

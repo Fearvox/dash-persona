@@ -35,6 +35,7 @@ const zh: Record<string, string> = {
   'ui.common.launchDashboard': '启动仪表盘',
   'ui.common.goToOnboarding': '前往引导',
   'ui.common.insufficientData': '数据不足',
+  'ui.common.importMoreData': '导入更多数据',
 
   // ===========================================================================
   // 平台标签
