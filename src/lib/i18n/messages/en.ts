@@ -940,6 +940,34 @@ const en: Record<string, string> = {
   'ui.portrait.exported': 'PNG saved',
   'ui.portrait.noData': 'Import creator data first',
   'ui.portrait.hover': 'Hover a metric for details',
+
+  // ===========================================================================
+  // Global error & not-found pages
+  // ===========================================================================
+  'ui.error.title': 'Something went wrong',
+  'ui.error.description': 'An unexpected error occurred. You can try again or head back to the home page.',
+  'ui.error.tryAgain': 'Try again',
+  'ui.error.backHome': 'Back to home',
+  'ui.notFound.title': 'Page not found',
+  'ui.notFound.description': 'The page you are looking for does not exist or has been moved.',
+  'ui.notFound.backHome': 'Back to home',
+  'ui.notFound.tryDemo': 'Try the demo',
+
+  // ===========================================================================
+  // Layout & accessibility
+  // ===========================================================================
+  'ui.a11y.skipToContent': 'Skip to main content',
+  'ui.a11y.toggleToEnglish': 'Switch to English',
+  'ui.a11y.toggleToChinese': 'Switch to Chinese',
+  'ui.a11y.loadingPipeline': 'Loading pipeline visualization',
+
+  // ===========================================================================
+  // Pipeline skeleton labels
+  // ===========================================================================
+  'ui.pipeline.dataSources': 'Data Sources',
+  'ui.pipeline.adapters': 'Adapters',
+  'ui.pipeline.analysisEngine': 'Analysis Engine',
+  'ui.pipeline.outputViews': 'Output Views',
 };
 
 export default en;

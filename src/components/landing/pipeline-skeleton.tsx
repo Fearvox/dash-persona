@@ -2,11 +2,13 @@
 // Pipeline Skeleton — static loading placeholder
 // ---------------------------------------------------------------------------
 
-const ROWS: ReadonlyArray<{ label: string; count: number; grid?: boolean }> = [
-  { label: 'Data Sources', count: 4 },
-  { label: 'Adapters', count: 3 },
-  { label: 'Analysis Engine', count: 9, grid: true },
-  { label: 'Output Views', count: 5 },
+import { t } from '@/lib/i18n';
+
+const ROWS: ReadonlyArray<{ key: string; count: number; grid?: boolean }> = [
+  { key: 'ui.pipeline.dataSources', count: 4 },
+  { key: 'ui.pipeline.adapters', count: 3 },
+  { key: 'ui.pipeline.analysisEngine', count: 9, grid: true },
+  { key: 'ui.pipeline.outputViews', count: 5 },
 ];
 
 const BOX_W = 140;
@@ -24,16 +26,16 @@ export default function PipelineSkeleton() {
         padding: '32px 16px',
       }}
       aria-busy="true"
-      aria-label="Loading pipeline visualization"
+      aria-label={t('ui.a11y.loadingPipeline')}
     >
       {ROWS.map((row, rowIdx) => (
-        <div key={row.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+        <div key={row.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           {/* Kicker label */}
           <span
             className="kicker"
             style={{ marginBottom: 4 }}
           >
-            {row.label}
+            {t(row.key)}
           </span>
 
           {/* Connecting lines from previous row */}

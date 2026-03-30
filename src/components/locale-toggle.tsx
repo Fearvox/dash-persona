@@ -26,6 +26,7 @@ export function LocaleToggle() {
         color: 'var(--text-subtle)',
         border: '1px solid var(--border-subtle)',
       }}
+      aria-label={locale === 'zh' ? 'Switch to English' : '切换为中文'}
     >
       {locale === 'zh' ? 'EN' : '中文'}
     </button>

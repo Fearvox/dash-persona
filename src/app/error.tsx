@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 
 export default function GlobalError({
   error,
@@ -15,14 +16,13 @@ export default function GlobalError({
         className="text-2xl font-bold tracking-tight sm:text-3xl"
         style={{ color: 'var(--text-primary)' }}
       >
-        Something went wrong
+        {t('ui.error.title')}
       </h1>
       <p
         className="max-w-md text-sm leading-6"
         style={{ color: 'var(--text-secondary)' }}
       >
-        An unexpected error occurred. You can try again or head back to the home
-        page.
+        {t('ui.error.description')}
       </p>
       <div className="flex items-center gap-4">
         <button
@@ -34,14 +34,14 @@ export default function GlobalError({
             color: 'var(--bg-primary)',
           }}
         >
-          Try again
+          {t('ui.error.tryAgain')}
         </button>
         <Link
           href="/"
           className="text-sm font-medium transition-colors hover:opacity-80"
           style={{ color: 'var(--text-subtle)' }}
         >
-          Back to home
+          {t('ui.error.backHome')}
         </Link>
       </div>
     </div>
