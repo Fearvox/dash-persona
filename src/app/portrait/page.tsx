@@ -85,15 +85,15 @@ function colorForValue(value: number): string {
 function deriveMetrics(profile: CreatorProfile): PortraitMetric[] {
   const score = computePersonaScore(profile);
   const overall = overallScore(score) / 100;
-  const eng = Math.min(score.engagement.overallRate * 5, 1);
-  const rhythm = score.rhythm.consistencyScore / 100;
-  const consist = score.consistency.score / 100;
+  const eng = Math.min((score.engagement?.overallRate ?? 0) * 5, 1);
+  const rhythm = (score.rhythm?.consistencyScore ?? 0) / 100;
+  const consist = (score.consistency?.score ?? 0) / 100;
   const growth =
-    score.growthHealth.momentum === 'accelerating'
+    score.growthHealth?.momentum === 'accelerating'
       ? 0.8
-      : score.growthHealth.momentum === 'steady'
+      : score.growthHealth?.momentum === 'steady'
         ? 0.6
-        : score.growthHealth.momentum === 'decelerating'
+        : score.growthHealth?.momentum === 'decelerating'
           ? 0.3
           : 0;
 

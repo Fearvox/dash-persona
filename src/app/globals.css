@@ -138,7 +138,13 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   line-height: 1;
   letter-spacing: 0;
   font-variant-ligatures: none;
+  font-feature-settings: "tnum" 1, "calt" 0;
   white-space: pre;
+  /* CJK: Ideographic characters use exactly 2 columns in monospace.
+     east-asian-width:wide glyphs already occupy 2em by default in Geist Mono;
+     these properties ensure consistent inter-character spacing. */
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 
 /* ── Modal backdrop ── */
