@@ -135,6 +135,7 @@ export class TrayManager {
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
   private douyinLoggedIn = false;
   private xhsLoggedIn = false;
+  private lastError: string | null = null;
 
   constructor(browserManager: BrowserManager) {
     this.browserManager = browserManager;
@@ -153,11 +154,35 @@ export class TrayManager {
 
     this.tray.setContextMenu(this.buildMenu());
 
+    // Listen for browser status changes (e.g. crash)
+    this.browserManager.setStatusChangeCallback((status, error) => {
+      this.updateStatus(status);
+      if (status === 'error' && error) {
+        this.setLastError(error);
+      }
+    });
+
     // Start periodic login status refresh
     this.refreshLoginStatus();
     this.refreshTimer = setInterval(() => {
       this.refreshLoginStatus();
     }, REFRESH_INTERVAL_MS);
+  }
+
+  setLastError(message: string): void {
+    this.lastError = message;
+    if (this.tray) {
+      this.tray.setContextMenu(this.buildMenu());
+    }
+  }
+
+  clearLastError(): void {
+    if (this.lastError) {
+      this.lastError = null;
+      if (this.tray) {
+        this.tray.setContextMenu(this.buildMenu());
+      }
+    }
   }
 
   updateStatus(status: BrowserStatus): void {
@@ -194,6 +219,12 @@ export class TrayManager {
           void this.browserManager.showLoginWindow('xhs');
         },
       },
+      ...(this.lastError
+        ? [
+            { type: 'separator' as const },
+            { label: `⚠ ${this.lastError}`, enabled: false },
+          ]
+        : []),
       { type: 'separator' },
       {
         label: '开机自启动',
@@ -230,6 +261,7 @@ export class TrayManager {
     // Derive tray icon status from login state
     if (douyin || xhs) {
       this.updateStatus('active');
+      this.clearLastError();
     } else if (this.browserManager.isReady()) {
       this.updateStatus('standby');
     } else {

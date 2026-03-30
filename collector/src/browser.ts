@@ -5,6 +5,8 @@ import crypto from 'crypto';
 
 export type BrowserStatus = 'active' | 'standby' | 'error';
 
+export type StatusChangeCallback = (status: BrowserStatus, error?: string) => void;
+
 export class BrowserManager {
   private static instance: BrowserManager;
 
@@ -12,6 +14,7 @@ export class BrowserManager {
   private pages: Map<string, Page> = new Map();
   private status: BrowserStatus = 'standby';
   private loginPages: Map<'douyin' | 'xhs', Page> = new Map();
+  private onStatusChange: StatusChangeCallback | null = null;
 
   private constructor() {}
 
@@ -20,6 +23,19 @@ export class BrowserManager {
       BrowserManager.instance = new BrowserManager();
     }
     return BrowserManager.instance;
+  }
+
+  setStatusChangeCallback(cb: StatusChangeCallback): void {
+    this.onStatusChange = cb;
+  }
+
+  getStatus(): BrowserStatus {
+    return this.status;
+  }
+
+  private setStatus(status: BrowserStatus, error?: string): void {
+    this.status = status;
+    this.onStatusChange?.(status, error);
   }
 
   // ── Lifecycle ──────────────────────────────────────────────
@@ -37,7 +53,12 @@ export class BrowserManager {
       args: ['--no-sandbox'],
     });
 
-    this.status = 'active';
+    this.context.on('close', () => {
+      this.context = null;
+      this.setStatus('error', 'Browser context closed unexpectedly');
+    });
+
+    this.setStatus('active');
   }
 
   async shutdown(): Promise<void> {
@@ -52,7 +73,7 @@ export class BrowserManager {
       this.context = null;
     }
 
-    this.status = 'standby';
+    this.setStatus('standby');
   }
 
   isReady(): boolean {

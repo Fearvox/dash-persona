@@ -1,6 +1,32 @@
-import express, { type Request, type Response } from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import http from 'http';
 import { BrowserManager } from './browser';
+
+// ---------------------------------------------------------------------------
+// Error classification
+// ---------------------------------------------------------------------------
+
+interface CollectorError {
+  error: string;
+  code: string;
+}
+
+const REQUEST_TIMEOUT_MS = 30_000;
+
+function classifyError(err: unknown): CollectorError {
+  const message = err instanceof Error ? err.message : String(err);
+
+  if (/target closed|target page, context or browser has been closed/i.test(message)) {
+    return { error: 'Page was closed or navigated away', code: 'TARGET_CLOSED' };
+  }
+  if (/timeout/i.test(message)) {
+    return { error: 'Navigation timed out', code: 'TIMEOUT' };
+  }
+  if (/browser.*not initialized|not ready/i.test(message)) {
+    return { error: 'Browser is not running', code: 'BROWSER_NOT_READY' };
+  }
+  return { error: message, code: 'INTERNAL_ERROR' };
+}
 
 // ---------------------------------------------------------------------------
 // Express app factory
@@ -11,6 +37,17 @@ export function createServer(browserManager: BrowserManager): express.Express {
 
   // Parse text/plain bodies (cdp-adapter sends JS code and selectors this way)
   app.use(express.text({ type: '*/*' }));
+
+  // Request timeout middleware — abort if handler takes >30s
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    const timer = setTimeout(() => {
+      if (!res.headersSent) {
+        res.status(504).json({ error: 'Request timed out', code: 'REQUEST_TIMEOUT' });
+      }
+    }, REQUEST_TIMEOUT_MS);
+    res.on('finish', () => clearTimeout(timer));
+    next();
+  });
 
   // ── GET /health ──────────────────────────────────────────────
 
@@ -34,7 +71,8 @@ export function createServer(browserManager: BrowserManager): express.Express {
       const { targetId } = await browserManager.newPage(url);
       res.json({ targetId });
     } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+      const classified = classifyError(err);
+      res.status(500).json(classified);
     }
   });
 
@@ -63,7 +101,8 @@ export function createServer(browserManager: BrowserManager): express.Express {
       const value = await page.evaluate(code);
       res.json({ value });
     } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+      const classified = classifyError(err);
+      res.status(500).json(classified);
     }
   });
 
@@ -93,7 +132,8 @@ export function createServer(browserManager: BrowserManager): express.Express {
       await page.click(selector);
       res.json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+      const classified = classifyError(err);
+      res.status(500).json(classified);
     }
   });
 
@@ -124,7 +164,8 @@ export function createServer(browserManager: BrowserManager): express.Express {
       }
       res.json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+      const classified = classifyError(err);
+      res.status(500).json(classified);
     }
   });
 
@@ -152,7 +193,8 @@ export function createServer(browserManager: BrowserManager): express.Express {
       await page.goto(url, { waitUntil: 'domcontentloaded' });
       res.json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+      const classified = classifyError(err);
+      res.status(500).json(classified);
     }
   });
 
@@ -169,7 +211,8 @@ export function createServer(browserManager: BrowserManager): express.Express {
       await browserManager.closePage(targetId);
       res.json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+      const classified = classifyError(err);
+      res.status(500).json(classified);
     }
   });
 
