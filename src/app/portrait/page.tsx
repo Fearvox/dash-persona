@@ -16,6 +16,61 @@ import { loadProfiles } from '@/lib/store/profile-store';
 import { computePersonaScore, overallScore, generatePersonaTags } from '@/lib/engine';
 
 // ---------------------------------------------------------------------------
+// CJK-aware monospace width helpers
+// ---------------------------------------------------------------------------
+
+/** Returns the visual column width of a character in a monospace font.
+ *  CJK Unified Ideographs, Fullwidth Forms, etc. occupy 2 columns. */
+function charWidth(code: number): number {
+  // CJK Unified Ideographs
+  if (code >= 0x4e00 && code <= 0x9fff) return 2;
+  // CJK Unified Ideographs Extension A
+  if (code >= 0x3400 && code <= 0x4dbf) return 2;
+  // CJK Compatibility Ideographs
+  if (code >= 0xf900 && code <= 0xfaff) return 2;
+  // CJK Unified Ideographs Extension B-F (surrogate pairs handled via codePointAt)
+  if (code >= 0x20000 && code <= 0x2fa1f) return 2;
+  // Fullwidth Forms
+  if (code >= 0xff01 && code <= 0xff60) return 2;
+  if (code >= 0xffe0 && code <= 0xffe6) return 2;
+  // Hangul Syllables
+  if (code >= 0xac00 && code <= 0xd7af) return 2;
+  // CJK Symbols and Punctuation / Hiragana / Katakana / Bopomofo
+  if (code >= 0x3000 && code <= 0x33ff) return 2;
+  // Enclosed CJK Letters
+  if (code >= 0x3200 && code <= 0x32ff) return 2;
+  return 1;
+}
+
+/** Visual column width of a string in a monospace context. */
+function strWidth(s: string): number {
+  let w = 0;
+  for (const ch of s) {
+    w += charWidth(ch.codePointAt(0)!);
+  }
+  return w;
+}
+
+/** Slice a string to fit within `maxCols` visual columns. */
+function sliceCols(s: string, maxCols: number): string {
+  let w = 0;
+  let i = 0;
+  for (const ch of s) {
+    const cw = charWidth(ch.codePointAt(0)!);
+    if (w + cw > maxCols) break;
+    w += cw;
+    i += ch.length; // handle surrogate pairs
+  }
+  return s.slice(0, i);
+}
+
+/** Pad a string to exactly `cols` visual columns with spaces. */
+function padEndCols(s: string, cols: number): string {
+  const w = strWidth(s);
+  return w >= cols ? s : s + ' '.repeat(cols - w);
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -209,15 +264,15 @@ export default function PortraitPage() {
           borderColor: 'var(--border-subtle)',
         }}
       >
-        {/* Identity Box — all ASCII, no CJK inside box to avoid width mismatch */}
+        {/* Identity Box — CJK-aware column alignment */}
         <pre className="text-sm leading-snug" style={{ color: 'var(--accent-green)' }}>
 {`\u250F\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513
 \u2503  CREATOR ID                 \u2503
 \u2523\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u252B
-\u2503  \u2588\u2588 ${nickname.slice(0, 22).padEnd(22)} \u2503
-\u2503                             \u2503
-\u2503  \u25B8 ${platform.padEnd(24)}\u2503
-\u2503  \u25B8 ${window.padEnd(24)}\u2503
+\u2503  \u2588\u2588 ${padEndCols(sliceCols(nickname, 22), 22)} \u2503
+\u2503${' '.repeat(28)}\u2503
+\u2503  \u25B8 ${padEndCols(platform, 24)}\u2503
+\u2503  \u25B8 ${padEndCols(window, 24)}\u2503
 \u2517\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u251B`}
         </pre>
 
@@ -230,14 +285,20 @@ export default function PortraitPage() {
             >
               {(() => {
                 const tagCells = tags.map((tag) => ` ${tag} `);
+                const widths = tagCells.map((c) => strWidth(c));
                 const top =
                   '\u250C' +
-                  tagCells.map((c) => '\u2500'.repeat(c.length)).join('\u252C') +
+                  widths.map((w) => '\u2500'.repeat(w)).join('\u252C') +
                   '\u2510';
-                const mid = '\u2502' + tagCells.join('\u2502') + '\u2502';
+                const mid =
+                  '\u2502' +
+                  tagCells
+                    .map((c, i) => padEndCols(c, widths[i]))
+                    .join('\u2502') +
+                  '\u2502';
                 const bot =
                   '\u2514' +
-                  tagCells.map((c) => '\u2500'.repeat(c.length)).join('\u2534') +
+                  widths.map((w) => '\u2500'.repeat(w)).join('\u2534') +
                   '\u2518';
                 return `${top}\n${mid}\n${bot}`;
               })()}
