@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
   explainPersonaScore,
   explainGrowthDelta,
@@ -12,6 +12,10 @@ import type { Post } from '../../schema/creator-data';
 import type { PersonaTreeNode } from '../../schema/persona-tree';
 import type { GrowthDelta, MetricDelta } from '../growth';
 import type { NodeScoring } from '../../schema/persona-tree';
+import { setLocale } from '@/lib/i18n';
+
+beforeAll(() => setLocale('en'));
+afterAll(() => setLocale('zh'));
 
 // ---------------------------------------------------------------------------
 // Helper: create a minimal post
