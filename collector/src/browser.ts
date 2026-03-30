@@ -11,6 +11,7 @@ export class BrowserManager {
   private context: BrowserContext | null = null;
   private pages: Map<string, Page> = new Map();
   private status: BrowserStatus = 'standby';
+  private loginWindowPage: Page | null = null;
 
   private constructor() {}
 
@@ -118,6 +119,28 @@ export class BrowserManager {
 
     const page = await this.context.newPage();
     await page.goto('https://creator.douyin.com', { waitUntil: 'domcontentloaded' });
+    this.loginWindowPage = page;
+
+    page.once('close', () => {
+      if (this.loginWindowPage === page) {
+        this.loginWindowPage = null;
+      }
+    });
+  }
+
+  async checkAndHideLoginWindow(): Promise<void> {
+    if (!this.loginWindowPage) return;
+
+    const [douyin, xhs] = await Promise.all([
+      this.isLoggedIn('douyin'),
+      this.isLoggedIn('xhs'),
+    ]);
+
+    if (douyin && xhs) {
+      const page = this.loginWindowPage;
+      this.loginWindowPage = null;
+      await page.close();
+    }
   }
 
   async hideWindow(): Promise<void> {

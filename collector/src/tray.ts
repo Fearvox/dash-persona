@@ -177,7 +177,9 @@ export class TrayManager {
 
     return Menu.buildFromTemplate([
       {
-        label: '打开登录窗口',
+        label: this.douyinLoggedIn && this.xhsLoggedIn
+          ? '登录窗口（已登录，已隐藏）'
+          : '打开登录窗口',
         click: () => {
           void this.browserManager.showLoginWindow();
         },
@@ -218,6 +220,11 @@ export class TrayManager {
 
     this.douyinLoggedIn = douyin;
     this.xhsLoggedIn = xhs;
+
+    // Auto-hide login window once both platforms are logged in
+    if (douyin && xhs) {
+      await this.browserManager.checkAndHideLoginWindow();
+    }
 
     // Derive tray icon status from login state
     if (douyin || xhs) {
