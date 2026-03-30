@@ -29,7 +29,7 @@ const zh: Record<string, string> = {
   'ui.common.tip': '提示',
   'ui.common.posts': '作品',
   'ui.common.followers': '粉丝',
-  'ui.common.version': 'v0.6.0',
+  'ui.common.version': 'v0.6.1',
   'ui.common.poweredBy': '技术支持',
   'ui.common.customDigitalSystems': '定制数字系统',
   'ui.common.launchDashboard': '启动仪表盘',
