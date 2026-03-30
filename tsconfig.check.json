@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@chenglou/pretext": ["./src/lib/textcraft/core/pretext-stub.d.ts"]
+    }
+  }
+}

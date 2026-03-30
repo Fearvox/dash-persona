@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import SiteFooter from "@/components/site-footer";
 import ToastContainer from "@/components/ui/toast";
+import { LocaleInitializer } from "@/components/locale-initializer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://dash-persona.vercel.app'),
   title: "DashPersona — 创作者智能引擎",
   description:
     "数据驱动的创作者智能引擎。通过确定性、零 AI 算法分析你在抖音、TikTok 和小红书上的社媒表现。",
@@ -56,9 +58,11 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <main id="main-content" className="flex-1">{children}</main>
-        <SiteFooter />
-        <ToastContainer />
+        <LocaleInitializer>
+          <main id="main-content" className="flex-1">{children}</main>
+          <SiteFooter />
+          <ToastContainer />
+        </LocaleInitializer>
       </body>
     </html>
   );

@@ -1,7 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { compareToBenchmark, compareToBenchmarkByNiche } from '../benchmark';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import { generateBenchmarkProfiles } from '../benchmark-data';
+import { setLocale } from '@/lib/i18n';
+
+beforeAll(() => setLocale('en'));
+afterAll(() => setLocale('zh'));
 
 // ---------------------------------------------------------------------------
 // compareToBenchmark (existing behaviour)

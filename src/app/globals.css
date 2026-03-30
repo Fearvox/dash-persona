@@ -131,6 +131,16 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   transform: translateY(1px) scale(0.98);
 }
 
+/* ── Portrait monospace container ── */
+.portrait-mono,
+.portrait-mono pre {
+  font-family: var(--font-mono);
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-ligatures: none;
+  white-space: pre;
+}
+
 /* ── Modal backdrop ── */
 .modal-backdrop {
   position: fixed;
@@ -220,6 +230,19 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.15; }
 }
+
+/* ── Textcraft decoration animations ── */
+@keyframes breathe {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes pulse-strong {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.ascii-glow { text-shadow: 0 0 12px rgba(126, 210, 154, 0.25); }
 
 /* ── Staggered fade-in on mount ── */
 .animate-stagger {

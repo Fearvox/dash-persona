@@ -9,46 +9,19 @@
  *  - CTA buttons: "Try Demo" (primary) + "Get Started" (outline)
  *  - Scroll-down indicator with pulse
  *
- * Uses 3-tier device detection to scale element count.
  */
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import CodeArtBackground from './code-art-background';
-import { detectDeviceTier, TIER_CONFIG } from '@/lib/pipeline/device-tier';
 import { t } from '@/lib/i18n';
-
-/** Mulberry32 PRNG — produces a deterministic count from min/max range */
-function mulberry32(seed: number): () => number {
-  let s = seed | 0;
-  return () => {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { LocaleToggle } from '@/components/locale-toggle';
 
 export default function BootSequence() {
-  // SSR default: mid tier range, pick a deterministic count
-  const midConfig = TIER_CONFIG.mid;
-  const defaultCount = Math.round(
-    midConfig.minElements + (midConfig.maxElements - midConfig.minElements) * mulberry32(42)(),
-  );
-
-  const [elementCount, setElementCount] = useState(defaultCount);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const tier = detectDeviceTier();
-    const config = TIER_CONFIG[tier];
-    // Deterministic count within tier range using same seed
-    const rand = mulberry32(42);
-    const count = Math.round(
-      config.minElements + (config.maxElements - config.minElements) * rand(),
-    );
-    setElementCount(count);
     setMounted(true);
   }, []);
 
@@ -60,7 +33,7 @@ export default function BootSequence() {
     >
       {/* Layer 0: Code art background */}
       <div className="absolute inset-0 z-0">
-        <CodeArtBackground count={elementCount} />
+        <CodeArtBackground />
       </div>
 
       {/* Layer 1: Center content */}
@@ -89,7 +62,7 @@ export default function BootSequence() {
 
         {/* Tagline */}
         <p
-          className="text-lg font-medium sm:text-xl"
+          className="mt-2 text-lg font-medium sm:text-xl"
           style={{ color: 'var(--accent-green)' }}
         >
           {t('ui.landing.tagline')}
@@ -97,7 +70,7 @@ export default function BootSequence() {
 
         {/* Sub-tagline */}
         <p
-          className="mt-2 text-sm sm:text-base"
+          className="mt-1 text-sm sm:text-base"
           style={{ color: 'var(--text-subtle)' }}
         >
           {t('ui.landing.subTagline')}
@@ -133,6 +106,11 @@ export default function BootSequence() {
             {t('ui.landing.installFull')}
           </Link>
         </div>
+      </div>
+
+      {/* Locale toggle — top right */}
+      <div className="absolute top-4 right-6 z-10">
+        <LocaleToggle />
       </div>
 
       {/* Layer 2: Scroll indicator */}

@@ -15,6 +15,7 @@ import {
   BENCHMARK_NICHES,
   type BenchmarkNiche,
 } from './benchmark-data';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // Category → niche mapping
@@ -101,7 +102,7 @@ export function detectNiche(
     if (profile.posts.length === 0) {
       return {
         niche: DEFAULT_NICHE,
-        label: NICHE_BENCHMARKS[DEFAULT_NICHE].label,
+        label: t('engine.niche.' + DEFAULT_NICHE),
         confidence: 0,
       };
     }
@@ -134,7 +135,7 @@ export function detectNiche(
 
   return {
     niche: bestNiche,
-    label: NICHE_BENCHMARKS[bestNiche].label,
+    label: t('engine.niche.' + bestNiche),
     confidence,
   };
 }

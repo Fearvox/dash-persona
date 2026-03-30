@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { t } from '@/lib/i18n';
 
 export default function NotFound() {
   return (
@@ -13,13 +16,13 @@ export default function NotFound() {
         className="text-2xl font-bold tracking-tight sm:text-3xl"
         style={{ color: 'var(--text-primary)' }}
       >
-        Page not found
+        {t('ui.notFound.title')}
       </h1>
       <p
         className="max-w-md text-sm leading-6"
         style={{ color: 'var(--text-secondary)' }}
       >
-        The page you are looking for does not exist or has been moved.
+        {t('ui.notFound.description')}
       </p>
       <div className="flex items-center gap-4">
         <Link
@@ -30,14 +33,14 @@ export default function NotFound() {
             color: 'var(--bg-primary)',
           }}
         >
-          Back to home
+          {t('ui.notFound.backHome')}
         </Link>
         <Link
           href="/dashboard?source=demo&persona=tutorial"
           className="text-sm font-medium transition-colors hover:opacity-80"
           style={{ color: 'var(--text-subtle)' }}
         >
-          Try the demo
+          {t('ui.notFound.tryDemo')}
         </Link>
       </div>
     </div>

@@ -928,6 +928,49 @@ const zh: Record<string, string> = {
   'pipeline.category.adapter': '适配器',
   'pipeline.category.engine': '分析引擎',
   'pipeline.category.output': '输出视图',
+
+  // ===========================================================================
+  // 数据画像
+  // ===========================================================================
+  'ui.portrait.title': '数据画像',
+  'ui.portrait.creatorId': '创作者 ID',
+  'ui.portrait.performanceMatrix': '表现矩阵',
+  'ui.portrait.trend30d': '30天趋势',
+  'ui.portrait.tags': '标签',
+  'ui.portrait.copyText': '复制文本',
+  'ui.portrait.exportPng': '导出 PNG',
+  'ui.portrait.copied': '已复制到剪贴板',
+  'ui.portrait.exported': 'PNG 已保存',
+  'ui.portrait.noData': '请先导入创作者数据',
+  'ui.portrait.hover': '悬停查看指标详情',
+
+  // ===========================================================================
+  // 全局错误和未找到页面
+  // ===========================================================================
+  'ui.error.title': '出了点问题',
+  'ui.error.description': '发生了意外错误。你可以重试或返回首页。',
+  'ui.error.tryAgain': '重试',
+  'ui.error.backHome': '返回首页',
+  'ui.notFound.title': '页面未找到',
+  'ui.notFound.description': '你访问的页面不存在或已被移动。',
+  'ui.notFound.backHome': '返回首页',
+  'ui.notFound.tryDemo': '试试 Demo',
+
+  // ===========================================================================
+  // 布局与无障碍
+  // ===========================================================================
+  'ui.a11y.skipToContent': '跳到主要内容',
+  'ui.a11y.toggleToEnglish': '切换为英文',
+  'ui.a11y.toggleToChinese': '切换为中文',
+  'ui.a11y.loadingPipeline': '正在加载流水线可视化',
+
+  // ===========================================================================
+  // 流水线骨架标签
+  // ===========================================================================
+  'ui.pipeline.dataSources': '数据源',
+  'ui.pipeline.adapters': '适配器',
+  'ui.pipeline.analysisEngine': '分析引擎',
+  'ui.pipeline.outputViews': '输出视图',
 };
 
 export default zh;
