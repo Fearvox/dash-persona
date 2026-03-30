@@ -14,6 +14,7 @@
 
 import type { CreatorProfile, Post } from '../schema/creator-data';
 import { memoize } from '../utils/memo-cache';
+import { safeTrend } from './stats';
 import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
@@ -92,9 +93,11 @@ export interface EngagementProfile {
   worstCategory: string | null;
   /**
    * Engagement trend: positive = improving, negative = declining.
-   * Computed as (mean rate of newer half) - (mean rate of older half).
+   * Computed via OLS linear regression on chronologically-ordered engagement rates.
    */
   trend: number;
+  /** Whether the trend is statistically significant (p < 0.05). */
+  trendReliable: boolean;
 }
 
 /** Publishing rhythm analysis. */
@@ -296,6 +299,7 @@ export function computeEngagementProfile(posts: Post[]): EngagementProfile {
       bestCategory: null,
       worstCategory: null,
       trend: 0,
+      trendReliable: false,
     };
   }
 
@@ -354,17 +358,12 @@ export function computeEngagementProfile(posts: Post[]): EngagementProfile {
       ? qualifiedWorst[qualifiedWorst.length - 1].category
       : null;
 
-  // Trend: compare mean rate of newer half vs older half
-  // (posts are assumed newest-first by convention)
-  let trend = 0;
-  if (rates.length >= 4) {
-    const mid = Math.floor(rates.length / 2);
-    const newerRates = rates.slice(0, mid);
-    const olderRates = rates.slice(mid);
-    const newerMean = newerRates.reduce((s, r) => s + r, 0) / newerRates.length;
-    const olderMean = olderRates.reduce((s, r) => s + r, 0) / olderRates.length;
-    trend = newerMean - olderMean;
-  }
+  // OLS regression with significance testing
+  // Reverse rates so index 0 = oldest (regression expects chronological order)
+  const chronologicalRates = [...rates].reverse();
+  const trendResult = safeTrend(chronologicalRates);
+  const trend = trendResult?.slope ?? 0;
+  const trendReliable = trendResult?.significant ?? false;
 
   return {
     overallRate,
@@ -373,6 +372,7 @@ export function computeEngagementProfile(posts: Post[]): EngagementProfile {
     bestCategory,
     worstCategory,
     trend,
+    trendReliable,
   };
 }
 
@@ -840,6 +840,7 @@ export function computePersonaScore(profile: CreatorProfile): PersonaScore {
         bestCategory: null,
         worstCategory: null,
         trend: 0,
+        trendReliable: false,
       },
       rhythm: {
         postsPerWeek: 0,
