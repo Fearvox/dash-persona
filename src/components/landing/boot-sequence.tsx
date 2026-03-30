@@ -16,7 +16,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import CodeArtBackground from './code-art-background';
 import { t } from '@/lib/i18n';
-import { renderAsciiText } from '@/lib/textcraft';
 import { LocaleToggle } from '@/components/locale-toggle';
 
 export default function BootSequence() {
@@ -61,24 +60,17 @@ export default function BootSequence() {
           </h1>
         </div>
 
-        {/* ASCII art tagline — always English (brand element) */}
-        <pre
-          className="font-mono text-center leading-none tracking-wider whitespace-pre text-[6px] sm:text-[7px] ascii-glow"
-          style={{ color: 'var(--accent-green)' }}
-          aria-label={t('ui.landing.tagline')}
-        >
-          {renderAsciiText('CREATOR INTELLIGENCE ENGINE', 'dash-brand')}
-        </pre>
-
-        {/* Localized tagline + sub-tagline */}
+        {/* Tagline */}
         <p
-          className="mt-3 text-sm font-medium sm:text-base"
-          style={{ color: 'var(--text-secondary)' }}
+          className="mt-2 text-lg font-medium sm:text-xl"
+          style={{ color: 'var(--accent-green)' }}
         >
           {t('ui.landing.tagline')}
         </p>
+
+        {/* Sub-tagline */}
         <p
-          className="mt-1 text-xs sm:text-sm"
+          className="mt-1 text-sm sm:text-base"
           style={{ color: 'var(--text-subtle)' }}
         >
           {t('ui.landing.subTagline')}

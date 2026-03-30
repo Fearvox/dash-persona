@@ -23,6 +23,9 @@ export default function SiteFooter() {
         <Link href="/dashboard?source=demo&persona=tutorial" className="nav-pill">
           {t('ui.common.dashboard')}
         </Link>
+        <Link href="/portrait" className="nav-pill">
+          {t('ui.portrait.title')}
+        </Link>
         <Link href="/settings" className="nav-pill">
           {t('ui.common.settings')}
         </Link>

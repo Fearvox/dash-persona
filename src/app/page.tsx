@@ -7,6 +7,7 @@ import { t } from '@/lib/i18n';
 import BootSequence from '@/components/landing/boot-sequence';
 import { OutputWall } from '@/components/landing/output-wall';
 import PipelineSkeleton from '@/components/landing/pipeline-skeleton';
+import { TextcraftDivider } from '@/components/ui/textcraft';
 
 // Lazy load React Flow pipeline (235KB) — only loads when scrolled into view
 const PipelineViewer = dynamic(
@@ -100,6 +101,11 @@ export default function HomePage() {
         {/* Act 1: Boot Sequence — full viewport */}
         <BootSequence />
 
+        {/* Divider: Boot → Pipeline */}
+        <div className="mx-auto w-full max-w-6xl px-6 py-8">
+          <TextcraftDivider label="PIPELINE" />
+        </div>
+
         {/* Act 2: Algorithm Pipeline — vertical flow */}
         <section
           className="mx-auto w-full max-w-6xl px-6 py-16"
@@ -119,6 +125,11 @@ export default function HomePage() {
           </p>
           <PipelineViewer />
         </section>
+
+        {/* Divider: Pipeline → Output */}
+        <div className="mx-auto w-full max-w-6xl px-6 py-8">
+          <TextcraftDivider label="OUTPUT" />
+        </div>
 
         {/* Act 3: Output Wall + CTA */}
         <section className="mx-auto w-full max-w-6xl px-6 pb-24">
