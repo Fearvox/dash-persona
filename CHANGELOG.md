@@ -10,9 +10,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ### Changed
 
-- **Install page** — DASH Collector 桌面应用作为主推安装方式（3 步流程：下载 → 启动登录 → 网页采集），CLI 安装折叠为备选方案。
-- **Onboarding auto-collect** — CDP 代理未连接时显示 DASH Collector 推荐卡片，引导用户下载桌面应用。
-- **i18n** — 所有用户可见的 "CDP 代理" 文案更新为 "DASH Collector"（中英文）。FAQ 更新为介绍 DASH Collector。
+- **Install page** — DASH Collector desktop app promoted as the primary install method (3-step flow: download → sign in → collect). CLI install collapsed as an alternative option.
+- **Onboarding auto-collect** — Shows DASH Collector recommendation card when CDP agent is not connected, guiding users to download the desktop app.
+- **i18n** — All user-facing "CDP Agent" copy updated to "DASH Collector" (both zh and en). FAQ rewritten to introduce DASH Collector.
 
 ---
 
@@ -32,7 +32,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 - **Calendar cold-start CTA** — "Import More Data" button linking to onboarding when calendar has insufficient posts.
 - **Extension timeout feedback** — 10-second countdown timer with explicit failure message and fallback CTAs when Data Passport extension is not detected.
 - **Timeline cold-start fix** — Demo mode now passes history snapshots to GrowthTrendChart as fallback data.
-- **DASH Desktop Collector** (`collector/`) — 独立 Electron 桌面应用，替代 Claude Code CLI 进行数据采集。内置 Playwright 持久化 Chromium，HTTP API 完全兼容 localhost:3458 接口。系统托盘常驻，Cookie 跨会话保留。cdp-adapter.ts 零改动。
+- **DASH Desktop Collector** (`collector/`) — Standalone Electron desktop app replacing the Claude Code CLI for data collection. Ships with Playwright persistent Chromium, HTTP API fully compatible with localhost:3458 interface. Lives in system tray, cookies persist across sessions. Zero changes to cdp-adapter.ts.
 
 ### Changed
 
@@ -53,7 +53,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ### Fixed
 
-- **TikTok date boundary** — Relative dates like "3月25日" crossing year boundaries (Dec → Jan) now correctly subtract a year when the inferred date is >30 days in the future.
+- **TikTok date boundary** — Relative dates like "Mar 25" (Chinese format, no year) crossing year boundaries (Dec → Jan) now correctly subtract a year when the inferred date is >30 days in the future.
 - **CJK column alignment** — Portrait page identity box and tags use `charWidth/strWidth/sliceCols/padEndCols` helpers that account for CJK fullwidth characters (2-column width).
 
 ---
@@ -67,7 +67,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 - **TextcraftDivider component** — Section divider used between landing page acts (Boot → Pipeline → Output).
 - **Canvas text field** — Custom canvas renderer for ASCII art with Geist Mono font and animation support.
 - **LocaleInitializer** — Reads localStorage post-hydration to avoid SSR/client locale mismatch.
-- **Locale toggle** — Language switch button (EN/中文) with accessible aria-label.
+- **Locale toggle** — Language switch button (EN/ZH) with accessible aria-label.
 - **28 new i18n keys** — Full coverage for error page, 404 page, pipeline skeleton, and accessibility labels in both zh and en.
 
 ### Fixed
@@ -109,8 +109,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 - **Persona detail page** ignored `source=import` and always showed demo data — now correctly loads and renders real imported profiles.
 - **Timeline page** same fix — uses real data for decision tree visualization.
 - **Calendar page** same fix — generates content plan from real imported posts.
-- **TikTok date parsing** — "3月25日" (no year) now correctly normalizes to ISO format with year-boundary detection (Dec → Jan crossing increments year).
-- **Douyin timeseries** — 总粉丝量 column now maps to followers field. History entries merge by date to prevent duplicates.
+- **TikTok date parsing** — "Mar 25" (Chinese format, no year) now correctly normalizes to ISO format with year-boundary detection (Dec → Jan crossing increments year).
+- **Douyin timeseries** — "Total Followers" column now maps to followers field. History entries merge by date to prevent duplicates.
 - **Data import merge** — Uploading new files no longer overwrites existing CDP-collected data. Posts deduplicate by description, larger follower counts are preserved.
 - **Douyin scroll collection** — Foreground tab + scrollIntoView on load-more element resolves IntersectionObserver not firing in background tabs.
 
