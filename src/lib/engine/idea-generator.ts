@@ -15,6 +15,7 @@ import {
   computeRhythm,
   computePersonaConsistency,
 } from './persona';
+import { adaptiveThreshold } from './stats';
 import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
@@ -123,10 +124,11 @@ export function generateExperimentIdeas(
   // Rule 1: Content gap -- high engagement but low volume
   // ------------------------------------------------------------------
   const totalPosts = allPosts.length;
+  const gapThreshold = adaptiveThreshold(0.15, totalPosts) * 100;
   for (const cat of globalEngagement.byCategory) {
     if (cat.category === 'uncategorised') continue;
     const postPct = pct(cat.postCount, totalPosts);
-    if (cat.meanEngagementRate > globalEngagement.overallRate && postPct < 15 && cat.postCount >= 1) {
+    if (cat.meanEngagementRate > globalEngagement.overallRate && postPct < gapThreshold && cat.postCount >= 1) {
       const ideaId = `idea-content-gap-${cat.category}`;
       if (treeCovers(existingTree, cat.category, cat.category)) continue;
       const currentPct = postPct;
@@ -191,12 +193,19 @@ export function generateExperimentIdeas(
         }
       }
 
+      // Compute adaptive threshold using the smaller of the two platform post counts
+      const xPlatPostCount = Math.min(
+        platformPosts[bestPlatform ?? '']?.length ?? 0,
+        platformPosts[worstPlatform ?? '']?.length ?? 0,
+      );
+      const xPlatThreshold = adaptiveThreshold(2.0, xPlatPostCount);
+
       if (
         bestPlatform &&
         worstPlatform &&
         bestPlatform !== worstPlatform &&
         worstRate > 0 &&
-        bestRate / worstRate >= 2
+        bestRate / worstRate >= xPlatThreshold
       ) {
         const ratio = (bestRate / worstRate).toFixed(1);
         const catLabel = t('engine.category.' + cat.category);
@@ -254,8 +263,9 @@ export function generateExperimentIdeas(
       const bestHourPct = pct(postsAtBestHour, datedPosts.length);
       const bestDayPct = pct(postsAtBestDay, datedPosts.length);
 
-      // "Rarely" means < 15% of posts despite being the peak
-      if (bestHourPct < 15 || bestDayPct < 15) {
+      // "Rarely" means below adaptive threshold despite being the peak
+      const rhythmThreshold = adaptiveThreshold(0.15, totalPosts) * 100;
+      if (bestHourPct < rhythmThreshold || bestDayPct < rhythmThreshold) {
         if (!treeCovers(existingTree, 'scheduling', 'rhythm')) {
           ideas.push({
             id: 'idea-rhythm-anomaly',
