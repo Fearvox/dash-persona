@@ -34,13 +34,24 @@ DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Not
 
 ---
 
-## Two Ways to Use DashPersona
+## Three Ways to Use DashPersona
 
 ### Web Demo — Try it instantly
 
 Visit [dash-persona.vercel.app](https://dash-persona.vercel.app) and click **Try Demo** to explore with built-in sample data. No login, no setup. You can also upload your own XLSX/JSON exports from Creator Centers to see real analysis — but the web version is limited to file-based data.
 
-### Full Version — Collect real-time data from your Creator Centers
+### DASH Collector — 一键采集，无需命令行
+
+下载 DASH Collector 桌面应用（macOS / Windows），启动后常驻系统托盘。首次运行时在内置 Chromium 中登录你的创作者中心，之后 DASH 网页会自动通过 Collector 采集数据。
+
+- 无需安装 CLI 工具
+- 无需编程知识
+- Cookie 持久化，重启无需重新登录
+- 系统托盘显示采集状态
+
+> 下载地址：[GitHub Releases](https://github.com/Fearvox/dash-persona/releases)（即将发布）
+
+### Full Version (CLI) — Advanced data collection
 
 Install the CLI for automatic data collection directly from your Chrome browser. Supports Douyin, TikTok, and Red Note creator centers using your existing login sessions.
 
@@ -51,15 +62,17 @@ claude skill install --global github.com/eze-is/web-access
 
 > **New to the command line?** Follow the [step-by-step installation guide](https://dash-persona.vercel.app/install) — designed for complete beginners with no programming experience.
 
-| | Web Demo | Full Version (CLI) |
-|---|---|---|
-| Sample data exploration | Yes | Yes |
-| File import (XLSX/JSON/CSV) | Yes | Yes |
-| Real-time CDP data collection | — | Yes |
-| Trending topic analysis | — | Yes |
-| Persistent data across sessions | — | Yes |
-| 18-signal intelligence framework | Yes | Yes |
-| All 11 analysis engines | Yes | Yes |
+| | Web Demo | DASH Collector | Full Version (CLI) |
+|---|---|---|---|
+| 安装难度 | 无需安装 | 下载即用 | 需要命令行 |
+| Sample data exploration | Yes | Yes | Yes |
+| File import (XLSX/JSON/CSV) | Yes | — | Yes |
+| Real-time CDP data collection | — | Yes | Yes |
+| Trending topic analysis | — | — | Yes |
+| Persistent data across sessions | — | Yes | Yes |
+| Cookie 跨会话保留 | — | Yes | — |
+| 18-signal intelligence framework | Yes | Yes | Yes |
+| All 11 analysis engines | Yes | Yes | Yes |
 
 ---
 
@@ -260,6 +273,7 @@ This project is a living case study: 11 analysis engines, 7 data adapters, a Chr
 - [x] E2E test coverage with Playwright (15 test cases across 5 core flows)
 - [x] Accessibility: focus-visible, skip-to-content, semantic landmarks, keyboard navigation
 - [x] CDP-based data collection for Douyin, TikTok, and XHS
+- [x] DASH Desktop Collector (Electron app, system tray, persistent Chromium)
 - [x] Trending analysis with real-time topic collection
 - [x] Next Content Engine with 7 deterministic suggestion rules
 - [x] Content structure analysis with video frame extraction

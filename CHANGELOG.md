@@ -22,6 +22,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 - **Calendar cold-start CTA** — "Import More Data" button linking to onboarding when calendar has insufficient posts.
 - **Extension timeout feedback** — 10-second countdown timer with explicit failure message and fallback CTAs when Data Passport extension is not detected.
 - **Timeline cold-start fix** — Demo mode now passes history snapshots to GrowthTrendChart as fallback data.
+- **DASH Desktop Collector** (`collector/`) — 独立 Electron 桌面应用，替代 Claude Code CLI 进行数据采集。内置 Playwright 持久化 Chromium，HTTP API 完全兼容 localhost:3458 接口。系统托盘常驻，Cookie 跨会话保留。cdp-adapter.ts 零改动。
 
 ### Changed
 
