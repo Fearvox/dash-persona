@@ -1,0 +1,21 @@
+{
+  "name": "@dash/collector",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build": "tsc && electron-builder"
+  },
+  "dependencies": {
+    "playwright": "^1.52.0",
+    "express": "^4.21.0",
+    "electron-updater": "^6.3.0"
+  },
+  "devDependencies": {
+    "electron": "^33.4.0",
+    "electron-builder": "^25.1.0",
+    "@types/express": "^4.17.21",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "appId": "design.zonic.dash-collector",
+  "productName": "DASH Collector",
+  "mac": {
+    "category": "public.app-category.productivity",
+    "target": ["dmg", "zip"]
+  },
+  "win": {
+    "target": ["nsis"]
+  },
+  "extraMetadata": {
+    "main": "dist/main.js"
+  }
+}
