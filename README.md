@@ -40,16 +40,16 @@ DashPersona ingests your creator data from **Douyin**, **TikTok**, and **Red Not
 
 Visit [dash-persona.vercel.app](https://dash-persona.vercel.app) and click **Try Demo** to explore with built-in sample data. No login, no setup. You can also upload your own XLSX/JSON exports from Creator Centers to see real analysis — but the web version is limited to file-based data.
 
-### DASH Collector — 一键采集，无需命令行
+### DASH Collector — One-click collection, no command line needed
 
-下载 DASH Collector 桌面应用（macOS / Windows），启动后常驻系统托盘。首次运行时在内置 Chromium 中登录你的创作者中心，之后 DASH 网页会自动通过 Collector 采集数据。
+Download the DASH Collector desktop app (macOS / Windows). It runs in your system tray. On first launch, log in to your Creator Center inside the built-in Chromium browser — after that, the DASH web app automatically collects data through the Collector.
 
-- 无需安装 CLI 工具
-- 无需编程知识
-- Cookie 持久化，重启无需重新登录
-- 系统托盘显示采集状态
+- No CLI tools required
+- No programming knowledge needed
+- Persistent cookies — no need to re-login after restart
+- System tray shows collection status
 
-> 下载地址：[GitHub Releases](https://github.com/Fearvox/dash-persona/releases)（即将发布）
+> Download: [GitHub Releases](https://github.com/Fearvox/dash-persona/releases) (coming soon)
 
 ### Full Version (CLI) — Advanced data collection
 
@@ -64,13 +64,13 @@ claude skill install --global github.com/eze-is/web-access
 
 | | Web Demo | DASH Collector | Full Version (CLI) |
 |---|---|---|---|
-| 安装难度 | 无需安装 | 下载即用 | 需要命令行 |
+| Setup difficulty | No install needed | Download and run | Command line required |
 | Sample data exploration | Yes | Yes | Yes |
 | File import (XLSX/JSON/CSV) | Yes | — | Yes |
 | Real-time CDP data collection | — | Yes | Yes |
 | Trending topic analysis | — | — | Yes |
 | Persistent data across sessions | — | Yes | Yes |
-| Cookie 跨会话保留 | — | Yes | — |
+| Persistent cookies across sessions | — | Yes | — |
 | 18-signal intelligence framework | Yes | Yes | Yes |
 | All 11 analysis engines | Yes | Yes | Yes |
 
@@ -176,9 +176,9 @@ For real data collection, see the [installation guide](https://dash-persona.verc
                               ├─ Next Content Engine       │  │
                               └─ Signal Collector (18) ────┘  │
                                  Platform weights:            │
-                                 Douyin: 完播率 8x            │
-                                 XHS: 收藏 6x                │
-                                 TikTok: 病毒率 7x ──────────┘
+                                 Douyin: completion rate 8x   │
+                                 XHS: save rate 6x            │
+                                 TikTok: viral ratio 7x ──────┘
 ```
 
 **All engines are deterministic.** Same input always produces the same output. No randomness, no model weights, no external API calls.
