@@ -19,6 +19,7 @@ import type {
   TrendingTopic,
 } from '../collectors/trending-collector';
 import type { ContentAnalysisResult } from './content-analyzer';
+import { rankNormalize, recalibrateSteps } from './stats';
 import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
@@ -385,7 +386,9 @@ function calculateScoring(
 
   // --- nicheRelevance ---
   // Overlap count mapped to 0-100. 1 overlap = 25, 2 = 50, 3 = 75, 4+ = 95.
-  const nicheRelevance = clamp100(Math.min(overlapCount * 25, 95));
+  const NICHE_STEPS = [0, 25, 50, 75, 95];
+  let nicheRelevance = clamp100(Math.min(overlapCount * 25, 95));
+  nicheRelevance = recalibrateSteps(nicheRelevance, NICHE_STEPS);
 
   // --- gapOpportunity ---
   // User already posts this category at `userCategoryPct` (0-100).
@@ -1061,7 +1064,7 @@ export function generateNextContent(
         ruleEngagementOptimisation(personaScore, trending, analysis, existingPosts, ts),
       ];
 
-  // Filter nulls, deduplicate by rule slug, sort by confidence descending
+  // Filter nulls, deduplicate by rule slug
   const seen = new Set<string>();
   const suggestions: NextContentSuggestion[] = rawResults
     .filter((s): s is NextContentSuggestion => s !== null)
@@ -1069,9 +1072,27 @@ export function generateNextContent(
       if (seen.has(s.rule)) return false;
       seen.add(s.rule);
       return true;
-    })
-    .sort((a, b) => b.confidence - a.confidence)
-    .slice(0, MAX_SUGGESTIONS);
+    });
+
+  // Rank-normalize scoring dimensions across the batch
+  const validSuggestions = suggestions.filter(Boolean) as NextContentSuggestion[];
+  if (validSuggestions.length > 1) {
+    const dims = ['trendAlignment', 'nicheRelevance', 'gapOpportunity', 'engagementPotential'];
+    const scoringObjects = validSuggestions.map(s => ({ ...s.scoring }));
+    const normalized = rankNormalize(scoringObjects, dims);
+    for (let i = 0; i < validSuggestions.length; i++) {
+      validSuggestions[i].scoring = normalized[i] as NextContentSuggestion['scoring'];
+      validSuggestions[i].confidence = Math.round(
+        (normalized[i].trendAlignment + normalized[i].nicheRelevance +
+         normalized[i].gapOpportunity + normalized[i].engagementPotential) / 4
+      );
+      validSuggestions[i].priority = confidenceToPriority(validSuggestions[i].confidence);
+    }
+  }
+
+  // Sort by confidence descending and cap at MAX_SUGGESTIONS
+  suggestions.sort((a, b) => b.confidence - a.confidence);
+  suggestions.splice(MAX_SUGGESTIONS);
 
   // Build input summary for the result envelope
   const personaTags = personaScore.tags.map((t) => t.label);
