@@ -17,6 +17,7 @@ import {
   type EngagementProfile,
   type ContentDistribution,
 } from './persona';
+import { adaptiveThreshold } from './stats';
 import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
@@ -155,9 +156,14 @@ export function comparePlatforms(
   // --- Insight: Engagement gap ---
   const topEng = byEngagement[0];
   const bottomEng = byEngagement[byEngagement.length - 1];
+  const engGapThreshold = adaptiveThreshold(
+    1.5,
+    Math.min(topEng.postCount, bottomEng.postCount),
+  );
   if (
     bottomEng.overallEngagementRate > 0 &&
-    topEng.overallEngagementRate / bottomEng.overallEngagementRate >= 1.5
+    topEng.overallEngagementRate / bottomEng.overallEngagementRate >=
+      engGapThreshold
   ) {
     const ratio = (
       topEng.overallEngagementRate / bottomEng.overallEngagementRate
@@ -178,7 +184,14 @@ export function comparePlatforms(
   // --- Insight: Audience size gap ---
   const topAud = byAudience[0];
   const bottomAud = byAudience[byAudience.length - 1];
-  if (bottomAud.followers > 0 && topAud.followers / bottomAud.followers >= 2) {
+  const audGapThreshold = adaptiveThreshold(
+    2.0,
+    Math.min(topAud.postCount, bottomAud.postCount),
+  );
+  if (
+    bottomAud.followers > 0 &&
+    topAud.followers / bottomAud.followers >= audGapThreshold
+  ) {
     const ratio = (topAud.followers / bottomAud.followers).toFixed(1);
     insights.push({
       type: 'audience_size',
@@ -213,7 +226,11 @@ export function comparePlatforms(
     if (catPerformance.length >= 2) {
       const best = catPerformance[0];
       const worst = catPerformance[catPerformance.length - 1];
-      if (worst.rate > 0 && best.rate / worst.rate >= 2) {
+      const catGapThreshold = adaptiveThreshold(
+        2.0,
+        Math.min(best.count, worst.count),
+      );
+      if (worst.rate > 0 && best.rate / worst.rate >= catGapThreshold) {
         const ratio = Math.round(best.rate / worst.rate);
         insights.push({
           type: 'best_content',
