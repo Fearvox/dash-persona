@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, Component } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, Component } from 'react';
 import type { ReactNode } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
+  PanOnScrollMode,
 } from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -28,20 +29,23 @@ const elk = new ELK();
 const NODE_WIDTH = 160;
 const NODE_HEIGHT = 70;
 
+type LayoutDirection = 'DOWN' | 'RIGHT';
+
 interface LayoutResult {
   nodes: PipelineNode[];
   width: number;
   height: number;
+  direction: LayoutDirection;
 }
 
-async function computeLayout(): Promise<LayoutResult> {
+async function computeLayout(direction: LayoutDirection): Promise<LayoutResult> {
   const graph: ElkNode = {
     id: 'root',
     layoutOptions: {
       'elk.algorithm': 'layered',
-      'elk.direction': 'DOWN',
+      'elk.direction': direction,
       'elk.spacing.nodeNode': '20',
-      'elk.layered.spacing.nodeNodeBetweenLayers': '60',
+      'elk.layered.spacing.nodeNodeBetweenLayers': direction === 'RIGHT' ? '40' : '60',
     },
     children: PIPELINE_MODULES.map((m) => ({
       id: m.id,
@@ -57,6 +61,7 @@ async function computeLayout(): Promise<LayoutResult> {
 
   const laid = await elk.layout(graph);
 
+  const isHorizontal = direction === 'RIGHT';
   const nodes = (laid.children ?? []).map((child) => {
     const mod = PIPELINE_MODULES.find((m) => m.id === child.id)!;
     return {
@@ -68,6 +73,7 @@ async function computeLayout(): Promise<LayoutResult> {
         codeName: mod.codeName,
         description: mod.description,
         color: mod.color,
+        horizontal: isHorizontal,
       },
     };
   });
@@ -76,7 +82,71 @@ async function computeLayout(): Promise<LayoutResult> {
     nodes,
     width: laid.width ?? 800,
     height: laid.height ?? 600,
+    direction,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Breakpoint hook
+// ---------------------------------------------------------------------------
+
+const HORIZONTAL_BREAKPOINT = 1024;
+
+function useLayoutDirection(): LayoutDirection {
+  const [dir, setDir] = useState<LayoutDirection>(
+    typeof window !== 'undefined' && window.innerWidth >= HORIZONTAL_BREAKPOINT
+      ? 'RIGHT'
+      : 'DOWN',
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${HORIZONTAL_BREAKPOINT}px)`);
+    const handler = (e: MediaQueryListEvent) => setDir(e.matches ? 'RIGHT' : 'DOWN');
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  return dir;
+}
+
+// ---------------------------------------------------------------------------
+// Scroll indicators
+// ---------------------------------------------------------------------------
+
+function ScrollIndicators({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <>
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 48,
+          height: '100%',
+          background: 'linear-gradient(to right, var(--bg-primary), transparent)',
+          pointerEvents: 'none',
+          zIndex: 10,
+          opacity: 0.8,
+        }}
+      />
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: 48,
+          height: '100%',
+          background: 'linear-gradient(to left, var(--bg-primary), transparent)',
+          pointerEvents: 'none',
+          zIndex: 10,
+          opacity: 0.8,
+        }}
+      />
+    </>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -138,11 +208,13 @@ const nodeTypes = { pipeline: PipelineModuleNode };
 
 function PipelineFlow({ standalone }: { standalone: boolean }) {
   const [layout, setLayout] = useState<LayoutResult | null>(null);
+  const direction = useLayoutDirection();
   const edges = useMemo(buildEdges, []);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const runLayout = useCallback(async () => {
+  const runLayout = useCallback(async (dir: LayoutDirection) => {
     try {
-      const result = await computeLayout();
+      const result = await computeLayout(dir);
       setLayout(result);
     } catch {
       // If elkjs fails, leave null so skeleton stays visible
@@ -150,36 +222,70 @@ function PipelineFlow({ standalone }: { standalone: boolean }) {
   }, []);
 
   useEffect(() => {
-    runLayout();
-  }, [runLayout]);
+    runLayout(direction);
+  }, [runLayout, direction]);
+
+  // Horizontal wheel → pan on wide screens
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || direction !== 'RIGHT') return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Only intercept vertical scroll when pipeline is focused/hovered
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && e.deltaX === 0) {
+        // ReactFlow handles its own pan — no extra transform needed
+        // but we prevent page scroll while hovering the pipeline
+        e.preventDefault();
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [direction]);
 
   if (!layout) {
     return <PipelineSkeleton />;
   }
 
-  // Use computed graph dimensions + padding for the container
-  const containerHeight = standalone ? '100vh' : `${Math.max(layout.height + 80, 600)}px`;
+  const isHorizontal = layout.direction === 'RIGHT';
+
+  // Horizontal: shorter height, let width expand; Vertical: use graph height
+  const containerHeight = standalone
+    ? '100vh'
+    : isHorizontal
+      ? `${Math.max(layout.height + 80, 400)}px`
+      : `${Math.max(layout.height + 80, 600)}px`;
 
   return (
     <div
-      className="w-full relative"
+      ref={containerRef}
+      tabIndex={0}
+      role="region"
+      aria-label="Pipeline visualization"
+      className="w-full relative outline-none"
       style={{
         height: containerHeight,
         padding: standalone ? 24 : 0,
       }}
     >
+      <ScrollIndicators show={isHorizontal} />
       <ReactFlow
         nodes={layout.nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.15, maxZoom: 0.85 }}
+        fitViewOptions={{
+          padding: isHorizontal ? 0.1 : 0.15,
+          maxZoom: isHorizontal ? 0.75 : 0.85,
+        }}
         minZoom={0.3}
         maxZoom={2}
         panOnDrag
-        zoomOnScroll
+        panOnScroll={isHorizontal}
+        panOnScrollMode={isHorizontal ? PanOnScrollMode.Horizontal : undefined}
+        zoomOnScroll={!isHorizontal}
         zoomOnPinch
-        preventScrolling={false}
+        preventScrolling={isHorizontal}
         nodesDraggable
         nodesConnectable={false}
         elementsSelectable={false}

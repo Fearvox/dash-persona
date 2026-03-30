@@ -12,7 +12,9 @@ import type { PipelineModule } from '@/lib/pipeline/pipeline-config';
 type PipelineNodeData = Pick<
   PipelineModule,
   'label' | 'codeName' | 'description' | 'color'
->;
+> & {
+  horizontal?: boolean;
+};
 
 export type PipelineNode = Node<PipelineNodeData, 'pipeline'>;
 
@@ -54,15 +56,15 @@ function PipelineModuleNode({ data }: NodeProps<PipelineNode>) {
         </p>
       )}
 
-      {/* Handles */}
+      {/* Handles — direction-aware */}
       <Handle
         type="target"
-        position={Position.Top}
+        position={data.horizontal ? Position.Left : Position.Top}
         className="!w-1 !h-1 !min-w-1 !min-h-1 !bg-[var(--border-subtle)] !border-none"
       />
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={data.horizontal ? Position.Right : Position.Bottom}
         className="!w-1 !h-1 !min-w-1 !min-h-1 !bg-[var(--border-subtle)] !border-none"
       />
     </div>
