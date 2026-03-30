@@ -6,6 +6,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ---
 
+## [0.6.1] - 2026-03-30
+
+### Changed
+
+- **Install page** — DASH Collector 桌面应用作为主推安装方式（3 步流程：下载 → 启动登录 → 网页采集），CLI 安装折叠为备选方案。
+- **Onboarding auto-collect** — CDP 代理未连接时显示 DASH Collector 推荐卡片，引导用户下载桌面应用。
+- **i18n** — 所有用户可见的 "CDP 代理" 文案更新为 "DASH Collector"（中英文）。FAQ 更新为介绍 DASH Collector。
+
+---
+
 ## [0.6.0] - 2026-03-30
 
 ### Added
