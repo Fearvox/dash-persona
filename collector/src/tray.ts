@@ -179,7 +179,7 @@ export class TrayManager {
       {
         label: '打开登录窗口',
         click: () => {
-          this.browserManager.showLoginWindow();
+          void this.browserManager.showLoginWindow();
         },
       },
       { type: 'separator' },

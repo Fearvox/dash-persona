@@ -113,15 +113,24 @@ export class BrowserManager {
     return false;
   }
 
-  showLoginWindow(): void {
-    // In persistent context mode, the browser window is already visible
-    // when launched with headless: false. This is a no-op placeholder
-    // for future BrowserWindow.show() integration via Electron IPC.
+  async showLoginWindow(): Promise<void> {
+    if (!this.context) return;
+
+    const page = await this.context.newPage();
+    await page.goto('https://creator.douyin.com', { waitUntil: 'domcontentloaded' });
   }
 
-  hideWindow(): void {
-    // Hiding requires Electron BrowserWindow control over the Chromium
-    // instance, which persistent context doesn't directly expose.
-    // Placeholder for future headless toggle or window minimization.
+  async hideWindow(): Promise<void> {
+    if (!this.context) return;
+
+    // Close pages not tracked by the pages Map (e.g. login windows)
+    const managedPages = new Set(this.pages.values());
+    const closePromises: Promise<void>[] = [];
+    for (const page of this.context.pages()) {
+      if (!managedPages.has(page)) {
+        closePromises.push(page.close());
+      }
+    }
+    await Promise.all(closePromises);
   }
 }
