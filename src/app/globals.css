@@ -250,6 +250,56 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 
 .ascii-glow { text-shadow: 0 0 12px rgba(126, 210, 154, 0.25); }
 
+/* ── Analyzing shimmer transition ── */
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes analyzing-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes analyzing-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.analyzing-shimmer-bar {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.analyzing-shimmer-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(126, 210, 154, 0.12) 40%,
+    rgba(126, 210, 154, 0.24) 50%,
+    rgba(126, 210, 154, 0.12) 60%,
+    transparent 100%
+  );
+  animation: shimmer-sweep 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.analyzing-enter-0 {
+  opacity: 0;
+  animation: analyzing-fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.analyzing-enter-1 {
+  opacity: 0;
+  animation: analyzing-fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+.analyzing-enter-2 {
+  opacity: 0;
+  animation: analyzing-fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
 /* ── Staggered fade-in on mount ── */
 .animate-stagger {
   opacity: 0;
@@ -271,6 +321,15 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
     animation: none !important;
   }
   .animate-stagger {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .analyzing-shimmer-bar::after {
+    animation: none !important;
+  }
+  .analyzing-enter-0,
+  .analyzing-enter-1,
+  .analyzing-enter-2 {
     animation: none !important;
     opacity: 1 !important;
   }

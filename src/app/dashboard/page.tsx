@@ -183,7 +183,11 @@ export default async function DashboardPage({
   // 1. Get demo profiles (one per platform)
   const profiles = getDemoProfile(personaType);
 
-  // 2-7. Run all engines in parallel
+  // 2-7. Run all engines in parallel (minimum 2s for analyzing shimmer)
+  const [engineResults] = await Promise.all([
+    runAllEngines(profiles),
+    new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+  ]);
   const {
     personaScores,
     explanations,
@@ -193,7 +197,7 @@ export default async function DashboardPage({
     nicheResult,
     allPosts,
     bestPlatform,
-  } = await runAllEngines(profiles);
+  } = engineResults;
 
   // 8. Build analysis snapshot for history tracking
   const bestProfile = profiles[bestPlatform] ?? Object.values(profiles)[0];

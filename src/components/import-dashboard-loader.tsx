@@ -49,24 +49,34 @@ export default function ImportDashboardLoader() {
 
   // All hooks must be called unconditionally (Rules of Hooks)
   const [engineResults, setEngineResults] = useState<AllEngineResults | null>(null);
+  const [shimmerDone, setShimmerDone] = useState(false);
 
   useEffect(() => {
     if (!profiles) return;
-    runAllEngines(profiles).then(setEngineResults);
+    // Run engines + enforce 2s minimum shimmer in parallel
+    Promise.all([
+      runAllEngines(profiles),
+      new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+    ]).then(([results]) => {
+      setEngineResults(results);
+      setShimmerDone(true);
+    });
   }, [profiles]);
 
-  if (!profiles) {
+  if (!profiles || !engineResults || !shimmerDone) {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
-        <p className="text-sm text-[var(--text-secondary)]">{t('ui.dashboard.loadingImported')}</p>
-      </div>
-    );
-  }
-
-  if (!engineResults) {
-    return (
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
-        <p className="text-sm text-[var(--text-secondary)]">{t('ui.dashboard.runningEngines')}</p>
+      <div
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg-primary)]"
+        aria-busy="true"
+        aria-label="Analyzing data"
+      >
+        <p className="analyzing-enter-0 mb-6 font-mono text-sm tracking-widest text-[var(--text-primary)]">
+          Analyzing...
+        </p>
+        <div className="analyzing-enter-1 analyzing-shimmer-bar h-[3px] w-48 bg-[rgba(126,210,154,0.1)]" />
+        <p className="analyzing-enter-2 mt-4 font-mono text-xs text-[var(--text-subtle)]">
+          Processing signals
+        </p>
       </div>
     );
   }
