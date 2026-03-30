@@ -1,17 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getLocale, setLocale, type Locale } from '@/lib/i18n';
 
 export function LocaleToggle() {
-  const [locale, setLocaleState] = useState<Locale>(getLocale());
+  const [locale, setLocaleState] = useState<Locale>('zh');
+
+  useEffect(() => {
+    setLocaleState(getLocale());
+  }, []);
 
   function toggle() {
     const next: Locale = locale === 'zh' ? 'en' : 'zh';
     setLocale(next);
     setLocaleState(next);
-    // Force full re-render — simplest approach for static i18n
-    window.location.reload();
+    window.dispatchEvent(new Event('locale-changed'));
   }
 
   return (

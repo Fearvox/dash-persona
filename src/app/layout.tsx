@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import SiteFooter from "@/components/site-footer";
 import ToastContainer from "@/components/ui/toast";
+import { LocaleInitializer } from "@/components/locale-initializer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -56,9 +57,11 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <main id="main-content" className="flex-1">{children}</main>
-        <SiteFooter />
-        <ToastContainer />
+        <LocaleInitializer>
+          <main id="main-content" className="flex-1">{children}</main>
+          <SiteFooter />
+          <ToastContainer />
+        </LocaleInitializer>
       </body>
     </html>
   );

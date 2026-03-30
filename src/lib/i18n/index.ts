@@ -5,14 +5,8 @@ export type Locale = 'zh' | 'en';
 
 const messages: Record<Locale, Record<string, string>> = { zh, en };
 
-function readStoredLocale(): Locale {
-  if (typeof window === 'undefined') return 'zh';
-  const stored = localStorage.getItem('dash-locale');
-  if (stored === 'en' || stored === 'zh') return stored;
-  return 'zh';
-}
-
-let currentLocale: Locale = readStoredLocale();
+// Always init as 'zh' to match server render — localStorage is read post-hydration
+let currentLocale: Locale = 'zh';
 
 export function getLocale(): Locale { return currentLocale; }
 export function setLocale(locale: Locale): void {
