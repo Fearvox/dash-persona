@@ -14,7 +14,8 @@
     <img src="https://img.youtube.com/vi/XwvHWx6m6dw/maxresdefault.jpg" alt="DashPersona Demo Video" width="720" />
   </a>
   <br />
-  <sub><b>Watch the demo →</b></sub>
+  <!-- Click the thumbnail above to watch the demo on YouTube -->
+  <sub><b>Click to watch on YouTube →</b></sub>
 </p>
 
 <p align="center">
