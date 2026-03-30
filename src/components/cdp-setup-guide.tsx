@@ -378,8 +378,7 @@ function SetupInstructions({ onRecheck, isChecking }: { onRecheck: () => void; i
         type="button"
         onClick={onRecheck}
         disabled={isChecking}
-        className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-medium)] text-sm font-medium transition-colors disabled:opacity-50 hover:border-[var(--accent-green)] hover:text-[var(--accent-green)]"
-        style={{ color: 'var(--text-secondary)' }}
+        className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-medium)] text-sm font-medium transition-colors disabled:opacity-50 hover:border-[var(--accent-green)] hover:text-[var(--accent-green)] text-[var(--text-secondary)]"
       >
         {isChecking && <Spinner />}
         {isChecking ? t('ui.components.cdpChecking') : t('ui.components.cdpRecheckBtn')}
@@ -484,8 +483,7 @@ function LoginCheckPanel({
         <button
           type="button"
           onClick={onSkip}
-          className="flex h-10 items-center justify-center rounded-lg border border-[var(--border-medium)] px-4 text-sm font-medium transition-colors hover:border-[var(--accent-green)] hover:text-[var(--accent-green)]"
-          style={{ color: 'var(--text-secondary)' }}
+          className="flex h-10 items-center justify-center rounded-lg border border-[var(--border-medium)] px-4 text-sm font-medium transition-colors hover:border-[var(--accent-green)] hover:text-[var(--accent-green)] text-[var(--text-secondary)]"
         >
           {t('ui.common.cancel')}
         </button>
@@ -501,8 +499,7 @@ function LoginDot({ status }: { status: LoginStatus }) {
   if (status === 'logged_in') {
     return (
       <span
-        className="inline-block h-2 w-2 rounded-full shrink-0"
-        style={{ background: 'var(--accent-green)' }}
+        className="inline-block h-2 w-2 rounded-full shrink-0 bg-[var(--accent-green)]"
         aria-label={t('ui.components.cdpLoginDotLoggedIn')}
       />
     );
@@ -510,16 +507,14 @@ function LoginDot({ status }: { status: LoginStatus }) {
   if (status === 'not_logged_in') {
     return (
       <span
-        className="inline-block h-2 w-2 rounded-full shrink-0"
-        style={{ background: 'var(--accent-red)' }}
+        className="inline-block h-2 w-2 rounded-full shrink-0 bg-[var(--accent-red)]"
         aria-label={t('ui.components.cdpLoginDotNotLoggedIn')}
       />
     );
   }
   return (
     <span
-      className="inline-block h-2 w-2 rounded-full shrink-0"
-      style={{ background: 'var(--border-medium)' }}
+      className="inline-block h-2 w-2 rounded-full shrink-0 bg-[var(--border-medium)]"
       aria-label={t('ui.components.cdpLoginDotUnknown')}
     />
   );
@@ -679,8 +674,7 @@ function MultiCollectPanel({
         type="button"
         onClick={onCollectAll}
         disabled={!hasAnyVerifiedIdle || anyCollecting}
-        className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-medium)] text-sm font-medium transition-colors disabled:opacity-40 hover:border-[var(--accent-green)] hover:text-[var(--accent-green)]"
-        style={{ color: 'var(--text-secondary)' }}
+        className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-medium)] text-sm font-medium transition-colors disabled:opacity-40 hover:border-[var(--accent-green)] hover:text-[var(--accent-green)] text-[var(--text-secondary)]"
       >
         {anyCollecting && <Spinner />}
         {anyCollecting ? t('ui.components.cdpCollecting') : t('ui.components.cdpCollectAll')}
@@ -780,8 +774,7 @@ function MultiDonePanel({
           <button
             type="button"
             onClick={onRetryFailed}
-            className="flex h-10 items-center justify-center rounded-lg border border-[var(--border-medium)] px-4 text-sm font-medium transition-colors hover:border-[var(--accent-yellow)] hover:text-[var(--accent-yellow)]"
-            style={{ color: 'var(--text-secondary)' }}
+            className="flex h-10 items-center justify-center rounded-lg border border-[var(--border-medium)] px-4 text-sm font-medium transition-colors hover:border-[var(--accent-yellow)] hover:text-[var(--accent-yellow)] text-[var(--text-secondary)]"
           >
             {t('ui.components.cdpRetryFailed')}
           </button>

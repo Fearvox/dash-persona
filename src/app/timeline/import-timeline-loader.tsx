@@ -109,7 +109,7 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
   if (loading) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-sm text-[var(--text-secondary)]">
           {t('ui.common.loadingImported')}
         </p>
       </div>
@@ -146,8 +146,7 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
               {t('ui.timeline.title')}
             </h1>
             <p
-              className="mt-1 text-sm"
-              style={{ color: 'var(--text-subtle)' }}
+              className="mt-1 text-sm text-[var(--text-subtle)]"
             >
               {t('ui.timeline.subtitle')}
             </p>
@@ -155,8 +154,7 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
 
           {/* Platform selector tabs */}
           <div
-            className="flex rounded-lg p-1"
-            style={{ background: 'var(--bg-secondary)' }}
+            className="flex rounded-lg p-1 bg-[var(--bg-secondary)]"
             role="tablist"
           >
             {platforms.map((p) => {
@@ -191,8 +189,7 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
         <div className="card p-4">
           <p className="kicker">{t('ui.timeline.totalNodes')}</p>
           <p
-            className="metric-value mt-1 text-xl font-bold"
-            style={{ color: 'var(--text-primary)' }}
+            className="metric-value mt-1 text-xl font-bold text-[var(--text-primary)]"
           >
             {tree.nodes.length}
           </p>
@@ -200,8 +197,7 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
         <div className="card p-4">
           <p className="kicker">{t('ui.timeline.mainline')}</p>
           <p
-            className="metric-value mt-1 text-xl font-bold"
-            style={{ color: 'var(--accent-green)' }}
+            className="metric-value mt-1 text-xl font-bold text-[var(--accent-green)]"
           >
             {lanes.mainline.length}
           </p>
@@ -209,8 +205,7 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
         <div className="card p-4">
           <p className="kicker">{t('ui.timeline.branches')}</p>
           <p
-            className="metric-value mt-1 text-xl font-bold"
-            style={{ color: 'var(--accent-yellow)' }}
+            className="metric-value mt-1 text-xl font-bold text-[var(--accent-yellow)]"
           >
             {lanes.branches.length}
           </p>
@@ -218,8 +213,7 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
         <div className="card p-4">
           <p className="kicker">{t('ui.timeline.boundaries')}</p>
           <p
-            className="metric-value mt-1 text-xl font-bold"
-            style={{ color: 'var(--accent-red)' }}
+            className="metric-value mt-1 text-xl font-bold text-[var(--accent-red)]"
           >
             {lanes.boundaries.length}
           </p>

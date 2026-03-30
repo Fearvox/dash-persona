@@ -12,8 +12,7 @@ export function TextcraftDivider({ label }: TextcraftDividerProps) {
 
   return (
     <pre
-      className="font-mono text-center text-[10px] leading-none animate-[breathe_4s_ease-in-out_infinite] motion-reduce:animate-none"
-      style={{ color: 'var(--text-subtle)' }}
+      className="font-mono text-center text-[10px] leading-none animate-[breathe_4s_ease-in-out_infinite] motion-reduce:animate-none text-[var(--text-subtle)]"
     >
       {line}
     </pre>

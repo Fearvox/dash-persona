@@ -162,11 +162,10 @@ function PipelineFlow({ standalone }: { standalone: boolean }) {
 
   return (
     <div
+      className="w-full relative"
       style={{
-        width: '100%',
         height: containerHeight,
         padding: standalone ? 24 : 0,
-        position: 'relative',
       }}
     >
       <ReactFlow
@@ -185,7 +184,7 @@ function PipelineFlow({ standalone }: { standalone: boolean }) {
         nodesConnectable={false}
         elementsSelectable={false}
         proOptions={{ hideAttribution: true }}
-        style={{ background: 'transparent' }}
+        className="!bg-transparent"
       />
     </div>
   );

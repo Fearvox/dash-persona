@@ -4,16 +4,13 @@ export default function CalendarLoading() {
       {/* Header skeleton */}
       <header className="flex flex-col gap-2">
         <div
-          className="h-4 w-24 animate-pulse rounded"
-          style={{ background: 'var(--bg-card)' }}
+          className="h-4 w-24 animate-pulse rounded bg-[var(--bg-card)]"
         />
         <div
-          className="mt-2 h-8 w-56 animate-pulse rounded"
-          style={{ background: 'var(--bg-card)' }}
+          className="mt-2 h-8 w-56 animate-pulse rounded bg-[var(--bg-card)]"
         />
         <div
-          className="h-4 w-48 animate-pulse rounded"
-          style={{ background: 'var(--bg-card)' }}
+          className="h-4 w-48 animate-pulse rounded bg-[var(--bg-card)]"
         />
       </header>
 
@@ -21,21 +18,17 @@ export default function CalendarLoading() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
-            className="h-8 w-16 animate-pulse rounded-md"
-            style={{ background: 'var(--bg-card)' }}
+            className="h-8 w-16 animate-pulse rounded-md bg-[var(--bg-card)]"
           />
           <div
-            className="h-5 w-44 animate-pulse rounded"
-            style={{ background: 'var(--bg-card)' }}
+            className="h-5 w-44 animate-pulse rounded bg-[var(--bg-card)]"
           />
           <div
-            className="h-8 w-16 animate-pulse rounded-md"
-            style={{ background: 'var(--bg-card)' }}
+            className="h-8 w-16 animate-pulse rounded-md bg-[var(--bg-card)]"
           />
         </div>
         <div
-          className="h-8 w-28 animate-pulse rounded-md"
-          style={{ background: 'var(--bg-card)' }}
+          className="h-8 w-28 animate-pulse rounded-md bg-[var(--bg-card)]"
         />
       </div>
 
@@ -44,14 +37,12 @@ export default function CalendarLoading() {
         {Array.from({ length: 7 }).map((_, col) => (
           <div key={col} className="flex flex-col gap-2">
             <div
-              className="h-8 animate-pulse rounded-lg"
-              style={{ background: 'var(--bg-secondary)' }}
+              className="h-8 animate-pulse rounded-lg bg-[var(--bg-secondary)]"
             />
             {Array.from({ length: 3 }).map((_, row) => (
               <div
                 key={row}
-                className="h-24 animate-pulse rounded-lg"
-                style={{ background: 'var(--bg-secondary)' }}
+                className="h-24 animate-pulse rounded-lg bg-[var(--bg-secondary)]"
               />
             ))}
           </div>
@@ -63,12 +54,10 @@ export default function CalendarLoading() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i}>
             <div
-              className="h-10 animate-pulse rounded-t-lg"
-              style={{ background: 'var(--bg-secondary)' }}
+              className="h-10 animate-pulse rounded-t-lg bg-[var(--bg-secondary)]"
             />
             <div
-              className="h-28 animate-pulse rounded-b-lg"
-              style={{ background: 'var(--bg-card)' }}
+              className="h-28 animate-pulse rounded-b-lg bg-[var(--bg-card)]"
             />
           </div>
         ))}

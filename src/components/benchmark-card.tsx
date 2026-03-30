@@ -13,8 +13,7 @@ export default function BenchmarkCard({ benchmarkResult }: BenchmarkCardProps) {
   return (
     <div className="card p-5">
       <h3
-        className="kicker mb-4"
-        style={{ color: 'var(--text-secondary)' }}
+        className="kicker mb-4 text-[var(--text-secondary)]"
       >
         {t('ui.components.vsBenchmark', { niche: nicheLabel })}
       </h3>
@@ -26,8 +25,7 @@ export default function BenchmarkCard({ benchmarkResult }: BenchmarkCardProps) {
       </div>
 
       <p
-        className="mt-4 text-xs leading-relaxed"
-        style={{ color: 'var(--text-subtle)' }}
+        className="mt-4 text-xs leading-relaxed text-[var(--text-subtle)]"
       >
         {summary}
       </p>
@@ -52,14 +50,14 @@ function MetricRow({ metric }: { metric: MetricBenchmark }) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-baseline justify-between">
-        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+        <span className="text-xs text-[var(--text-secondary)]">
           {metric.metric}
         </span>
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-xs tabular-nums" style={{ color: 'var(--text-primary)' }}>
+          <span className="font-mono text-xs tabular-nums text-[var(--text-primary)]">
             {formatMetricValue(metric.userValue, metric.metric)}
           </span>
-          <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+          <span className="text-xs text-[var(--text-subtle)]">
             vs {formatMetricValue(metric.benchmarkMean, metric.metric)}
           </span>
           <span className="text-xs font-medium" style={{ color: rankColor }}>
@@ -70,8 +68,7 @@ function MetricRow({ metric }: { metric: MetricBenchmark }) {
 
       {/* Percentile bar */}
       <div
-        className="h-1 w-full overflow-hidden rounded-full"
-        style={{ background: 'var(--bg-primary)' }}
+        className="h-1 w-full overflow-hidden rounded-full bg-[var(--bg-primary)]"
       >
         <div
           className="h-full rounded-full transition-all duration-500"

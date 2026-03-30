@@ -104,8 +104,7 @@ export function OutputWall() {
           {t('ui.landing.outputViews')}
         </h2>
         <p
-          className="mb-6 max-w-lg text-sm leading-relaxed"
-          style={{ color: 'var(--text-secondary)' }}
+          className="mb-6 max-w-lg text-sm leading-relaxed text-[var(--text-secondary)]"
         >
           {t('ui.landing.outputDescription')}
         </p>
@@ -157,14 +156,12 @@ export function OutputWall() {
               {/* Card content */}
               <div className="p-4">
                 <p
-                  className="text-sm font-semibold"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="text-sm font-semibold text-[var(--text-primary)]"
                 >
                   {view.name}
                 </p>
                 <p
-                  className="mt-1 text-xs leading-relaxed"
-                  style={{ color: 'var(--text-subtle)' }}
+                  className="mt-1 text-xs leading-relaxed text-[var(--text-subtle)]"
                 >
                   {view.description}
                 </p>
@@ -179,21 +176,13 @@ export function OutputWall() {
         <div className="flex gap-4">
           <Link
             href="/dashboard?source=demo&persona=tutorial"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
-            style={{
-              background: 'var(--accent-green)',
-              color: 'var(--bg-primary)',
-            }}
+            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
           >
             {t('ui.landing.tryDemo')}
           </Link>
           <Link
             href="/onboarding"
-            className="inline-flex h-12 items-center justify-center rounded-full border px-8 text-sm font-semibold transition-colors hover:bg-white/5"
-            style={{
-              borderColor: 'var(--border-medium)',
-              color: 'var(--text-primary)',
-            }}
+            className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--border-medium)] px-8 text-sm font-semibold transition-colors hover:bg-white/5 text-[var(--text-primary)]"
           >
             {t('ui.landing.getStarted')}
           </Link>
@@ -202,13 +191,11 @@ export function OutputWall() {
 
       {/* Powered by Dash footer */}
       <footer
-        className="flex flex-col items-center gap-3 pt-8 pb-4"
-        style={{ borderTop: '1px solid var(--border-subtle)' }}
+        className="flex flex-col items-center gap-3 pt-8 pb-4 border-t border-[var(--border-subtle)]"
       >
         <div className="flex items-center gap-2">
           <span
-            className="text-sm font-semibold tracking-tight"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-sm font-semibold tracking-tight text-[var(--text-subtle)]"
           >
             {t('ui.common.poweredBy')}
           </span>
@@ -217,21 +204,19 @@ export function OutputWall() {
             viewBox="0 0 32 20"
             fill="none"
             aria-hidden="true"
-            style={{ height: '0.7em', width: 'auto' }}
+            className="h-[0.7em] w-auto"
           >
             <line x1="1" y1="10" x2="31" y2="10" stroke="var(--text-secondary)" strokeWidth="2.5" strokeLinecap="round" />
             <line x1="11" y1="18" x2="21" y2="2" stroke="var(--text-secondary)" strokeWidth="2.5" strokeLinecap="round" />
           </svg>
           <span
-            className="text-sm font-extrabold uppercase"
-            style={{ color: 'var(--text-secondary)', letterSpacing: '-0.06em' }}
+            className="text-sm font-extrabold uppercase text-[var(--text-secondary)] tracking-[-0.06em]"
           >
             DASH
           </span>
         </div>
         <p
-          className="text-xs"
-          style={{ color: 'var(--text-subtle)' }}
+          className="text-xs text-[var(--text-subtle)]"
         >
           {t('ui.common.customDigitalSystems')}
         </p>

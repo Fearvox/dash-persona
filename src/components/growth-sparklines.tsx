@@ -327,11 +327,7 @@ const SparklineCard = memo(function SparklineCard({
           </ResponsiveContainer>
         ) : (
           <div
-            className="flex h-full items-center justify-center rounded text-xs"
-            style={{
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-subtle)',
-            }}
+            className="flex h-full items-center justify-center rounded text-xs bg-[var(--bg-secondary)] text-[var(--text-subtle)]"
           >
             {t('ui.common.insufficientData')}
           </div>

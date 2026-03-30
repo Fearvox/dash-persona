@@ -32,18 +32,16 @@ export default function CompareTable({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+              <tr className="border-b border-[var(--border-subtle)]">
                 <th
-                  className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                  style={{ color: 'var(--text-subtle)' }}
+                  className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
                 >
                   Metric
                 </th>
                 {PLATFORMS.map((p) => (
                   <th
                     key={p}
-                    className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wider"
-                    style={{ color: 'var(--text-subtle)' }}
+                    className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
                   >
                     {PLATFORM_LABELS[p]}
                   </th>
@@ -54,11 +52,10 @@ export default function CompareTable({
               {metricRows.map((row) => (
                 <tr
                   key={row.label}
-                  style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                  className="border-b border-[var(--border-subtle)]"
                 >
                   <td
-                    className="px-5 py-3"
-                    style={{ color: 'var(--text-secondary)' }}
+                    className="px-5 py-3 text-[var(--text-secondary)]"
                   >
                     {row.label}
                   </td>
@@ -89,8 +86,7 @@ export default function CompareTable({
       {/* Mobile: tab navigation */}
       <div className="sm:hidden">
         <div
-          className="mb-4 flex rounded-lg p-1"
-          style={{ background: 'var(--bg-secondary)' }}
+          className="mb-4 flex rounded-lg bg-[var(--bg-secondary)] p-1"
           role="tablist"
         >
           {PLATFORMS.map((p, i) => {
@@ -121,8 +117,7 @@ export default function CompareTable({
         {/* Active platform metrics */}
         <div className="card p-5">
           <h3
-            className="mb-4 text-sm font-semibold"
-            style={{ color: 'var(--text-primary)' }}
+            className="mb-4 text-sm font-semibold text-[var(--text-primary)]"
           >
             {PLATFORM_LABELS[PLATFORMS[activeTab]]}
           </h3>
@@ -139,8 +134,7 @@ export default function CompareTable({
                   className="flex items-center justify-between"
                 >
                   <span
-                    className="text-xs"
-                    style={{ color: 'var(--text-subtle)' }}
+                    className="text-xs text-[var(--text-subtle)]"
                   >
                     {row.label}
                   </span>
@@ -155,8 +149,7 @@ export default function CompareTable({
                     {v?.display ?? '\u2014'}
                     {isWinner && (
                       <span
-                        className="ml-1 text-xs"
-                        style={{ color: 'var(--accent-green)' }}
+                        className="ml-1 text-xs text-[var(--accent-green)]"
                       >
                         #1
                       </span>

@@ -85,14 +85,12 @@ export default function ConfirmDialog({
       <div ref={panelRef} className="modal-panel">
         <h3
           id={titleId}
-          className="text-base font-bold"
-          style={{ color: 'var(--text-primary)' }}
+          className="text-base font-bold text-[var(--text-primary)]"
         >
           {title}
         </h3>
         <p
-          className="mt-2 text-sm leading-relaxed"
-          style={{ color: 'var(--text-secondary)' }}
+          className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]"
         >
           {description}
         </p>
@@ -100,12 +98,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg px-4 py-2 text-sm font-medium"
-            style={{
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="rounded-lg px-4 py-2 text-sm font-medium bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
           >
             {cancelLabel}
           </button>

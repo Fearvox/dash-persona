@@ -33,15 +33,10 @@ function ChartTooltip({
   const d = payload[0].payload;
   return (
     <div
-      className="rounded-lg px-3 py-2 text-xs shadow-lg"
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-medium)',
-        color: 'var(--text-primary)',
-      }}
+      className="rounded-lg px-3 py-2 text-xs shadow-lg bg-[var(--bg-card)] border border-[var(--border-medium)] text-[var(--text-primary)]"
     >
       <p className="capitalize font-medium">{d.name}</p>
-      <p className="mt-1" style={{ color: 'var(--text-subtle)' }}>
+      <p className="mt-1 text-[var(--text-subtle)]">
         {d.value.toFixed(1)}%
       </p>
     </div>
@@ -57,8 +52,7 @@ export default function PersonaBarChart({ data, onBarClick }: PersonaBarChartPro
   if (chartData.length === 0) {
     return (
       <div
-        className="flex h-40 items-center justify-center rounded text-xs"
-        style={{ background: 'var(--bg-secondary)', color: 'var(--text-subtle)' }}
+        className="flex h-40 items-center justify-center rounded text-xs bg-[var(--bg-secondary)] text-[var(--text-subtle)]"
       >
         No content data
       </div>

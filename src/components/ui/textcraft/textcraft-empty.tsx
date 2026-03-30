@@ -11,8 +11,7 @@ export function TextcraftEmpty({ message = 'no data yet' }: TextcraftEmptyProps)
 
   return (
     <pre
-      className="font-mono text-center text-[10px] leading-snug"
-      style={{ color: 'var(--text-subtle)', opacity: 0.6 }}
+      className="font-mono text-center text-[10px] leading-snug text-[var(--text-subtle)] opacity-[0.6]"
     >
       {`${top}\n${mid}\n${bot}`}
     </pre>

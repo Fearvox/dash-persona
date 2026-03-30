@@ -33,11 +33,7 @@ export default function CodeArtBackground() {
 
       {/* Radial vignette overlay — darkens edges, keeps center clear */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse 50% 50% at 50% 50%, transparent 0%, var(--bg-primary) 100%)',
-        }}
+        className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_transparent_0%,_var(--bg-primary)_100%)]"
       />
     </div>
   )

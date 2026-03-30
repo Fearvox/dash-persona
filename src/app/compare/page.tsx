@@ -125,7 +125,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
           {t('ui.compare.title')}
         </h1>
-        <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
+        <p className="text-sm text-[var(--text-subtle)]">
           {t('ui.compare.persona', { type: personaType })}
         </p>
       </header>
@@ -164,14 +164,12 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 className="card px-5 py-4"
               >
                 <p
-                  className="mb-1 text-[0.6875rem] font-medium uppercase tracking-wider"
-                  style={{ color: 'var(--accent-highlight)' }}
+                  className="mb-1 text-[0.6875rem] font-medium uppercase tracking-wider text-[var(--accent-highlight)]"
                 >
                   {insight.type.replace(/_/g, ' ')}
                 </p>
                 <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: 'var(--text-secondary)' }}
+                  className="text-sm leading-relaxed text-[var(--text-secondary)]"
                 >
                   {insight.text}
                 </p>
@@ -190,18 +188,16 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr className="border-b border-[var(--border-subtle)]">
                   <th
-                    className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                    style={{ color: 'var(--text-subtle)' }}
+                    className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
                   >
                     {t('ui.compare.category')}
                   </th>
                   {PLATFORMS.map((p) => (
                     <th
                       key={p}
-                      className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider"
-                      style={{ color: 'var(--text-subtle)' }}
+                      className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
                     >
                       {PLATFORM_LABELS[p]}
                     </th>
@@ -214,13 +210,10 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                   return (
                     <tr
                       key={row.category}
-                      style={{
-                        borderBottom: '1px solid var(--border-subtle)',
-                      }}
+                      className="border-b border-[var(--border-subtle)]"
                     >
                       <td
-                        className="px-4 py-2.5 capitalize"
-                        style={{ color: 'var(--text-secondary)' }}
+                        className="px-4 py-2.5 capitalize text-[var(--text-secondary)]"
                       >
                         {row.category}
                       </td>
@@ -277,8 +270,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 }
               >
                 <p
-                  className="text-xs font-medium uppercase tracking-wider"
-                  style={{ color: 'var(--text-subtle)' }}
+                  className="text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
                 >
                   {entry.label}
                 </p>

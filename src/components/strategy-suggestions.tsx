@@ -23,8 +23,7 @@ export default function StrategySuggestions({
   if (suggestions.length === 0) {
     return (
       <div
-        className="card p-6 text-center text-sm"
-        style={{ color: 'var(--text-subtle)' }}
+        className="card p-6 text-center text-sm text-[var(--text-subtle)]"
       >
         {t('ui.components.noStrategySuggestions')}
       </div>
@@ -59,8 +58,7 @@ export default function StrategySuggestions({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h3
-                  className="truncate text-sm font-medium leading-snug"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="truncate text-sm font-medium leading-snug text-[var(--text-primary)]"
                 >
                   {s.title}
                 </h3>
@@ -72,8 +70,7 @@ export default function StrategySuggestions({
                 </span>
               </div>
               <p
-                className="mt-0.5 line-clamp-2 text-xs leading-relaxed"
-                style={{ color: 'var(--text-secondary)' }}
+                className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]"
               >
                 {s.description}
               </p>

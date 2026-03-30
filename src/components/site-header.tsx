@@ -21,11 +21,7 @@ export default function SiteHeader() {
     <>
       {/* Fixed header bar */}
       <header
-        className="fixed top-0 right-0 left-0 z-40 flex h-12 items-center justify-between px-6 backdrop-blur-md"
-        style={{
-          background: 'rgba(10, 15, 13, 0.80)',
-          borderBottom: '1px solid var(--border-subtle)',
-        }}
+        className="fixed top-0 right-0 left-0 z-40 flex h-12 items-center justify-between px-6 backdrop-blur-md bg-[rgba(10,_15,_13,_0.80)] border-b border-b-[var(--border-subtle)]"
       >
         {/* Logo */}
         <Link

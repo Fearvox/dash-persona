@@ -18,22 +18,15 @@ const GAP = 12;
 export default function PipelineSkeleton() {
   return (
     <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 32,
-        padding: '32px 16px',
-      }}
+      className="flex flex-col items-center gap-8 px-4 py-8"
       aria-busy="true"
       aria-label={t('ui.a11y.loadingPipeline')}
     >
       {ROWS.map((row, rowIdx) => (
-        <div key={row.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+        <div key={row.key} className="flex flex-col items-center gap-3">
           {/* Kicker label */}
           <span
-            className="kicker"
-            style={{ marginBottom: 4 }}
+            className="kicker mb-1"
           >
             {t(row.key)}
           </span>
@@ -41,22 +34,13 @@ export default function PipelineSkeleton() {
           {/* Connecting lines from previous row */}
           {rowIdx > 0 && (
             <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: GAP + BOX_W,
-                marginTop: -8,
-                marginBottom: -4,
-              }}
+              className="flex justify-center -mt-2 -mb-1"
+              style={{ gap: GAP + BOX_W }}
             >
               {Array.from({ length: Math.min(3, ROWS[rowIdx - 1].count) }).map((_, i) => (
                 <div
                   key={i}
-                  style={{
-                    width: 1,
-                    height: 24,
-                    borderLeft: '1px dashed var(--border-subtle)',
-                  }}
+                  className="w-px h-6 border-l border-dashed border-[var(--border-subtle)]"
                 />
               ))}
             </div>
@@ -66,18 +50,14 @@ export default function PipelineSkeleton() {
           {row.grid ? (
             // 3x3 grid for engine modules
             <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(3, ${BOX_W}px)`,
-                gap: GAP,
-              }}
+              className="grid grid-cols-[repeat(3,140px)] gap-3"
             >
               {Array.from({ length: row.count }).map((_, i) => (
                 <SkeletonBox key={i} />
               ))}
             </div>
           ) : (
-            <div style={{ display: 'flex', gap: GAP, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div className="flex gap-3 flex-wrap justify-center">
               {Array.from({ length: row.count }).map((_, i) => (
                 <SkeletonBox key={i} />
               ))}
@@ -92,13 +72,7 @@ export default function PipelineSkeleton() {
 function SkeletonBox() {
   return (
     <div
-      style={{
-        width: BOX_W,
-        height: BOX_H,
-        background: 'var(--bg-secondary)',
-        borderRadius: 'var(--radius-md)',
-        animation: 'skeleton-pulse 1.5s ease-in-out infinite',
-      }}
+      className="w-[140px] h-[56px] bg-[var(--bg-secondary)] rounded-[var(--radius-md)] animate-[skeleton-pulse_1.5s_ease-in-out_infinite]"
     />
   );
 }

@@ -25,56 +25,48 @@ function PlatformCard({ summary }: { summary: PlatformSummary }) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <p
-            className="text-xs"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-xs text-[var(--text-subtle)]"
           >
             {t('ui.compare.followers')}
           </p>
           <p
-            className="metric-value text-lg font-semibold"
-            style={{ color: 'var(--text-primary)' }}
+            className="metric-value text-lg font-semibold text-[var(--text-primary)]"
           >
             {formatNumber(summary.followers)}
           </p>
         </div>
         <div>
           <p
-            className="text-xs"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-xs text-[var(--text-subtle)]"
           >
             {t('ui.compare.engagementRate')}
           </p>
           <p
-            className="metric-value text-lg font-semibold"
-            style={{ color: 'var(--text-primary)' }}
+            className="metric-value text-lg font-semibold text-[var(--text-primary)]"
           >
             {(summary.overallEngagementRate * 100).toFixed(1)}%
           </p>
         </div>
         <div>
           <p
-            className="text-xs"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-xs text-[var(--text-subtle)]"
           >
             {t('ui.components.topContent')}
           </p>
           <p
-            className="text-sm font-medium capitalize"
-            style={{ color: 'var(--text-secondary)' }}
+            className="text-sm font-medium capitalize text-[var(--text-secondary)]"
           >
             {topContentType(summary)}
           </p>
         </div>
         <div>
           <p
-            className="text-xs"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-xs text-[var(--text-subtle)]"
           >
             {t('ui.common.posts')}
           </p>
           <p
-            className="metric-value text-lg font-semibold"
-            style={{ color: 'var(--text-primary)' }}
+            className="metric-value text-lg font-semibold text-[var(--text-primary)]"
           >
             {summary.postCount}
           </p>
@@ -97,11 +89,7 @@ export default function PlatformComparison({
         {summaries.map((s) => (
           <div
             key={s.platform}
-            className="rounded-lg p-4"
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="rounded-lg p-4 bg-[var(--bg-secondary)] border border-[var(--border-subtle)]"
           >
             <PlatformCard summary={s} />
           </div>
@@ -111,8 +99,7 @@ export default function PlatformComparison({
       {/* Mobile: tab navigation */}
       <div className="sm:hidden">
         <div
-          className="mb-4 flex rounded-lg p-1"
-          style={{ background: 'var(--bg-secondary)' }}
+          className="mb-4 flex rounded-lg p-1 bg-[var(--bg-secondary)]"
           role="tablist"
         >
           {summaries.map((s, i) => {
@@ -143,11 +130,7 @@ export default function PlatformComparison({
 
         {summaries[activeTab] && (
           <div
-            className="rounded-lg p-4"
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="rounded-lg p-4 bg-[var(--bg-secondary)] border border-[var(--border-subtle)]"
             role="tabpanel"
           >
             <PlatformCard summary={summaries[activeTab]} />
@@ -161,12 +144,7 @@ export default function PlatformComparison({
           {insights.slice(0, 4).map((insight, i) => (
             <div
               key={i}
-              className="rounded-lg px-4 py-3 text-sm"
-              style={{
-                background: 'rgba(240, 245, 69, 0.06)',
-                border: '1px solid rgba(240, 245, 69, 0.12)',
-                color: 'var(--accent-highlight)',
-              }}
+              className="rounded-lg px-4 py-3 text-sm bg-[rgba(240,_245,_69,_0.06)] border border-[rgba(240,_245,_69,_0.12)] text-[var(--accent-highlight)]"
             >
               {insight.text}
             </div>

@@ -72,24 +72,18 @@ function NodeCard({
 
   return (
     <div
-      className="flex flex-col gap-0"
-      style={{ minWidth: 220, maxWidth: 280 }}
+      className="flex min-w-[220px] max-w-[280px] flex-col gap-0"
     >
       <button
         type="button"
         onClick={onClick}
-        className="card w-full cursor-pointer p-4 text-left transition-all"
-        style={{
-          borderColor: isSelected ? 'var(--accent-green)' : undefined,
-          borderWidth: isSelected ? '2px' : undefined,
-        }}
+        className={`card w-full cursor-pointer p-4 text-left transition-all ${isSelected ? 'border-2 border-[var(--accent-green)]' : ''}`}
         aria-pressed={isSelected}
       >
         {/* Header: ID + status badge */}
         <div className="flex items-center justify-between gap-2">
           <span
-            className="metric-value text-xs font-medium"
-            style={{ color: 'var(--text-subtle)' }}
+            className="metric-value text-xs font-medium text-[var(--text-subtle)]"
           >
             {node.id}
           </span>
@@ -103,16 +97,14 @@ function NodeCard({
 
         {/* Title */}
         <p
-          className="mt-2 text-sm font-semibold leading-snug"
-          style={{ color: 'var(--text-primary)' }}
+          className="mt-2 text-sm font-semibold leading-snug text-[var(--text-primary)]"
         >
           {node.title}
         </p>
 
         {/* Hypothesis preview */}
         <p
-          className="mt-1 text-xs leading-relaxed"
-          style={{ color: 'var(--text-subtle)' }}
+          className="mt-1 text-xs leading-relaxed text-[var(--text-subtle)]"
         >
           {node.hypothesis.length > 80
             ? node.hypothesis.slice(0, 80) + '...'
@@ -129,18 +121,13 @@ function NodeCard({
               {node.scoring.compositeScore}
             </span>
             <span
-              className="text-xs"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs text-[var(--text-subtle)]"
             >
               {t('ui.timeline.scoreCompositeLabel')}
             </span>
             {hasConflict && (
               <span
-                className="badge text-xs"
-                style={{
-                  background: 'rgba(210, 200, 126, 0.15)',
-                  color: 'var(--accent-yellow)',
-                }}
+                className="badge bg-[rgba(210,_200,_126,_0.15)] text-[var(--accent-yellow)] text-xs"
               >
                 {t('ui.timeline.conflict')}
               </span>
@@ -170,6 +157,7 @@ function NodeCard({
                   ? `1px solid ${style.text}`
                   : '1px solid transparent',
               }}
+
               aria-label={`Set outcome to ${outcome}`}
             >
               {outcome.charAt(0).toUpperCase() + outcome.slice(1)}
@@ -183,12 +171,7 @@ function NodeCard({
               e.stopPropagation();
               onDiscard();
             }}
-            className="ml-auto rounded px-2 py-0.5 text-xs font-medium transition-colors"
-            style={{
-              color: 'var(--accent-red)',
-              background: 'transparent',
-              border: '1px solid transparent',
-            }}
+            className="ml-auto rounded bg-transparent px-2 py-0.5 text-xs font-medium text-[var(--accent-red)] border border-transparent transition-colors"
             aria-label={`Discard experiment ${node.id}`}
           >
             {t('ui.timeline.discard')}
@@ -215,7 +198,7 @@ function ScoreBar({
   return (
     <div>
       <div className="flex items-center justify-between text-xs">
-        <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+        <span className="text-[var(--text-secondary)]">{label}</span>
         <span
           className="metric-value font-medium"
           style={{ color: scoreColor(value) }}
@@ -224,15 +207,13 @@ function ScoreBar({
         </span>
       </div>
       <div
-        className="mt-1 h-1.5 w-full overflow-hidden rounded-full"
-        style={{ background: 'var(--bg-secondary)' }}
+        className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-secondary)]"
       >
         <div
-          className="h-full rounded-full transition-all"
+          className="h-full rounded-full opacity-70 transition-all"
           style={{
             width: `${Math.min((value / max) * 100, 100)}%`,
             background: scoreColor(value),
-            opacity: 0.7,
           }}
         />
       </div>
@@ -256,8 +237,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
         <div>
           <div className="flex items-center gap-2">
             <span
-              className="metric-value text-sm font-medium"
-              style={{ color: 'var(--text-subtle)' }}
+              className="metric-value text-sm font-medium text-[var(--text-subtle)]"
             >
               {node.id}
             </span>
@@ -269,26 +249,20 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
             </span>
             {hasConflict && (
               <span
-                className="badge"
-                style={{
-                  background: 'rgba(210, 200, 126, 0.15)',
-                  color: 'var(--accent-yellow)',
-                }}
+                className="badge bg-[rgba(210,_200,_126,_0.15)] text-[var(--accent-yellow)]"
               >
                 {t('ui.timeline.metricConflict')}
               </span>
             )}
           </div>
           <h3
-            className="mt-1 text-lg font-bold"
-            style={{ color: 'var(--text-primary)' }}
+            className="mt-1 text-lg font-bold text-[var(--text-primary)]"
           >
             {node.title}
           </h3>
         </div>
         <span
-          className="text-xs"
-          style={{ color: 'var(--text-subtle)' }}
+          className="text-xs text-[var(--text-subtle)]"
         >
           {t('ui.timeline.series')}: {node.series}
         </span>
@@ -296,8 +270,7 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
 
       {/* Hypothesis */}
       <p
-        className="mt-3 text-sm leading-relaxed"
-        style={{ color: 'var(--text-secondary)' }}
+        className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]"
       >
         {node.hypothesis}
       </p>
@@ -313,14 +286,13 @@ function DetailPanel({ node }: { node: PersonaTreeNode }) {
             <ScoreBar label={t('ui.timeline.scoreComposite')} value={node.scoring.compositeScore} />
           </div>
           <p
-            className="mt-2 text-xs"
-            style={{ color: 'var(--text-subtle)' }}
+            className="mt-2 text-xs text-[var(--text-subtle)]"
           >
             Threshold:{' '}
             {node.scoring.passesThreshold ? (
-              <span style={{ color: 'var(--accent-green)' }}>Passes</span>
+              <span className="text-[var(--accent-green)]">Passes</span>
             ) : (
-              <span style={{ color: 'var(--accent-red)' }}>Below</span>
+              <span className="text-[var(--accent-red)]">Below</span>
             )}
           </p>
         </div>

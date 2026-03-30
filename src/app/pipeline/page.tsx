@@ -14,12 +14,11 @@ export default function PipelineStandalonePage() {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-10">
       <header>
         <h1
-          className="text-xl font-bold tracking-tight sm:text-2xl"
-          style={{ color: 'var(--text-primary)' }}
+          className="text-xl font-bold tracking-tight sm:text-2xl text-[var(--text-primary)]"
         >
           {t('ui.pipeline.title')}
         </h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-subtle)' }}>
+        <p className="mt-1 text-sm text-[var(--text-subtle)]">
           {t('ui.pipeline.subtitle')}
         </p>
       </header>

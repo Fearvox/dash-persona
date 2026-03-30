@@ -160,8 +160,7 @@ export default function PersonaOverview({
           </p>
           <div className="flex items-center gap-1.5">
             <p
-              className="text-xs font-medium"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs font-medium text-[var(--text-subtle)]"
             >
               {t('ui.dashboard.overallScore')}
             </p>
@@ -170,8 +169,7 @@ export default function PersonaOverview({
             )}
           </div>
           <p
-            className="text-xs"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-xs text-[var(--text-subtle)]"
           >
             {t('ui.dashboard.bestPlatform', { platform: bestPlatform })}
           </p>
@@ -202,15 +200,10 @@ export default function PersonaOverview({
             return (
               <div
                 key={dim.key}
-                className="rounded-lg p-4"
-                style={{
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                }}
+                className="rounded-lg p-4 bg-[var(--bg-secondary)] border border-[var(--border-subtle)]"
               >
                 <p
-                  className="text-xs font-medium"
-                  style={{ color: 'var(--text-subtle)' }}
+                  className="text-xs font-medium text-[var(--text-subtle)]"
                 >
                   {dim.label}
                 </p>
@@ -260,14 +253,7 @@ function ViewPostsButton({
     <button
       type="button"
       onClick={() => onClick(postIds)}
-      className="mt-1 w-full text-center text-xs font-medium"
-      style={{
-        color: 'var(--accent-green)',
-        background: 'transparent',
-        border: 'none',
-        cursor: 'pointer',
-        padding: '2px 0',
-      }}
+      className="mt-1 w-full text-center text-xs font-medium text-[var(--accent-green)] bg-transparent border-none cursor-pointer py-[2px] px-0"
     >
       {t('ui.components.viewPosts', { count: postIds.length })}
     </button>

@@ -95,8 +95,7 @@ export default async function DashboardPage({
             {liveUrl ? t('ui.dashboard.invalidProfileUrl') : t('ui.dashboard.noProfileUrl')}
           </h1>
           <p
-            className="max-w-md text-center text-sm leading-6"
-            style={{ color: 'var(--text-secondary)' }}
+            className="max-w-md text-center text-sm leading-6 text-[var(--text-secondary)]"
           >
             {liveUrl
               ? t('ui.dashboard.invalidUrlMessage')
@@ -104,11 +103,7 @@ export default async function DashboardPage({
           </p>
           <Link
             href="/onboarding"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
-            style={{
-              background: 'var(--accent-green)',
-              color: 'var(--bg-primary)',
-            }}
+            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
           >
             {t('ui.common.goToOnboarding')}
           </Link>
@@ -130,7 +125,7 @@ export default async function DashboardPage({
           if (isLoading) {
             return (
               <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <p className="text-sm text-[var(--text-secondary)]">
                   {t('ui.dashboard.waitingExtension')}
                 </p>
               </div>
@@ -143,8 +138,7 @@ export default async function DashboardPage({
                   {t('ui.dashboard.extensionError')}
                 </h1>
                 <p
-                  className="max-w-md text-center text-sm leading-6"
-                  style={{ color: 'var(--accent-red)' }}
+                  className="max-w-md text-center text-sm leading-6 text-[var(--accent-red)]"
                 >
                   {error}
                 </p>
@@ -164,8 +158,7 @@ export default async function DashboardPage({
                   {t('ui.dashboard.extensionData')}
                 </h1>
                 <p
-                  className="max-w-md text-center text-sm leading-6"
-                  style={{ color: 'var(--text-secondary)' }}
+                  className="max-w-md text-center text-sm leading-6 text-[var(--text-secondary)]"
                 >
                   {t('ui.dashboard.noExtensionData')}
                 </p>
@@ -227,8 +220,7 @@ export default async function DashboardPage({
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="text-sm font-medium transition-colors hover:opacity-80"
-            style={{ color: 'var(--accent-green)' }}
+            className="text-sm font-medium transition-colors hover:opacity-80 text-[var(--accent-green)]"
             aria-label="Back to home"
           >
             &larr;
@@ -241,8 +233,7 @@ export default async function DashboardPage({
             <span className="badge badge-green">{t('ui.common.demo')}</span>
           )}
           <span
-            className="text-xs"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-xs text-[var(--text-subtle)]"
           >
             {personaType}
           </span>
@@ -354,11 +345,7 @@ export default async function DashboardPage({
               className="card flex items-start gap-3 p-4 transition-colors"
             >
               <span
-                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm"
-                style={{
-                  background: 'rgba(126, 210, 154, 0.12)',
-                  color: 'var(--accent-green)',
-                }}
+                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm bg-[rgba(126,_210,_154,_0.12)] text-[var(--accent-green)]"
                 aria-hidden="true"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -369,14 +356,12 @@ export default async function DashboardPage({
               </span>
               <div className="min-w-0">
                 <p
-                  className="text-sm font-medium"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="text-sm font-medium text-[var(--text-primary)]"
                 >
                   {t('ui.dashboard.contentCalendar')}
                 </p>
                 <p
-                  className="mt-0.5 text-xs leading-snug"
-                  style={{ color: 'var(--text-subtle)' }}
+                  className="mt-0.5 text-xs leading-snug text-[var(--text-subtle)]"
                 >
                   {t('ui.dashboard.contentCalendarDesc')}
                 </p>
@@ -388,11 +373,7 @@ export default async function DashboardPage({
               className="card flex items-start gap-3 p-4 transition-colors"
             >
               <span
-                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm"
-                style={{
-                  background: 'rgba(126, 184, 210, 0.12)',
-                  color: 'var(--accent-blue)',
-                }}
+                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm bg-[rgba(126,_184,_210,_0.12)] text-[var(--accent-blue)]"
                 aria-hidden="true"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -405,14 +386,12 @@ export default async function DashboardPage({
               </span>
               <div className="min-w-0">
                 <p
-                  className="text-sm font-medium"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="text-sm font-medium text-[var(--text-primary)]"
                 >
                   {t('ui.dashboard.personaTimeline')}
                 </p>
                 <p
-                  className="mt-0.5 text-xs leading-snug"
-                  style={{ color: 'var(--text-subtle)' }}
+                  className="mt-0.5 text-xs leading-snug text-[var(--text-subtle)]"
                 >
                   {t('ui.dashboard.personaTimelineDesc')}
                 </p>
@@ -424,11 +403,7 @@ export default async function DashboardPage({
               className="card flex items-start gap-3 p-4 transition-colors"
             >
               <span
-                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm"
-                style={{
-                  background: 'rgba(210, 200, 126, 0.12)',
-                  color: 'var(--accent-yellow)',
-                }}
+                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm bg-[rgba(210,_200,_126,_0.12)] text-[var(--accent-yellow)]"
                 aria-hidden="true"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -439,14 +414,12 @@ export default async function DashboardPage({
               </span>
               <div className="min-w-0">
                 <p
-                  className="text-sm font-medium"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="text-sm font-medium text-[var(--text-primary)]"
                 >
                   {t('ui.dashboard.comparePlatforms')}
                 </p>
                 <p
-                  className="mt-0.5 text-xs leading-snug"
-                  style={{ color: 'var(--text-subtle)' }}
+                  className="mt-0.5 text-xs leading-snug text-[var(--text-subtle)]"
                 >
                   {t('ui.dashboard.comparePlatformsDesc')}
                 </p>
@@ -461,11 +434,7 @@ export default async function DashboardPage({
               className="card flex items-center gap-3 p-4 transition-colors"
             >
               <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  color: 'var(--text-secondary)',
-                }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm bg-[rgba(255,_255,_255,_0.06)] text-[var(--text-secondary)]"
                 aria-hidden="true"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -474,8 +443,7 @@ export default async function DashboardPage({
                 </svg>
               </span>
               <p
-                className="text-sm font-medium"
-                style={{ color: 'var(--text-secondary)' }}
+                className="text-sm font-medium text-[var(--text-secondary)]"
               >
                 {t('ui.common.settings')}
               </p>

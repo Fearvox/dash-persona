@@ -229,10 +229,7 @@ export default function OnboardingPage() {
           aria-label={t("ui.onboarding.step", { step: 1 })}
         >
           <div
-            className="h-1 flex-1 rounded-full"
-            style={{
-              background: "var(--accent-green)",
-            }}
+            className="h-1 flex-1 rounded-full bg-[var(--accent-green)]"
           />
         </div>
 
@@ -241,8 +238,7 @@ export default function OnboardingPage() {
             {t("ui.onboarding.connectAccounts")}
           </h1>
           <p
-            className="mt-2 text-sm leading-6"
-            style={{ color: "var(--text-secondary)" }}
+            className="mt-2 text-sm leading-6 text-[var(--text-secondary)]"
           >
             {t("ui.onboarding.connectDesc")}
           </p>
@@ -358,11 +354,7 @@ export default function OnboardingPage() {
                   <button
                     type="button"
                     onClick={handleLaunchImport}
-                    className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
-                    style={{
-                      background: "var(--accent-green)",
-                      color: "var(--bg-primary)",
-                    }}
+                    className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
                   >
                     {t("ui.common.launchDashboard")}
                   </button>
@@ -376,12 +368,7 @@ export default function OnboardingPage() {
           {mode === "url" && (
             <>
           <p
-            className="mt-4 rounded-md px-3 py-2 text-xs leading-5"
-            style={{
-              background: "rgba(210, 200, 126, 0.08)",
-              color: "var(--accent-yellow)",
-              border: "1px solid rgba(210, 200, 126, 0.15)",
-            }}
+            className="mt-4 rounded-md px-3 py-2 text-xs leading-5 bg-[rgba(210,_200,_126,_0.08)] text-[var(--accent-yellow)] border border-[rgba(210,_200,_126,_0.15)]"
           >
             {t("ui.onboarding.tiktokSupported")}
           </p>
@@ -405,19 +392,13 @@ export default function OnboardingPage() {
                     onChange={(e) =>
                       updateEntry(entries, setEntries, index, e.target.value)
                     }
-                    className="h-12 w-full rounded-lg border bg-transparent px-4 pr-28 text-sm outline-none transition-colors focus:border-[var(--accent-green)]"
-                    style={{
-                      borderColor: "var(--border-medium)",
-                      color: "var(--text-primary)",
-                    }}
+                    className="h-12 w-full rounded-lg border border-[var(--border-medium)] bg-transparent px-4 pr-28 text-sm outline-none transition-colors focus:border-[var(--accent-green)] text-[var(--text-primary)]"
                   />
                   {/* Gradient fade overlay to prevent text/badge overlap */}
                   <div
-                    className="pointer-events-none absolute inset-y-[1px] right-[1px] w-28 rounded-r-lg"
+                    className="pointer-events-none absolute inset-y-[1px] right-[1px] w-28 rounded-r-lg bg-[linear-gradient(to_right,_rgba(10,15,13,0)_0%,_rgba(10,15,13,0.15)_15%,_rgba(10,15,13,0.25)_30%,_rgba(10,15,13,0.50)_50%,_rgba(10,15,13,0.85)_85%,_rgba(10,15,13,1)_100%)] transition-opacity duration-200"
                     style={{
-                      background: "linear-gradient(to right, rgba(10,15,13,0) 0%, rgba(10,15,13,0.15) 15%, rgba(10,15,13,0.25) 30%, rgba(10,15,13,0.50) 50%, rgba(10,15,13,0.85) 85%, rgba(10,15,13,1) 100%)",
                       opacity: entry.url.length > 30 ? 1 : 0,
-                      transition: "opacity 0.2s",
                     }}
                   />
                   {entry.platform && (
@@ -432,8 +413,7 @@ export default function OnboardingPage() {
                   <button
                     type="button"
                     onClick={() => removeEntry(entries, setEntries, index)}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
-                    style={{ color: "var(--text-subtle)" }}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-white/5 text-[var(--text-subtle)]"
                     aria-label={t("ui.onboarding.removeUrl", { index: index + 1 })}
                   >
                     <svg
@@ -455,8 +435,7 @@ export default function OnboardingPage() {
 
           {hasNonTikTok && (
             <p
-              className="mt-3 text-xs"
-              style={{ color: "var(--accent-red)" }}
+              className="mt-3 text-xs text-[var(--accent-red)]"
             >
               {t("ui.onboarding.douyinRedNoteNotSupported")}
             </p>
@@ -465,8 +444,7 @@ export default function OnboardingPage() {
           <button
             type="button"
             onClick={() => addEntry(entries, setEntries)}
-            className="mt-4 text-sm font-medium transition-colors hover:opacity-80"
-            style={{ color: "var(--accent-green)" }}
+            className="mt-4 text-sm font-medium transition-colors hover:opacity-80 text-[var(--accent-green)]"
           >
             {t("ui.onboarding.addPlatform")}
           </button>
@@ -475,15 +453,13 @@ export default function OnboardingPage() {
             <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
               <Link
                 href="/dashboard?source=demo&persona=tutorial"
-                className="text-sm font-medium transition-colors hover:opacity-80"
-                style={{ color: "var(--text-subtle)" }}
+                className="text-sm font-medium transition-colors hover:opacity-80 text-[var(--text-subtle)]"
               >
                 {t("ui.onboarding.skipDemo")}
               </Link>
               <Link
                 href="/dashboard?source=extension"
-                className="text-sm font-medium transition-colors hover:opacity-80"
-                style={{ color: "var(--accent-blue)" }}
+                className="text-sm font-medium transition-colors hover:opacity-80 text-[var(--accent-blue)]"
               >
                 {t("ui.onboarding.useExtension")}
               </Link>
@@ -492,11 +468,7 @@ export default function OnboardingPage() {
               type="button"
               onClick={handleLaunchUrl}
               disabled={!hasValidEntry}
-              className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors disabled:opacity-40"
-              style={{
-                background: "var(--accent-green)",
-                color: "var(--bg-primary)",
-              }}
+              className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
             >
               {t("ui.common.launchDashboard")}
             </button>

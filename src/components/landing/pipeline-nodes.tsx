@@ -23,63 +23,24 @@ export type PipelineNode = Node<PipelineNodeData, 'pipeline'>;
 function PipelineModuleNode({ data }: NodeProps<PipelineNode>) {
   return (
     <div
-      style={{
-        width: 160,
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-md)',
-        padding: '10px 12px',
-        position: 'relative',
-        transition: 'border-color 0.15s ease, transform 0.15s ease',
-        cursor: 'default',
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget;
-        el.style.borderColor = 'var(--border-medium)';
-        el.style.transform = 'scale(1.01)';
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget;
-        el.style.borderColor = 'var(--border-subtle)';
-        el.style.transform = 'scale(1)';
-      }}
+      className="w-[160px] bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] px-3 py-2.5 relative transition-[border-color,transform] duration-150 ease-in-out cursor-default hover:border-[var(--border-medium)] hover:scale-[1.01]"
     >
       {/* Corner color indicator (8x8) */}
       <div
-        style={{
-          position: 'absolute',
-          top: 6,
-          left: 6,
-          width: 8,
-          height: 8,
-          borderRadius: 'var(--radius-sm)',
-          background: data.color,
-        }}
+        className="absolute top-1.5 left-1.5 w-2 h-2 rounded-[var(--radius-sm)]"
+        style={{ background: data.color }}
       />
 
       {/* Primary label */}
       <p
-        style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: 'var(--text-primary)',
-          margin: 0,
-          marginTop: 2,
-          lineHeight: 1.3,
-        }}
+        className="text-[13px] font-medium text-[var(--text-primary)] m-0 mt-0.5 leading-[1.3]"
       >
         {data.label}
       </p>
 
       {/* Code name */}
       <p
-        style={{
-          fontSize: 11,
-          fontFamily: 'var(--font-mono)',
-          color: 'var(--text-subtle)',
-          margin: '3px 0 0',
-          lineHeight: 1.2,
-        }}
+        className="text-[11px] font-mono text-[var(--text-subtle)] mt-[3px] mb-0 leading-[1.2]"
       >
         {data.codeName}
       </p>
@@ -87,15 +48,7 @@ function PipelineModuleNode({ data }: NodeProps<PipelineNode>) {
       {/* Description */}
       {data.description && (
         <p
-          style={{
-            fontSize: 11,
-            color: 'var(--text-subtle)',
-            margin: '4px 0 0',
-            lineHeight: 1.3,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
+          className="text-[11px] text-[var(--text-subtle)] mt-1 mb-0 leading-[1.3] overflow-hidden text-ellipsis whitespace-nowrap"
         >
           {data.description}
         </p>
@@ -105,26 +58,12 @@ function PipelineModuleNode({ data }: NodeProps<PipelineNode>) {
       <Handle
         type="target"
         position={Position.Top}
-        style={{
-          width: 4,
-          height: 4,
-          background: 'var(--border-subtle)',
-          border: 'none',
-          minWidth: 4,
-          minHeight: 4,
-        }}
+        className="!w-1 !h-1 !min-w-1 !min-h-1 !bg-[var(--border-subtle)] !border-none"
       />
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{
-          width: 4,
-          height: 4,
-          background: 'var(--border-subtle)',
-          border: 'none',
-          minWidth: 4,
-          minHeight: 4,
-        }}
+        className="!w-1 !h-1 !min-w-1 !min-h-1 !bg-[var(--border-subtle)] !border-none"
       />
     </div>
   );

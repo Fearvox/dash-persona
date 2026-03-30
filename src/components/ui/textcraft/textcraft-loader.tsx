@@ -20,8 +20,7 @@ export function TextcraftLoader({ label = 'analyzing', progress }: TextcraftLoad
 
   return (
     <pre
-      className="font-mono text-center text-[11px] leading-tight animate-[pulse-strong_2s_ease-in-out_infinite] motion-reduce:animate-none"
-      style={{ color: 'var(--accent-green)' }}
+      className="font-mono text-center text-[11px] leading-tight animate-[pulse-strong_2s_ease-in-out_infinite] motion-reduce:animate-none text-[var(--accent-green)]"
     >
       {content}
     </pre>

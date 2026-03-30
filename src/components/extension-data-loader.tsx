@@ -121,8 +121,7 @@ export default function ExtensionDataLoader({
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
         <div
-          className="flex h-16 w-16 items-center justify-center rounded-full"
-          style={{ background: 'rgba(200, 126, 126, 0.12)' }}
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(200,_126,_126,_0.12)]"
         >
           <svg
             width="28"
@@ -142,26 +141,20 @@ export default function ExtensionDataLoader({
           {t('ui.extension.notDetected')}
         </h1>
         <p
-          className="max-w-md text-center text-sm leading-6"
-          style={{ color: 'var(--text-secondary)' }}
+          className="max-w-md text-center text-sm leading-6 text-[var(--text-secondary)]"
         >
           {t('ui.extension.notDetectedDesc')}
         </p>
         <div className="flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href="/dashboard?source=demo&persona=tutorial"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
-            style={{
-              background: 'var(--accent-green)',
-              color: 'var(--bg-primary)',
-            }}
+            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
           >
             {t('ui.extension.fallbackToDemo')}
           </Link>
           <Link
             href="/onboarding"
-            className="text-sm font-medium transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-sm font-medium transition-colors hover:opacity-80 text-[var(--text-subtle)]"
           >
             {t('ui.extension.tryOtherMethod')}
           </Link>
@@ -200,18 +193,16 @@ export default function ExtensionDataLoader({
             />
           </svg>
           <span
-            className="font-mono text-2xl font-bold tabular-nums"
-            style={{ color: 'var(--accent-green)' }}
+            className="font-mono text-2xl font-bold tabular-nums text-[var(--accent-green)]"
           >
             {countdown}
           </span>
         </div>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-sm text-[var(--text-secondary)]">
           {t('ui.extension.waiting')}
         </p>
         <p
-          className="max-w-xs text-center text-xs leading-5"
-          style={{ color: 'var(--text-subtle)' }}
+          className="max-w-xs text-center text-xs leading-5 text-[var(--text-subtle)]"
         >
           {t('ui.extension.waitingDesc')}
         </p>

@@ -181,7 +181,7 @@ function PortraitContent() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-sm text-[var(--text-secondary)]">
           {t('ui.common.loading')}
         </p>
       </div>
@@ -194,8 +194,7 @@ function PortraitContent() {
         <TextcraftEmpty message={t('ui.portrait.noData')} />
         <Link
           href="/onboarding"
-          className="text-sm underline underline-offset-4 transition-colors hover:opacity-80"
-          style={{ color: 'var(--accent-green)' }}
+          className="text-sm underline underline-offset-4 transition-colors hover:opacity-80 text-[var(--accent-green)]"
         >
           {t('ui.common.goToOnboarding')}
         </Link>
@@ -260,14 +259,12 @@ function PortraitContent() {
       <header className="flex items-center justify-between">
         <Link
           href={backHref}
-          className="text-xs transition-colors hover:opacity-80"
-          style={{ color: 'var(--text-subtle)' }}
+          className="text-xs transition-colors hover:opacity-80 text-[var(--text-subtle)]"
         >
           {t('ui.common.backToDashboard')}
         </Link>
         <h1
-          className="font-mono text-xs font-medium uppercase tracking-widest"
-          style={{ color: 'var(--text-secondary)' }}
+          className="font-mono text-xs font-medium uppercase tracking-widest text-[var(--text-secondary)]"
         >
           {t('ui.portrait.title')}
         </h1>
@@ -276,14 +273,10 @@ function PortraitContent() {
       {/* Portrait container */}
       <div
         ref={containerRef}
-        className="portrait-mono rounded-lg border p-6"
-        style={{
-          background: 'var(--bg-card)',
-          borderColor: 'var(--border-subtle)',
-        }}
+        className="portrait-mono rounded-lg border p-6 bg-[var(--bg-card)] border-[var(--border-subtle)]"
       >
         {/* Identity Box — CJK-aware column alignment */}
-        <pre className="text-sm leading-snug" style={{ color: 'var(--accent-green)' }}>
+        <pre className="text-sm leading-snug text-[var(--accent-green)]">
 {`\u250F\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513
 \u2503  CREATOR ID                 \u2503
 \u2523\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u252B
@@ -298,8 +291,7 @@ function PortraitContent() {
         {tags.length > 0 && (
           <div className="mt-4">
             <pre
-              className="text-[10px]"
-              style={{ color: 'var(--text-secondary)' }}
+              className="text-[10px] text-[var(--text-secondary)]"
             >
               {(() => {
                 const tagCells = tags.map((tag) => ` ${tag} `);
@@ -327,8 +319,7 @@ function PortraitContent() {
         {/* Metrics */}
         <div className="mt-6">
           <p
-            className="mb-2 text-[10px] font-medium uppercase tracking-wider"
-            style={{ color: 'var(--text-subtle)' }}
+            className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--text-subtle)]"
           >
             {t('ui.portrait.performanceMatrix')}
           </p>
@@ -340,15 +331,13 @@ function PortraitContent() {
                 <button
                   key={m.label}
                   type="button"
-                  className="flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 text-left transition-opacity"
-                  style={{ opacity: dimmed ? 0.5 : 1 }}
+                  className={`flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 text-left transition-opacity ${dimmed ? 'opacity-50' : ''}`}
                   onClick={() =>
                     setExpandedMetric(isExpanded ? null : m.label)
                   }
                 >
                   <span
-                    className="w-14 text-xs"
-                    style={{ color: 'var(--text-secondary)' }}
+                    className="w-14 text-xs text-[var(--text-secondary)]"
                   >
                     {m.label}
                   </span>
@@ -359,8 +348,7 @@ function PortraitContent() {
                     {renderProgressBar(m.value, 10)}
                   </pre>
                   <span
-                    className="w-10 text-right text-xs tabular-nums"
-                    style={{ color: 'var(--text-secondary)' }}
+                    className="w-10 text-right text-xs tabular-nums text-[var(--text-secondary)]"
                   >
                     {`${Math.round(m.value * 100)}%`}
                   </span>
@@ -369,8 +357,7 @@ function PortraitContent() {
             })}
           </div>
           <p
-            className="mt-2 text-[9px]"
-            style={{ color: 'var(--text-subtle)' }}
+            className="mt-2 text-[9px] text-[var(--text-subtle)]"
           >
             {t('ui.portrait.hover')}
           </p>
@@ -380,14 +367,12 @@ function PortraitContent() {
         {trendData.length > 0 && (
           <div className="mt-6">
             <p
-              className="mb-2 text-[10px] font-medium uppercase tracking-wider"
-              style={{ color: 'var(--text-subtle)' }}
+              className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--text-subtle)]"
             >
               {t('ui.portrait.trend30d')}
             </p>
             <pre
-              className="text-base leading-none"
-              style={{ color: 'var(--accent-green)' }}
+              className="text-base leading-none text-[var(--accent-green)]"
             >
               {renderBrailleLine(trendData)}
             </pre>
@@ -395,10 +380,9 @@ function PortraitContent() {
         )}
 
         {/* Footer branding */}
-        <div className="mt-6 flex items-center justify-between border-t pt-4" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div className="mt-6 flex items-center justify-between border-t pt-4 border-t-[var(--border-subtle)]">
           <span
-            className="text-[10px] tracking-wider"
-            style={{ color: 'var(--text-subtle)' }}
+            className="text-[10px] tracking-wider text-[var(--text-subtle)]"
           >
             DASH &mdash;/ Creator Intelligence
           </span>
@@ -409,24 +393,14 @@ function PortraitContent() {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          className="rounded-md border px-4 py-2 text-xs font-medium transition-colors hover:opacity-80"
-          style={{
-            borderColor: 'var(--border-subtle)',
-            color: 'var(--text-primary)',
-            background: 'var(--bg-card)',
-          }}
+          className="rounded-md border px-4 py-2 text-xs font-medium transition-colors hover:opacity-80 border-[var(--border-subtle)] text-[var(--text-primary)] bg-[var(--bg-card)]"
           onClick={handleCopyText}
         >
           {t('ui.portrait.copyText')}
         </button>
         <button
           type="button"
-          className="rounded-md border px-4 py-2 text-xs font-medium transition-colors hover:opacity-80"
-          style={{
-            borderColor: 'var(--border-subtle)',
-            color: 'var(--text-primary)',
-            background: 'var(--bg-card)',
-          }}
+          className="rounded-md border px-4 py-2 text-xs font-medium transition-colors hover:opacity-80 border-[var(--border-subtle)] text-[var(--text-primary)] bg-[var(--bg-card)]"
           onClick={handleExportPng}
         >
           {t('ui.portrait.exportPng')}
@@ -436,12 +410,7 @@ function PortraitContent() {
       {/* Toast */}
       {toast && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 rounded-md border px-4 py-2 text-xs"
-          style={{
-            background: 'var(--bg-card)',
-            borderColor: 'var(--border-subtle)',
-            color: 'var(--accent-green)',
-          }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 rounded-md border px-4 py-2 text-xs bg-[var(--bg-card)] border-[var(--border-subtle)] text-[var(--accent-green)]"
         >
           {toast}
         </div>
@@ -459,7 +428,7 @@ export default function PortraitPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm text-[var(--text-secondary)]">
             {t('ui.common.loading')}
           </p>
         </div>

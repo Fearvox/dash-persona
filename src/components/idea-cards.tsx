@@ -29,8 +29,7 @@ export default function IdeaCards({ ideas, onUseIdea }: IdeaCardsProps) {
   if (ideas.length === 0) {
     return (
       <p
-        className="text-sm"
-        style={{ color: 'var(--text-subtle)' }}
+        className="text-sm text-[var(--text-subtle)]"
       >
         No experiment ideas available. Add more content data to unlock suggestions.
       </p>
@@ -50,8 +49,7 @@ export default function IdeaCards({ ideas, onUseIdea }: IdeaCardsProps) {
             {/* Header: title + impact badge */}
             <div className="flex items-start justify-between gap-3">
               <h4
-                className="text-sm font-semibold leading-snug"
-                style={{ color: 'var(--text-primary)' }}
+                className="text-sm font-semibold leading-snug text-[var(--text-primary)]"
               >
                 {idea.title}
               </h4>
@@ -65,16 +63,14 @@ export default function IdeaCards({ ideas, onUseIdea }: IdeaCardsProps) {
 
             {/* Hypothesis */}
             <p
-              className="mt-2 text-xs leading-relaxed"
-              style={{ color: 'var(--text-secondary)' }}
+              className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]"
             >
               {idea.hypothesis}
             </p>
 
             {/* Rationale */}
             <p
-              className="mt-1.5 text-xs leading-relaxed"
-              style={{ color: 'var(--text-subtle)' }}
+              className="mt-1.5 text-xs leading-relaxed text-[var(--text-subtle)]"
             >
               {idea.rationale}
             </p>
@@ -85,11 +81,7 @@ export default function IdeaCards({ ideas, onUseIdea }: IdeaCardsProps) {
                 {idea.basedOn.slice(0, 2).map((point, i) => (
                   <span
                     key={i}
-                    className="rounded-full px-2 py-0.5 text-xs"
-                    style={{
-                      background: 'var(--bg-secondary)',
-                      color: 'var(--text-subtle)',
-                    }}
+                    className="rounded-full px-2 py-0.5 text-xs bg-[var(--bg-secondary)] text-[var(--text-subtle)]"
                   >
                     {point}
                   </span>
@@ -98,11 +90,7 @@ export default function IdeaCards({ ideas, onUseIdea }: IdeaCardsProps) {
               <button
                 type="button"
                 onClick={() => onUseIdea(idea)}
-                className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
-                style={{
-                  background: 'var(--accent-green)',
-                  color: 'var(--bg-primary)',
-                }}
+                className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
               >
                 Use this idea
               </button>

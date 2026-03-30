@@ -95,19 +95,14 @@ export default function LiveCollector({
 
   return (
     <div
-      className="rounded-xl border p-6"
-      style={{
-        borderColor: 'var(--border-subtle)',
-        background: 'var(--bg-card)',
-      }}
+      className="rounded-xl border p-6 border-[var(--border-subtle)] bg-[var(--bg-card)]"
     >
       {state.status === 'loading' && (
         <div className="flex items-center gap-3">
           <div
-            className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
-            style={{ borderColor: 'var(--accent-green)', borderTopColor: 'transparent' }}
+            className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent-green)] border-t-transparent"
           />
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm text-[var(--text-secondary)]">
             {t('ui.components.fetchingLive')}
           </p>
         </div>
@@ -115,18 +110,16 @@ export default function LiveCollector({
 
       {state.status === 'error' && (
         <div>
-          <p className="text-sm font-medium" style={{ color: 'var(--accent-red, #ef4444)' }}>
+          <p className="text-sm font-medium text-[var(--accent-red,#ef4444)]">
             {t('ui.components.liveCollectionFailed')}
           </p>
           <p
-            className="mt-1 text-sm"
-            style={{ color: 'var(--text-subtle)' }}
+            className="mt-1 text-sm text-[var(--text-subtle)]"
           >
             {state.message}
           </p>
           <p
-            className="mt-3 text-sm"
-            style={{ color: 'var(--text-subtle)' }}
+            className="mt-3 text-sm text-[var(--text-subtle)]"
           >
             {t('ui.components.fallingBackDemo')}
           </p>
@@ -142,12 +135,12 @@ export default function LiveCollector({
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
-            style={{ color: 'var(--accent-green)' }}
+            className="text-[var(--accent-green)]"
             aria-hidden="true"
           >
             <path d="M3 8l4 4 6-7" />
           </svg>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm text-[var(--text-secondary)]">
             {t('ui.components.liveDataCollected', { userId: state.profile.profile.uniqueId })}
           </p>
         </div>

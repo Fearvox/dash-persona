@@ -78,27 +78,20 @@ export default async function CalendarPage({
           {t('ui.calendar.needMoreData')}
         </h1>
         <p
-          className="max-w-md text-center text-sm leading-6"
-          style={{ color: 'var(--text-secondary)' }}
+          className="max-w-md text-center text-sm leading-6 text-[var(--text-secondary)]"
         >
           {t('ui.calendar.needMoreDataPre')}{' '}
           <strong>{plan.dataPoints}</strong>
           {' '}{t('ui.calendar.needMoreDataPost', { plural: plan.dataPoints === 1 ? '' : t('ui.calendar.posts') })}
         </p>
         <p
-          className="max-w-sm text-center text-xs"
-          style={{ color: 'var(--text-subtle)' }}
+          className="max-w-sm text-center text-xs text-[var(--text-subtle)]"
         >
           {t('ui.calendar.keepPublishing')}
         </p>
         <Link
           href="/onboarding"
-          className="mt-4 inline-flex items-center gap-1.5 rounded-md border px-4 py-2 text-xs font-medium transition-colors hover:opacity-80"
-          style={{
-            borderColor: 'var(--accent-green)',
-            color: 'var(--accent-green)',
-            background: 'transparent',
-          }}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-md border px-4 py-2 text-xs font-medium transition-colors hover:opacity-80 border-[var(--accent-green)] text-[var(--accent-green)] bg-transparent"
         >
           {t('ui.common.importMoreData')}
         </Link>
@@ -120,7 +113,7 @@ export default async function CalendarPage({
         <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
           {t('ui.calendar.title')}
         </h1>
-        <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
+        <p className="text-sm text-[var(--text-subtle)]">
           {t('ui.calendar.subtitle', { dataPoints: plan.dataPoints, slots: plan.slots.length })}
         </p>
       </header>

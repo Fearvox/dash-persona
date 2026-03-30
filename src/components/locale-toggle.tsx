@@ -21,11 +21,7 @@ export function LocaleToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="font-mono text-[10px] tracking-wider px-2 py-1 rounded transition-colors hover:opacity-80"
-      style={{
-        color: 'var(--text-subtle)',
-        border: '1px solid var(--border-subtle)',
-      }}
+      className="font-mono text-[10px] tracking-wider px-2 py-1 rounded transition-colors hover:opacity-80 text-[var(--text-subtle)] border border-[var(--border-subtle)]"
       aria-label={locale === 'zh' ? 'Switch to English' : '切换为中文'}
     >
       {locale === 'zh' ? 'EN' : '中文'}

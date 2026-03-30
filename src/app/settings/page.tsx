@@ -45,8 +45,7 @@ export default function SettingsPage() {
       <header>
         <Link
           href="/dashboard?source=demo&persona=tutorial"
-          className="text-sm font-medium transition-colors hover:opacity-80"
-          style={{ color: 'var(--accent-green)' }}
+          className="text-sm font-medium text-[var(--accent-green)] transition-colors hover:opacity-80"
           aria-label="Back to dashboard"
         >
           &larr; Dashboard
@@ -65,10 +64,9 @@ export default function SettingsPage() {
           {preferences === null ? (
             <div className="flex items-center gap-3">
               <div
-                className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
-                style={{ borderColor: 'var(--accent-green)', borderTopColor: 'transparent' }}
+                className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent-green)] border-t-transparent"
               />
-              <span className="text-sm" style={{ color: 'var(--text-subtle)' }}>
+              <span className="text-sm text-[var(--text-subtle)]">
                 {t('ui.settings.loadingPreferences')}
               </span>
             </div>
@@ -76,12 +74,11 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-5">
               {/* Interaction count */}
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-sm text-[var(--text-secondary)]">
                   {t('ui.settings.totalInteractions')}
                 </span>
                 <span
-                  className="metric-value text-sm font-semibold"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="metric-value text-sm font-semibold text-[var(--text-primary)]"
                 >
                   {preferences.interactionCount}
                 </span>
@@ -90,37 +87,36 @@ export default function SettingsPage() {
               {/* Preferences summary */}
               <div>
                 <h3
-                  className="mb-3 text-sm font-medium"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="mb-3 text-sm font-medium text-[var(--text-primary)]"
                 >
                   {t('ui.settings.yourPreferences')}
                 </h3>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: 'var(--text-subtle)' }}>
+                    <span className="text-[var(--text-subtle)]">
                       {t('ui.settings.topSections')}
                     </span>
-                    <span style={{ color: 'var(--text-secondary)' }}>
+                    <span className="text-[var(--text-secondary)]">
                       {preferences.topSections.length > 0
                         ? preferences.topSections.slice(0, 3).join(', ')
                         : t('ui.settings.noneYet')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: 'var(--text-subtle)' }}>
+                    <span className="text-[var(--text-subtle)]">
                       {t('ui.settings.focusPlatform')}
                     </span>
-                    <span style={{ color: 'var(--text-secondary)' }}>
+                    <span className="text-[var(--text-secondary)]">
                       {preferences.focusPlatform
                         ? (PLATFORM_LABELS[preferences.focusPlatform] ?? preferences.focusPlatform)
                         : t('ui.settings.noneYet')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: 'var(--text-subtle)' }}>
+                    <span className="text-[var(--text-subtle)]">
                       {t('ui.settings.preferredTimeRange')}
                     </span>
-                    <span style={{ color: 'var(--text-secondary)' }}>
+                    <span className="text-[var(--text-secondary)]">
                       {formatTimeRange(preferences.preferredTimeRange)}
                     </span>
                   </div>
@@ -132,18 +128,13 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="inline-flex h-9 items-center justify-center rounded-full px-5 text-xs font-semibold transition-colors"
-                  style={{
-                    background: 'rgba(200, 126, 126, 0.15)',
-                    color: 'var(--accent-red)',
-                  }}
+                  className="inline-flex h-9 items-center justify-center rounded-full bg-[rgba(200,_126,_126,_0.15)] px-5 text-xs font-semibold text-[var(--accent-red)] transition-colors"
                 >
                   {t('ui.settings.clearLearningData')}
                 </button>
                 {cleared && (
                   <span
-                    className="text-xs font-medium"
-                    style={{ color: 'var(--accent-green)' }}
+                    className="text-xs font-medium text-[var(--accent-green)]"
                     role="status"
                   >
                     {t('ui.settings.clearedSuccessfully')}
@@ -163,26 +154,24 @@ export default function SettingsPage() {
         <div className="card p-5">
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: 'var(--text-subtle)' }}>{t('ui.settings.versionLabel')}</span>
+              <span className="text-[var(--text-subtle)]">{t('ui.settings.versionLabel')}</span>
               <span
-                className="metric-value"
-                style={{ color: 'var(--text-secondary)' }}
+                className="metric-value text-[var(--text-secondary)]"
               >
                 0.6.1
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: 'var(--text-subtle)' }}>{t('ui.settings.license')}</span>
-              <span style={{ color: 'var(--text-secondary)' }}>BSL 1.1</span>
+              <span className="text-[var(--text-subtle)]">{t('ui.settings.license')}</span>
+              <span className="text-[var(--text-secondary)]">BSL 1.1</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: 'var(--text-subtle)' }}>{t('ui.settings.source')}</span>
+              <span className="text-[var(--text-subtle)]">{t('ui.settings.source')}</span>
               <a
                 href="https://github.com/openclaw/dash-persona"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:opacity-80"
-                style={{ color: 'var(--accent-green)' }}
+                className="text-[var(--accent-green)] transition-colors hover:opacity-80"
               >
                 GitHub
               </a>

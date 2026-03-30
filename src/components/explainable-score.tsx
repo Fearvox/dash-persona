@@ -77,11 +77,7 @@ export default function ExplainableScore({
 
   return (
     <div
-      className={`rounded-lg ${className ?? ''}`}
-      style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-subtle)',
-      }}
+      className={`rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] ${className ?? ''}`}
     >
       {/* Clickable header */}
       <button
@@ -89,12 +85,10 @@ export default function ExplainableScore({
         onClick={toggle}
         aria-expanded={expanded}
         aria-controls={panelId}
-        className="flex w-full items-center justify-between p-4 text-left"
-        style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+        className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent p-4 text-left"
       >
         <p
-          className="text-xs font-medium"
-          style={{ color: 'var(--text-subtle)' }}
+          className="text-xs font-medium text-[var(--text-subtle)]"
         >
           {label}
         </p>
@@ -117,14 +111,10 @@ export default function ExplainableScore({
           transition: 'max-height 0.3s ease-in-out',
         }}
       >
-        <div className="border-t px-4 pb-4 pt-3" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div className="border-t border-[var(--border-subtle)] px-4 pb-4 pt-3">
           {/* Formula */}
           <p
-            className="rounded px-2 py-1.5 font-mono text-xs leading-relaxed"
-            style={{
-              background: 'var(--bg-primary)',
-              color: 'var(--text-secondary)',
-            }}
+            className="rounded bg-[var(--bg-primary)] px-2 py-1.5 font-mono text-xs leading-relaxed text-[var(--text-secondary)]"
           >
             {explanation.formula}
           </p>
@@ -139,8 +129,7 @@ export default function ExplainableScore({
           {/* Top posts */}
           {explanation.factors.some((f) => f.topPostIds.length > 0) && (
             <p
-              className="mt-3 text-xs"
-              style={{ color: 'var(--text-subtle)' }}
+              className="mt-3 text-xs text-[var(--text-subtle)]"
             >
               Driven by{' '}
               {explanation.factors
@@ -153,8 +142,7 @@ export default function ExplainableScore({
 
           {/* Summary */}
           <p
-            className="mt-2 text-xs leading-relaxed"
-            style={{ color: 'var(--text-secondary)' }}
+            className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]"
           >
             {explanation.summary}
           </p>
@@ -175,8 +163,7 @@ function FactorRow({ factor }: { factor: ScoreFactor }) {
   return (
     <div className="flex items-center gap-2">
       <span
-        className="w-24 shrink-0 truncate text-xs font-medium"
-        style={{ color: 'var(--text-secondary)' }}
+        className="w-24 shrink-0 truncate text-xs font-medium text-[var(--text-secondary)]"
         title={factor.name}
       >
         {factor.name}

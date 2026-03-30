@@ -28,8 +28,7 @@ export default function BootSequence() {
   return (
     <section
       aria-labelledby="boot-heading"
-      className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: 'var(--bg-primary)' }}
+      className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden bg-[var(--bg-primary)]"
     >
       {/* Layer 0: Code art background */}
       <div className="absolute inset-0 z-0">
@@ -53,8 +52,7 @@ export default function BootSequence() {
           />
           <h1
             id="boot-heading"
-            className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
-            style={{ color: 'var(--text-primary)' }}
+            className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl text-[var(--text-primary)]"
           >
             DashPersona
           </h1>
@@ -62,16 +60,14 @@ export default function BootSequence() {
 
         {/* Tagline */}
         <p
-          className="mt-2 text-lg font-medium sm:text-xl"
-          style={{ color: 'var(--accent-green)' }}
+          className="mt-2 text-lg font-medium sm:text-xl text-[var(--accent-green)]"
         >
           {t('ui.landing.tagline')}
         </p>
 
         {/* Sub-tagline */}
         <p
-          className="mt-1 text-sm sm:text-base"
-          style={{ color: 'var(--text-subtle)' }}
+          className="mt-1 text-sm sm:text-base text-[var(--text-subtle)]"
         >
           {t('ui.landing.subTagline')}
         </p>
@@ -80,28 +76,19 @@ export default function BootSequence() {
         <div className="mt-10 flex flex-col gap-4 sm:flex-row">
           <Link
             href="/dashboard?source=demo&persona=tutorial"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
-            style={{
-              background: 'var(--accent-green)',
-              color: 'var(--bg-primary)',
-            }}
+            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
           >
             {t('ui.landing.tryDemo')}
           </Link>
           <Link
             href="/onboarding"
-            className="inline-flex h-12 items-center justify-center rounded-full border px-8 text-sm font-semibold transition-colors hover:bg-white/5"
-            style={{
-              borderColor: 'var(--border-medium)',
-              color: 'var(--text-primary)',
-            }}
+            className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--border-medium)] px-8 text-sm font-semibold transition-colors hover:bg-white/5 text-[var(--text-primary)]"
           >
             {t('ui.landing.getStarted')}
           </Link>
           <Link
             href="/install"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-medium transition-colors hover:bg-white/5"
-            style={{ color: 'var(--accent-yellow)' }}
+            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-medium transition-colors hover:bg-white/5 text-[var(--accent-yellow)]"
           >
             {t('ui.landing.installFull')}
           </Link>
@@ -116,8 +103,7 @@ export default function BootSequence() {
       {/* Layer 2: Scroll indicator */}
       <div className="absolute bottom-8 z-10 flex flex-col items-center gap-2 scroll-indicator">
         <span
-          className="text-xs"
-          style={{ color: 'var(--text-subtle)' }}
+          className="text-xs text-[var(--text-subtle)]"
         >
           {t('ui.landing.scrollToExplore')}
         </span>
@@ -131,8 +117,7 @@ export default function BootSequence() {
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="animate-bounce"
-          style={{ color: 'var(--accent-green)' }}
+          className="animate-bounce text-[var(--accent-green)]"
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>

@@ -358,12 +358,7 @@ export default function CalendarClient({ plan }: CalendarClientProps) {
           <button
             type="button"
             onClick={goToPrevMonth}
-            className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
-            style={{
-              background: 'var(--bg-card)',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
             aria-label="Previous month"
           >
             &larr;
@@ -376,12 +371,7 @@ export default function CalendarClient({ plan }: CalendarClientProps) {
           <button
             type="button"
             onClick={goToNextMonth}
-            className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
-            style={{
-              background: 'var(--bg-card)',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
             aria-label="Next month"
           >
             &rarr;
@@ -505,13 +495,7 @@ export default function CalendarClient({ plan }: CalendarClientProps) {
                   </span>
                 </div>
                 <div
-                  className="flex flex-col gap-1 rounded-b-lg px-2 py-2"
-                  style={{
-                    background: 'var(--bg-card)',
-                    borderLeft: '1px solid var(--border-subtle)',
-                    borderRight: '1px solid var(--border-subtle)',
-                    borderBottom: '1px solid var(--border-subtle)',
-                  }}
+                  className="flex flex-col gap-1 rounded-b-lg px-2 py-2 bg-[var(--bg-card)] border-x border-b border-[var(--border-subtle)]"
                 >
                   {daySlots.map((slot) => (
                     <SlotPill

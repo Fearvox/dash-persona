@@ -96,7 +96,7 @@ export default function ImportPersonaLoader({ platform }: ImportPersonaLoaderPro
   if (loading) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-sm text-[var(--text-secondary)]">
           {t('ui.common.loadingImported')}
         </p>
       </div>

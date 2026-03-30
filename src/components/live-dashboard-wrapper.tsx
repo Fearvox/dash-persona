@@ -62,8 +62,7 @@ export default function LiveDashboardWrapper({
         <div>
           <Link
             href="/"
-            className="text-sm font-medium transition-colors hover:opacity-80"
-            style={{ color: 'var(--accent-green)' }}
+            className="text-sm font-medium transition-colors hover:opacity-80 text-[var(--accent-green)]"
             aria-label="Back to home"
           >
             &larr; DashPersona
@@ -75,17 +74,12 @@ export default function LiveDashboardWrapper({
             {usedFallback ? t('ui.components.demoModeFallback') : t('ui.components.liveData')}
           </span>
         </div>
-        <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
+        <p className="text-sm text-[var(--text-subtle)]">
           {usedFallback ? t('ui.components.showingDemo') : url}
         </p>
         {!usedFallback && profiles !== null && (
           <p
-            className="mt-1 rounded-md px-3 py-1.5 text-xs leading-5"
-            style={{
-              background: 'rgba(126, 184, 210, 0.08)',
-              color: 'var(--accent-blue)',
-              border: '1px solid rgba(126, 184, 210, 0.15)',
-            }}
+            className="mt-1 rounded-md px-3 py-1.5 text-xs leading-5 bg-[rgba(126,_184,_210,_0.08)] text-[var(--accent-blue)] border border-[rgba(126,_184,_210,_0.15)]"
           >
             {t('ui.components.snapshotNote')}
           </p>

@@ -13,8 +13,7 @@ export default function SiteFooter() {
 
   return (
     <footer
-      className="flex flex-col items-center gap-2 px-6 py-4"
-      style={{ borderTop: '1px solid var(--border-subtle)' }}
+      className="flex flex-col items-center gap-2 px-6 py-4 border-t border-t-[var(--border-subtle)]"
     >
       <div className="flex items-center justify-center gap-6">
         <Link href="/" className="nav-pill">
@@ -32,8 +31,7 @@ export default function SiteFooter() {
         <LocaleToggle />
       </div>
       <span
-        className="text-xs"
-        style={{ color: 'var(--text-subtle)' }}
+        className="text-xs text-[var(--text-subtle)]"
       >
         {t('ui.common.version')}
       </span>

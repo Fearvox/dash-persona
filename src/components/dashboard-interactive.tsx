@@ -95,12 +95,7 @@ export default function DashboardInteractive({
         <button
           type="button"
           onClick={openAllPosts}
-          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors"
-          style={{
-            background: 'rgba(126, 210, 154, 0.1)',
-            color: 'var(--accent-green)',
-            border: '1px solid rgba(126, 210, 154, 0.2)',
-          }}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors bg-[rgba(126,_210,_154,_0.1)] text-[var(--accent-green)] border border-[rgba(126,_210,_154,_0.2)]"
         >
           <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 4h16v16H4z" /><path d="M4 10h16" /><path d="M10 4v16" />

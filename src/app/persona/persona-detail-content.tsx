@@ -120,8 +120,7 @@ export default function PersonaDetailContent({
 
           {/* Platform selector tabs */}
           <div
-            className="flex rounded-lg p-1"
-            style={{ background: 'var(--bg-secondary)' }}
+            className="flex rounded-lg bg-[var(--bg-secondary)] p-1"
             role="tablist"
           >
             {platforms.map((p) => {
@@ -132,16 +131,7 @@ export default function PersonaDetailContent({
                   href={platformHref(p)}
                   role="tab"
                   aria-selected={isActive}
-                  className="rounded-md px-4 py-1.5 text-xs font-medium transition-colors"
-                  style={{
-                    background: isActive ? 'var(--bg-card)' : 'transparent',
-                    color: isActive
-                      ? 'var(--text-primary)'
-                      : 'var(--text-subtle)',
-                    border: isActive
-                      ? '1px solid var(--border-subtle)'
-                      : '1px solid transparent',
-                  }}
+                  className={`rounded-md px-4 py-1.5 text-xs font-medium transition-colors ${isActive ? 'bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-subtle)]' : 'bg-transparent text-[var(--text-subtle)] border border-transparent'}`}
                 >
                   {PLATFORM_LABELS[p]}
                 </Link>
@@ -162,8 +152,7 @@ export default function PersonaDetailContent({
               {overall}
             </p>
             <p
-              className="text-xs font-medium"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs font-medium text-[var(--text-subtle)]"
             >
               {t('ui.persona.overallPersonaScore')}
             </p>
@@ -171,14 +160,13 @@ export default function PersonaDetailContent({
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
               <span
-                className="text-sm font-medium"
-                style={{ color: 'var(--text-secondary)' }}
+                className="text-sm font-medium text-[var(--text-secondary)]"
               >
                 {t('ui.persona.momentum')}
               </span>
               {momentumBadge(score.growthHealth.momentum)}
             </div>
-            <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+            <p className="text-xs text-[var(--text-subtle)]">
               {PLATFORM_LABELS[platform]} &middot; {personaType} &middot;{' '}
               {t('ui.persona.postsAnalysed', { count: score.postsAnalysed })}
             </p>
@@ -195,8 +183,7 @@ export default function PersonaDetailContent({
           {/* Content Mix */}
           <div className="card p-5">
             <p
-              className="text-xs font-medium uppercase tracking-wider"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
             >
               {t('ui.persona.contentMix')}
             </p>
@@ -205,34 +192,27 @@ export default function PersonaDetailContent({
                 <div key={cat}>
                   <div className="flex items-center justify-between text-xs">
                     <span
-                      className="capitalize"
-                      style={{ color: 'var(--text-secondary)' }}
+                      className="capitalize text-[var(--text-secondary)]"
                     >
                       {cat}
                     </span>
                     <span
-                      className="metric-value"
-                      style={{ color: 'var(--text-primary)' }}
+                      className="metric-value text-[var(--text-primary)]"
                     >
                       {pct.toFixed(1)}%
                     </span>
                   </div>
                   <div
-                    className="mt-1 h-1.5 w-full overflow-hidden rounded-full"
-                    style={{ background: 'var(--bg-secondary)' }}
+                    className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-secondary)]"
                   >
                     <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${Math.min(pct, 100)}%`,
-                        background: 'var(--accent-green)',
-                        opacity: 0.7,
-                      }}
+                      className="h-full rounded-full bg-[var(--accent-green)] opacity-70"
+                      style={{ width: `${Math.min(pct, 100)}%` }}
                     />
                   </div>
                 </div>
               ))}
-              <p className="mt-1 text-xs" style={{ color: 'var(--text-subtle)' }}>
+              <p className="mt-1 text-xs text-[var(--text-subtle)]">
                 {t('ui.persona.diversityIndex', { count: diversityIndex })}
               </p>
             </div>
@@ -241,14 +221,13 @@ export default function PersonaDetailContent({
           {/* Engagement Profile */}
           <div className="card p-5">
             <p
-              className="text-xs font-medium uppercase tracking-wider"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
             >
               {t('ui.persona.engagementProfile')}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>{t('ui.persona.avgRate')}</span>
+                <span className="text-[var(--text-secondary)]">{t('ui.persona.avgRate')}</span>
                 <span
                   className="metric-value text-lg font-semibold"
                   style={{
@@ -264,18 +243,17 @@ export default function PersonaDetailContent({
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-[var(--text-secondary)]">
                   {t('ui.persona.bestCategory')}
                 </span>
                 <span
-                  className="capitalize"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="capitalize text-[var(--text-primary)]"
                 >
                   {score.engagement.bestCategory ?? 'N/A'}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>{t('ui.persona.trend')}</span>
+                <span className="text-[var(--text-secondary)]">{t('ui.persona.trend')}</span>
                 <span
                   className="font-medium"
                   style={{
@@ -292,7 +270,7 @@ export default function PersonaDetailContent({
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-[var(--text-secondary)]">
                   {t('ui.persona.viralPotential')}
                 </span>
                 <span
@@ -308,40 +286,35 @@ export default function PersonaDetailContent({
           {/* Posting Rhythm */}
           <div className="card p-5">
             <p
-              className="text-xs font-medium uppercase tracking-wider"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
             >
               {t('ui.persona.postingRhythm')}
             </p>
             <div className="mt-3 flex flex-col gap-3">
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-[var(--text-secondary)]">
                   {t('ui.persona.postsPerWeek')}
                 </span>
                 <span
-                  className="metric-value text-lg font-semibold"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="metric-value text-lg font-semibold text-[var(--text-primary)]"
                 >
                   {score.rhythm.postsPerWeek}
                 </span>
               </div>
               <div>
                 <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: 'var(--text-secondary)' }}>
+                  <span className="text-[var(--text-secondary)]">
                     {t('ui.persona.consistency')}
                   </span>
                   <span
                     className="metric-value font-medium"
-                    style={{
-                      color: scoreColor(score.rhythm.consistencyScore),
-                    }}
+                    style={{ color: scoreColor(score.rhythm.consistencyScore) }}
                   >
                     {score.rhythm.consistencyScore}/100
                   </span>
                 </div>
                 <div
-                  className="mt-1 h-1.5 w-full overflow-hidden rounded-full"
-                  style={{ background: 'var(--bg-secondary)' }}
+                  className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-secondary)]"
                 >
                   <div
                     className="h-full rounded-full"
@@ -353,10 +326,10 @@ export default function PersonaDetailContent({
                 </div>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-[var(--text-secondary)]">
                   {t('ui.persona.bestSlots')}
                 </span>
-                <span style={{ color: 'var(--text-primary)' }}>
+                <span className="text-[var(--text-primary)]">
                   {bestDay}, {bestHourLabel}
                 </span>
               </div>
@@ -366,28 +339,25 @@ export default function PersonaDetailContent({
           {/* Persona Consistency */}
           <div className="card p-5">
             <p
-              className="text-xs font-medium uppercase tracking-wider"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
             >
               {t('ui.persona.personaConsistency')}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <p
                 className="metric-value text-2xl font-bold sm:text-3xl"
-                style={{
-                  color: scoreColor(score.consistency.score),
-                }}
+                style={{ color: scoreColor(score.consistency.score) }}
               >
                 {score.consistency.score}
                 <span className="text-sm font-normal">/100</span>
               </p>
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              <p className="text-xs text-[var(--text-secondary)]">
                 {score.consistency.isConsistent
                   ? t('ui.persona.stableIdentity')
                   : t('ui.persona.diverseTopics')}
               </p>
               {score.consistency.dominantCategory && (
-                <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+                <p className="text-xs text-[var(--text-subtle)]">
                   {t('ui.persona.dominant')}:{' '}
                   <span className="capitalize">
                     {score.consistency.dominantCategory}
@@ -401,14 +371,13 @@ export default function PersonaDetailContent({
           {/* Growth Health */}
           <div className="card p-5">
             <p
-              className="text-xs font-medium uppercase tracking-wider"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
             >
               {t('ui.persona.growthHealth')}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-[var(--text-secondary)]">
                   {t('ui.persona.followerGrowth')}
                 </span>
                 <span
@@ -427,12 +396,11 @@ export default function PersonaDetailContent({
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-[var(--text-secondary)]">
                   {t('ui.persona.viewGrowth')}
                 </span>
                 <span
-                  className="metric-value"
-                  style={{ color: 'var(--text-subtle)' }}
+                  className="metric-value text-[var(--text-subtle)]"
                 >
                   {score.growthHealth.viewGrowthRate === 0
                     ? 'N/A'
@@ -440,7 +408,7 @@ export default function PersonaDetailContent({
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-[var(--text-secondary)]">
                   {t('ui.persona.momentum')}
                 </span>
                 {momentumBadge(score.growthHealth.momentum)}
@@ -451,8 +419,7 @@ export default function PersonaDetailContent({
           {/* Strategy */}
           <div className="card p-5">
             <p
-              className="text-xs font-medium uppercase tracking-wider"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs font-medium uppercase tracking-wider text-[var(--text-subtle)]"
             >
               {t('ui.persona.strategy')}
             </p>
@@ -461,14 +428,12 @@ export default function PersonaDetailContent({
                 suggestions.map((s) => (
                   <div key={s.ruleId}>
                     <p
-                      className="text-xs font-semibold"
-                      style={{ color: 'var(--text-primary)' }}
+                      className="text-xs font-semibold text-[var(--text-primary)]"
                     >
                       {s.title}
                     </p>
                     <p
-                      className="mt-0.5 text-xs leading-relaxed"
-                      style={{ color: 'var(--text-subtle)' }}
+                      className="mt-0.5 text-xs leading-relaxed text-[var(--text-subtle)]"
                     >
                       {s.description.length > 120
                         ? s.description.slice(0, 120) + '...'
@@ -477,7 +442,7 @@ export default function PersonaDetailContent({
                   </div>
                 ))
               ) : (
-                <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+                <p className="text-xs text-[var(--text-subtle)]">
                   {t('ui.persona.noSuggestions')}
                 </p>
               )}

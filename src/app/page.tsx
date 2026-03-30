@@ -52,20 +52,17 @@ function SimpleFallbackLanding() {
     <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
       <img src="/logo-icon.svg" alt="DashPersona logo" width={40} height={40} />
       <h1
-        className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl"
-        style={{ color: 'var(--text-primary)' }}
+        className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl text-[var(--text-primary)]"
       >
         DashPersona
       </h1>
       <p
-        className="mt-2 text-lg font-medium"
-        style={{ color: 'var(--accent-green)' }}
+        className="mt-2 text-lg font-medium text-[var(--accent-green)]"
       >
         Data-Agnostic Creator Intelligence Engine
       </p>
       <p
-        className="mt-4 max-w-md text-sm leading-6"
-        style={{ color: 'var(--text-secondary)' }}
+        className="mt-4 max-w-md text-sm leading-6 text-[var(--text-secondary)]"
       >
         Analyze your social media presence across Douyin, TikTok, and Red Note
         with deterministic, AI-free algorithms.
@@ -73,15 +70,13 @@ function SimpleFallbackLanding() {
       <div className="mt-8 flex gap-4">
         <Link
           href="/dashboard?source=demo&persona=tutorial"
-          className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold"
-          style={{ background: 'var(--accent-green)', color: 'var(--bg-primary)' }}
+          className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold bg-[var(--accent-green)] text-[var(--bg-primary)]"
         >
           Try Demo
         </Link>
         <Link
           href="/onboarding"
-          className="inline-flex h-12 items-center justify-center rounded-full border px-8 text-sm font-semibold"
-          style={{ borderColor: 'var(--border-medium)', color: 'var(--text-primary)' }}
+          className="inline-flex h-12 items-center justify-center rounded-full border px-8 text-sm font-semibold border-[var(--border-medium)] text-[var(--text-primary)]"
         >
           Get Started
         </Link>
@@ -118,8 +113,7 @@ export default function HomePage() {
             {t('ui.landing.howItWorks')}
           </h2>
           <p
-            className="mb-8 max-w-lg text-sm leading-relaxed"
-            style={{ color: 'var(--text-secondary)' }}
+            className="mb-8 max-w-lg text-sm leading-relaxed text-[var(--text-secondary)]"
           >
             {t('ui.landing.pipelineDesc')}
           </p>

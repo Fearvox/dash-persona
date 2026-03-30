@@ -61,7 +61,7 @@ export default function ImportCalendarLoader() {
   if (loading) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-sm text-[var(--text-secondary)]">
           {t('ui.common.loadingImported')}
         </p>
       </div>
@@ -85,8 +85,7 @@ export default function ImportCalendarLoader() {
           {t('ui.calendar.needMoreData')}
         </h1>
         <p
-          className="max-w-md text-center text-sm leading-6"
-          style={{ color: 'var(--text-secondary)' }}
+          className="max-w-md text-center text-sm leading-6 text-[var(--text-secondary)]"
         >
           {t('ui.calendar.needMoreDataPre')}{' '}
           <strong>{plan.dataPoints}</strong>

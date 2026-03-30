@@ -116,13 +116,9 @@ export default function ForYouCard({ profiles }: ForYouCardProps) {
       <div className="card p-5">
         <div className="flex items-center gap-2">
           <div
-            className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
-            style={{
-              borderColor: 'var(--accent-green)',
-              borderTopColor: 'transparent',
-            }}
+            className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent-green)] border-t-transparent"
           />
-          <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+          <span className="text-xs text-[var(--text-subtle)]">
             {t('ui.components.loadingInsights')}
           </span>
         </div>
@@ -133,8 +129,7 @@ export default function ForYouCard({ profiles }: ForYouCardProps) {
   return (
     <div className="card p-5">
       <h3
-        className="mb-4 text-xs font-semibold uppercase tracking-wider"
-        style={{ color: 'var(--accent-green)' }}
+        className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--accent-green)]"
       >
         {t('ui.dashboard.forYou')}
       </h3>
@@ -142,11 +137,7 @@ export default function ForYouCard({ profiles }: ForYouCardProps) {
         {insights.map((insight) => (
           <div
             key={insight.label}
-            className="rounded-lg p-3 transition-colors"
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="rounded-lg p-3 transition-colors bg-[var(--bg-secondary)] border border-[var(--border-subtle)]"
           >
             <p
               className="mb-1 text-xs font-semibold"
@@ -155,8 +146,7 @@ export default function ForYouCard({ profiles }: ForYouCardProps) {
               {insight.label}
             </p>
             <p
-              className="text-xs leading-relaxed"
-              style={{ color: 'var(--text-subtle)' }}
+              className="text-xs leading-relaxed text-[var(--text-subtle)]"
             >
               {insight.detail}
             </p>

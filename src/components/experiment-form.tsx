@@ -107,10 +107,9 @@ export default function ExperimentForm({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="exp-title"
-          className="text-xs font-medium"
-          style={{ color: 'var(--text-secondary)' }}
+          className="text-xs font-medium text-[var(--text-secondary)]"
         >
-          {t('ui.components.expTitle')} <span style={{ color: 'var(--accent-red)' }}>*</span>
+          {t('ui.components.expTitle')} <span className="text-[var(--accent-red)]">*</span>
         </label>
         <input
           id="exp-title"
@@ -118,12 +117,7 @@ export default function ExperimentForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t('ui.components.expTitlePlaceholder')}
-          className="rounded-lg px-3 py-2 text-sm outline-none transition-colors"
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-primary)',
-          }}
+          className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none transition-colors"
           required
           autoFocus
         />
@@ -133,10 +127,9 @@ export default function ExperimentForm({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="exp-hypothesis"
-          className="text-xs font-medium"
-          style={{ color: 'var(--text-secondary)' }}
+          className="text-xs font-medium text-[var(--text-secondary)]"
         >
-          {t('ui.components.expHypothesis')} <span style={{ color: 'var(--accent-red)' }}>*</span>
+          {t('ui.components.expHypothesis')} <span className="text-[var(--accent-red)]">*</span>
         </label>
         <textarea
           id="exp-hypothesis"
@@ -144,13 +137,7 @@ export default function ExperimentForm({
           onChange={(e) => setHypothesis(e.target.value)}
           placeholder={t('ui.components.expHypothesisPlaceholder')}
           rows={3}
-          className="rounded-lg px-3 py-2 text-sm outline-none transition-colors"
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-primary)',
-            resize: 'vertical',
-          }}
+          className="resize-y rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none transition-colors"
           required
         />
       </div>
@@ -159,8 +146,7 @@ export default function ExperimentForm({
       <div className="flex flex-col gap-1.5" ref={seriesRef}>
         <label
           htmlFor="exp-series"
-          className="text-xs font-medium"
-          style={{ color: 'var(--text-secondary)' }}
+          className="text-xs font-medium text-[var(--text-secondary)]"
         >
           {t('ui.components.expSeries')}
         </label>
@@ -175,21 +161,12 @@ export default function ExperimentForm({
             }}
             onFocus={() => setShowSeriesDropdown(true)}
             placeholder={t('ui.components.expSeriesPlaceholder')}
-            className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors"
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-primary)',
-            }}
+            className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none transition-colors"
             autoComplete="off"
           />
           {showSeriesDropdown && filteredSeries.length > 0 && (
             <ul
-              className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg shadow-lg"
-              style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-medium)',
-              }}
+              className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-lg"
               role="listbox"
             >
               {filteredSeries.map((s) => (
@@ -198,9 +175,8 @@ export default function ExperimentForm({
                     type="button"
                     role="option"
                     aria-selected={series === s}
-                    className="w-full px-3 py-2 text-left text-xs transition-colors hover:opacity-80"
+                    className="w-full px-3 py-2 text-left text-xs text-[var(--text-primary)] transition-colors hover:opacity-80"
                     style={{
-                      color: 'var(--text-primary)',
                       background:
                         series === s
                           ? 'var(--bg-secondary)'
@@ -224,8 +200,7 @@ export default function ExperimentForm({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="exp-parent"
-          className="text-xs font-medium"
-          style={{ color: 'var(--text-secondary)' }}
+          className="text-xs font-medium text-[var(--text-secondary)]"
         >
           {t('ui.components.expParentNode')}
         </label>
@@ -233,12 +208,7 @@ export default function ExperimentForm({
           id="exp-parent"
           value={parentId ?? ''}
           onChange={(e) => setParentId(e.target.value || null)}
-          className="rounded-lg px-3 py-2 text-sm outline-none transition-colors"
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-primary)',
-          }}
+          className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none transition-colors"
         >
           <option value="">{t('ui.components.expNoneRoot')}</option>
           {parentNodes.map((node) => (
@@ -253,8 +223,7 @@ export default function ExperimentForm({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="exp-status"
-          className="text-xs font-medium"
-          style={{ color: 'var(--text-secondary)' }}
+          className="text-xs font-medium text-[var(--text-secondary)]"
         >
           {t('ui.components.expStatus')}
         </label>
@@ -262,12 +231,7 @@ export default function ExperimentForm({
           id="exp-status"
           value={status}
           onChange={(e) => setStatus(e.target.value as 'planned' | 'running')}
-          className="rounded-lg px-3 py-2 text-sm outline-none transition-colors"
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-primary)',
-          }}
+          className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none transition-colors"
         >
           <option value="planned">{t('ui.components.expPlanned')}</option>
           <option value="running">{t('ui.components.expRunning')}</option>
@@ -294,12 +258,7 @@ export default function ExperimentForm({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg px-5 py-2 text-sm font-medium transition-colors"
-          style={{
-            background: 'var(--bg-secondary)',
-            color: 'var(--text-subtle)',
-            border: '1px solid var(--border-subtle)',
-          }}
+          className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-5 py-2 text-sm font-medium text-[var(--text-subtle)] transition-colors"
         >
           {t('ui.common.cancel')}
         </button>

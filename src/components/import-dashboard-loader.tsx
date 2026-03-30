@@ -79,8 +79,7 @@ export default function ImportDashboardLoader() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="text-sm font-medium transition-colors hover:opacity-80"
-            style={{ color: 'var(--accent-green)' }}
+            className="text-sm font-medium transition-colors hover:opacity-80 text-[var(--accent-green)]"
             aria-label="Back to home"
           >
             &larr;
