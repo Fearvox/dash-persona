@@ -123,6 +123,26 @@ export {
   generateExperimentIdeas,
 } from './idea-generator';
 
+// -- Signal collector --
+export {
+  type CreatorSignal,
+  type SignalVector,
+  collectSignals,
+} from './signal-collector';
+
+// -- Stats utilities --
+export {
+  empiricalPercentile,
+  batchPercentile,
+  type TrendResult,
+  linearTrend,
+  safeTrend,
+  safeDivide,
+  recalibrateSteps,
+  rankNormalize,
+  adaptiveThreshold,
+} from './stats';
+
 // ---------------------------------------------------------------------------
 // Parallel engine runner
 // ---------------------------------------------------------------------------
