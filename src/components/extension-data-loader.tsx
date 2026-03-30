@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import type { CreatorProfile, FanPortrait } from '@/lib/schema/creator-data';
 import { ExtensionAdapter, ExtensionAdapterError } from '@/lib/adapters/extension-adapter';
 import { t } from '@/lib/i18n';
 
 const STORAGE_KEY = 'dashpersona-extension-profile';
+const EXTENSION_TIMEOUT_MS = 10_000;
 
 interface ExtensionDataLoaderProps {
   /** Fallback profiles to use while waiting for extension data */
@@ -25,7 +27,7 @@ interface ExtensionDataLoaderProps {
  * 2. localStorage fallback (extension stores data before opening tab)
  *
  * Once data arrives, passes it to children via render prop.
- * Surfaces structured errors instead of silently falling back.
+ * Shows a countdown timer and surfaces structured errors instead of silently falling back.
  */
 export default function ExtensionDataLoader({
   fallbackProfiles,
@@ -35,6 +37,8 @@ export default function ExtensionDataLoader({
   const [isExtensionData, setIsExtensionData] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(Math.ceil(EXTENSION_TIMEOUT_MS / 1000));
+  const [timedOut, setTimedOut] = useState(false);
 
   const adapter = new ExtensionAdapter();
 
@@ -46,6 +50,8 @@ export default function ExtensionDataLoader({
         setProfiles({ [profile.platform]: profile });
         setIsExtensionData(true);
         setError(null);
+        setIsLoading(false);
+        setTimedOut(false);
         try {
           localStorage.setItem(STORAGE_KEY, json);
         } catch { /* storage full — ignore */ }
@@ -56,11 +62,14 @@ export default function ExtensionDataLoader({
       } else {
         setError(err instanceof Error ? err.message : 'Failed to process extension data');
       }
+      setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    let dataReceived = false;
+
     // Strategy 1: Listen for postMessage from extension
     const handleMessage = (event: MessageEvent) => {
       // Origin validation — accept from same origin or chrome extensions
@@ -71,6 +80,7 @@ export default function ExtensionDataLoader({
         return;
       }
       if (event.data?.type === 'DASHPERSONA_PROFILE_DATA' && event.data?.profile) {
+        dataReceived = true;
         loadProfile(event.data.profile);
       }
     };
@@ -80,14 +90,134 @@ export default function ExtensionDataLoader({
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
+        dataReceived = true;
         loadProfile(stored);
       }
     } catch { /* no storage access */ }
 
-    setIsLoading(false);
+    // Strategy 3: Timeout with countdown
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          if (!dataReceived) {
+            setTimedOut(true);
+            setIsLoading(false);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => window.removeEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      clearInterval(countdownInterval);
+    };
   }, [loadProfile]);
+
+  // Show timeout UI with clear failure message and fallback CTA
+  if (timedOut && !isExtensionData) {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
+        <div
+          className="flex h-16 w-16 items-center justify-center rounded-full"
+          style={{ background: 'rgba(200, 126, 126, 0.12)' }}
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--accent-red)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+        </div>
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+          {t('ui.extension.notDetected')}
+        </h1>
+        <p
+          className="max-w-md text-center text-sm leading-6"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {t('ui.extension.notDetectedDesc')}
+        </p>
+        <div className="flex flex-col items-center gap-3 sm:flex-row">
+          <Link
+            href="/dashboard?source=demo&persona=tutorial"
+            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
+            style={{
+              background: 'var(--accent-green)',
+              color: 'var(--bg-primary)',
+            }}
+          >
+            {t('ui.extension.fallbackToDemo')}
+          </Link>
+          <Link
+            href="/onboarding"
+            className="text-sm font-medium transition-colors hover:opacity-80"
+            style={{ color: 'var(--text-subtle)' }}
+          >
+            {t('ui.extension.tryOtherMethod')}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state with countdown
+  if (isLoading) {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-6 px-6 py-20">
+        {/* Countdown ring */}
+        <div className="relative flex h-20 w-20 items-center justify-center">
+          <svg className="absolute inset-0" viewBox="0 0 80 80" aria-hidden="true">
+            <circle
+              cx="40"
+              cy="40"
+              r="36"
+              fill="none"
+              stroke="rgba(255,255,255,0.06)"
+              strokeWidth="3"
+            />
+            <circle
+              cx="40"
+              cy="40"
+              r="36"
+              fill="none"
+              stroke="var(--accent-green)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={`${2 * Math.PI * 36}`}
+              strokeDashoffset={`${2 * Math.PI * 36 * (1 - countdown / Math.ceil(EXTENSION_TIMEOUT_MS / 1000))}`}
+              className="transition-[stroke-dashoffset] duration-1000 ease-linear"
+              style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
+            />
+          </svg>
+          <span
+            className="font-mono text-2xl font-bold tabular-nums"
+            style={{ color: 'var(--accent-green)' }}
+          >
+            {countdown}
+          </span>
+        </div>
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          {t('ui.extension.waiting')}
+        </p>
+        <p
+          className="max-w-xs text-center text-xs leading-5"
+          style={{ color: 'var(--text-subtle)' }}
+        >
+          {t('ui.extension.waitingDesc')}
+        </p>
+      </div>
+    );
+  }
 
   return <>{children({ profiles, isExtensionData, isLoading, error })}</>;
 }

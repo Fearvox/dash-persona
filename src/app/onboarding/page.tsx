@@ -78,12 +78,8 @@ function mergeProfile(
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2>(1);
   const [mode, setMode] = useState<"import" | "url" | "browser">("import");
   const [entries, setEntries] = useState<PlatformEntry[]>([
-    { id: crypto.randomUUID(), url: "", platform: null },
-  ]);
-  const [benchmarks, setBenchmarks] = useState<PlatformEntry[]>([
     { id: crypto.randomUUID(), url: "", platform: null },
   ]);
   const [importResults, setImportResults] = useState<FileParseResult[]>([]);
@@ -208,12 +204,8 @@ export default function OnboardingPage() {
   );
   const hasValidEntry = hasTikTok;
 
-  function handleContinueToStep2() {
+  function handleLaunchUrl() {
     if (!hasValidEntry) return;
-    setStep(2);
-  }
-
-  function handleFinish() {
     const firstValidUrl = entries.find((e) => e.platform !== null)?.url;
     if (firstValidUrl) {
       router.push(
@@ -227,14 +219,14 @@ export default function OnboardingPage() {
   return (
     <div className="flex flex-1 flex-col items-center px-6 py-16 sm:py-24">
       <div className="w-full max-w-lg">
-        {/* Progress indicator */}
+        {/* Single-step progress indicator */}
         <div
           className="mb-10 flex items-center gap-3"
           role="progressbar"
-          aria-valuenow={step}
+          aria-valuenow={1}
           aria-valuemin={1}
-          aria-valuemax={2}
-          aria-label={t("ui.onboarding.step", { step })}
+          aria-valuemax={1}
+          aria-label={t("ui.onboarding.step", { step: 1 })}
         >
           <div
             className="h-1 flex-1 rounded-full"
@@ -242,338 +234,281 @@ export default function OnboardingPage() {
               background: "var(--accent-green)",
             }}
           />
-          <div
-            className="h-1 flex-1 rounded-full transition-colors"
-            style={{
-              background:
-                step === 2
-                  ? "var(--accent-green)"
-                  : "var(--border-subtle)",
-            }}
-          />
         </div>
 
-        {step === 1 && (
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {t("ui.onboarding.connectAccounts")}
-            </h1>
-            <p
-              className="mt-2 text-sm leading-6"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              {t("ui.onboarding.connectDesc")}
-            </p>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            {t("ui.onboarding.connectAccounts")}
+          </h1>
+          <p
+            className="mt-2 text-sm leading-6"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {t("ui.onboarding.connectDesc")}
+          </p>
 
-            {/* Mode toggle */}
-            <div
-              className="mt-6 flex rounded-lg bg-[var(--bg-card)] p-1"
-              role="tablist"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "import"}
-                onClick={() => setMode("import")}
-                className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
-                  mode === "import"
-                    ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
-                    : "bg-transparent text-[var(--text-secondary)]"
-                }`}
-              >
-                {t("ui.onboarding.importFiles")}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "url"}
-                onClick={() => setMode("url")}
-                className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
-                  mode === "url"
-                    ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
-                    : "bg-transparent text-[var(--text-secondary)]"
-                }`}
-              >
-                {t("ui.onboarding.pasteUrl")}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "browser"}
-                onClick={() => setMode("browser")}
-                className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
-                  mode === "browser"
-                    ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
-                    : "bg-transparent text-[var(--text-secondary)]"
-                }`}
-              >
-                {t("ui.onboarding.autoCollect")}
-              </button>
-            </div>
-
-            {/* File import mode */}
-            {mode === "import" && (
-              <div className="mt-8">
-                {/* Export guide — teach users how to get the data */}
-                <div className="mb-6 rounded-lg border border-[rgba(210,200,126,0.15)] bg-[rgba(210,200,126,0.06)] px-4 py-3">
-                  <p className="text-xs font-semibold text-[var(--accent-yellow)]">
-                    {t("ui.onboarding.exportGuideTitle")}
-                  </p>
-                  <div className="mt-2 flex flex-col gap-2">
-                    <div className="text-xs text-[var(--text-secondary)]">
-                      <strong className="text-[var(--text-primary)]">{t("ui.onboarding.douyinExport")}</strong> —
-                      Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">creator.douyin.com</code>:
-                      <ol className="mt-1 ml-3 flex flex-col gap-0.5 text-[var(--text-subtle)]">
-                        <li>{t("ui.onboarding.douyinStep1")}</li>
-                        <li>{t("ui.onboarding.douyinStep2")}</li>
-                      </ol>
-                    </div>
-                    <div className="text-xs text-[var(--text-secondary)]">
-                      <strong className="text-[var(--text-primary)]">{t("ui.onboarding.tiktokExport")}</strong> —
-                      Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">tiktok.com/tiktokstudio/analytics</code>:
-                      <ol className="mt-1 ml-3 flex flex-col gap-0.5 text-[var(--text-subtle)]">
-                        <li>{t("ui.onboarding.tiktokStep1")}</li>
-                        <li>{t("ui.onboarding.tiktokStep2")}</li>
-                        <li>{t("ui.onboarding.tiktokStep3")}</li>
-                        <li>{t("ui.onboarding.tiktokStep4")}</li>
-                      </ol>
-                    </div>
-                    <div className="text-xs text-[var(--text-secondary)]">
-                      <strong className="text-[var(--text-primary)]">{t("ui.onboarding.redNoteExport")}</strong> —{" "}
-                      {t("ui.onboarding.redNoteStep")}
-                    </div>
-                  </div>
-                  <p className="mt-2 text-[0.65rem] text-[var(--text-subtle)]">
-                    {t("ui.onboarding.exportMoreData")}
-                  </p>
-                </div>
-
-                <FileDropZone
-                  onFilesSelected={handleFilesSelected}
-                  results={importResults}
-                  isProcessing={isProcessing}
-                />
-                {hasData && (
-                  <div className="mt-6 flex flex-col gap-3">
-                    <div className="rounded-lg bg-[var(--bg-card)] px-4 py-3">
-                      <p className="text-xs font-medium text-[var(--text-primary)]">
-                        {t("ui.onboarding.mergePreview")}
-                      </p>
-                      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)]">
-                        {totalPosts > 0 && <span>{t("ui.onboarding.postsCount", { count: totalPosts })}</span>}
-                        {totalHistory > 0 && <span>{t("ui.onboarding.dailySnapshots", { count: totalHistory })}</span>}
-                        {schemaTypes.map((s) => (
-                          <span key={s} className="rounded bg-[rgba(126,210,154,0.1)] px-1.5 py-0.5 text-[var(--accent-green)]">
-                            {s === "post_list" ? t("ui.onboarding.schemaPostList") : s === "post_analysis" ? t("ui.onboarding.schemaPostAnalysis") : s === "aggregate" ? t("ui.onboarding.schemaAggregate") : s === "timeseries" ? t("ui.onboarding.schemaTimeseries") : s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                    <p className="text-sm text-[var(--text-secondary)]">
-                      {t("ui.onboarding.readyToAnalyze")}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleLaunchImport}
-                      className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
-                      style={{
-                        background: "var(--accent-green)",
-                        color: "var(--bg-primary)",
-                      }}
-                    >
-                      {t("ui.common.launchDashboard")}
-                    </button>
-                  </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* URL paste mode */}
-            {mode === "url" && (
-              <>
-            <p
-              className="mt-4 rounded-md px-3 py-2 text-xs leading-5"
-              style={{
-                background: "rgba(210, 200, 126, 0.08)",
-                color: "var(--accent-yellow)",
-                border: "1px solid rgba(210, 200, 126, 0.15)",
-              }}
-            >
-              {t("ui.onboarding.tiktokSupported")}
-            </p>
-
-            <fieldset className="mt-8 flex flex-col gap-4">
-              <legend className="sr-only">{t("ui.onboarding.profileUrls")}</legend>
-              {entries.map((entry, index) => (
-                <div key={entry.id} className="flex items-center gap-3">
-                  <div className="relative flex-1">
-                    <label
-                      htmlFor={`url-${index}`}
-                      className="sr-only"
-                    >
-                      {t("ui.onboarding.profileUrl", { index: index + 1 })}
-                    </label>
-                    <input
-                      id={`url-${index}`}
-                      type="url"
-                      placeholder="https://www.tiktok.com/@username"
-                      value={entry.url}
-                      onChange={(e) =>
-                        updateEntry(entries, setEntries, index, e.target.value)
-                      }
-                      className="h-12 w-full rounded-lg border bg-transparent px-4 pr-28 text-sm outline-none transition-colors focus:border-[var(--accent-green)]"
-                      style={{
-                        borderColor: "var(--border-medium)",
-                        color: "var(--text-primary)",
-                      }}
-                    />
-                    {/* Gradient fade overlay to prevent text/badge overlap */}
-                    <div
-                      className="pointer-events-none absolute inset-y-[1px] right-[1px] w-28 rounded-r-lg"
-                      style={{
-                        background: "linear-gradient(to right, rgba(10,15,13,0) 0%, rgba(10,15,13,0.15) 15%, rgba(10,15,13,0.25) 30%, rgba(10,15,13,0.50) 50%, rgba(10,15,13,0.85) 85%, rgba(10,15,13,1) 100%)",
-                        opacity: entry.url.length > 30 ? 1 : 0,
-                        transition: "opacity 0.2s",
-                      }}
-                    />
-                    {entry.platform && (
-                      <span
-                        className={`badge ${platformBadgeColor[entry.platform] ?? ""} absolute right-3 top-1/2 -translate-y-1/2`}
-                      >
-                        {entry.platform}
-                      </span>
-                    )}
-                  </div>
-                  {entries.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeEntry(entries, setEntries, index)}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
-                      style={{ color: "var(--text-subtle)" }}
-                      aria-label={t("ui.onboarding.removeUrl", { index: index + 1 })}
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        aria-hidden="true"
-                      >
-                        <path d="M4 4l8 8M12 4l-8 8" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              ))}
-            </fieldset>
-
-            {hasNonTikTok && (
-              <p
-                className="mt-3 text-xs"
-                style={{ color: "var(--accent-red)" }}
-              >
-                {t("ui.onboarding.douyinRedNoteNotSupported")}
-              </p>
-            )}
-
+          {/* Mode toggle */}
+          <div
+            className="mt-6 flex rounded-lg bg-[var(--bg-card)] p-1"
+            role="tablist"
+          >
             <button
               type="button"
-              onClick={() => addEntry(entries, setEntries)}
-              className="mt-4 text-sm font-medium transition-colors hover:opacity-80"
-              style={{ color: "var(--accent-green)" }}
+              role="tab"
+              aria-selected={mode === "import"}
+              onClick={() => setMode("import")}
+              className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
+                mode === "import"
+                  ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
+                  : "bg-transparent text-[var(--text-secondary)]"
+              }`}
             >
-              {t("ui.onboarding.addPlatform")}
+              {t("ui.onboarding.importFiles")}
             </button>
-
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
-                <Link
-                  href="/dashboard?source=demo&persona=tutorial"
-                  className="text-sm font-medium transition-colors hover:opacity-80"
-                  style={{ color: "var(--text-subtle)" }}
-                >
-                  {t("ui.onboarding.skipDemo")}
-                </Link>
-                <Link
-                  href="/dashboard?source=extension"
-                  className="text-sm font-medium transition-colors hover:opacity-80"
-                  style={{ color: "var(--accent-blue)" }}
-                >
-                  {t("ui.onboarding.useExtension")}
-                </Link>
-              </div>
-              <button
-                type="button"
-                onClick={handleContinueToStep2}
-                disabled={!hasValidEntry}
-                className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors disabled:opacity-40"
-                style={{
-                  background: "var(--accent-green)",
-                  color: "var(--bg-primary)",
-                }}
-              >
-                {t("ui.common.continue")}
-              </button>
-            </div>
-              </>
-            )}
-
-            {/* CDP auto collect mode */}
-            {mode === "browser" && (
-              <CDPSetupGuide />
-            )}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "url"}
+              onClick={() => setMode("url")}
+              className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
+                mode === "url"
+                  ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
+                  : "bg-transparent text-[var(--text-secondary)]"
+              }`}
+            >
+              {t("ui.onboarding.pasteUrl")}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "browser"}
+              onClick={() => setMode("browser")}
+              className={`flex-1 rounded-md px-4 py-2 text-xs font-medium transition-colors ${
+                mode === "browser"
+                  ? "bg-[var(--accent-green)] text-[var(--bg-primary)]"
+                  : "bg-transparent text-[var(--text-secondary)]"
+              }`}
+            >
+              {t("ui.onboarding.autoCollect")}
+            </button>
           </div>
-        )}
 
-        {step === 2 && (
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {t("ui.onboarding.benchmarkTitle")}
-            </h1>
-            <p
-              className="mt-2 text-sm leading-6"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              {t("ui.onboarding.benchmarkDesc")}
-            </p>
-            <div
-              className="mt-4 rounded-md px-4 py-3 text-xs leading-5"
-              style={{
-                background: "rgba(210, 200, 126, 0.08)",
-                color: "var(--accent-yellow)",
-                border: "1px solid rgba(210, 200, 126, 0.15)",
-              }}
-            >
-              {t("ui.onboarding.benchmarkNotAvailable")}
+          {/* File import mode */}
+          {mode === "import" && (
+            <div className="mt-8">
+              {/* Export guide — teach users how to get the data */}
+              <div className="mb-6 rounded-lg border border-[rgba(210,200,126,0.15)] bg-[rgba(210,200,126,0.06)] px-4 py-3">
+                <p className="text-xs font-semibold text-[var(--accent-yellow)]">
+                  {t("ui.onboarding.exportGuideTitle")}
+                </p>
+                <div className="mt-2 flex flex-col gap-2">
+                  <div className="text-xs text-[var(--text-secondary)]">
+                    <strong className="text-[var(--text-primary)]">{t("ui.onboarding.douyinExport")}</strong> —
+                    Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">creator.douyin.com</code>:
+                    <ol className="mt-1 ml-3 flex flex-col gap-0.5 text-[var(--text-subtle)]">
+                      <li>{t("ui.onboarding.douyinStep1")}</li>
+                      <li>{t("ui.onboarding.douyinStep2")}</li>
+                    </ol>
+                  </div>
+                  <div className="text-xs text-[var(--text-secondary)]">
+                    <strong className="text-[var(--text-primary)]">{t("ui.onboarding.tiktokExport")}</strong> —
+                    Open <code className="rounded bg-white/5 px-1 py-0.5 font-mono text-[0.65rem] text-[var(--text-primary)]">tiktok.com/tiktokstudio/analytics</code>:
+                    <ol className="mt-1 ml-3 flex flex-col gap-0.5 text-[var(--text-subtle)]">
+                      <li>{t("ui.onboarding.tiktokStep1")}</li>
+                      <li>{t("ui.onboarding.tiktokStep2")}</li>
+                      <li>{t("ui.onboarding.tiktokStep3")}</li>
+                      <li>{t("ui.onboarding.tiktokStep4")}</li>
+                    </ol>
+                  </div>
+                  <div className="text-xs text-[var(--text-secondary)]">
+                    <strong className="text-[var(--text-primary)]">{t("ui.onboarding.redNoteExport")}</strong> —{" "}
+                    {t("ui.onboarding.redNoteStep")}
+                  </div>
+                </div>
+                <p className="mt-2 text-[0.65rem] text-[var(--text-subtle)]">
+                  {t("ui.onboarding.exportMoreData")}
+                </p>
+              </div>
+
+              <FileDropZone
+                onFilesSelected={handleFilesSelected}
+                results={importResults}
+                isProcessing={isProcessing}
+              />
+              {hasData && (
+                <div className="mt-6 flex flex-col gap-3">
+                  <div className="rounded-lg bg-[var(--bg-card)] px-4 py-3">
+                    <p className="text-xs font-medium text-[var(--text-primary)]">
+                      {t("ui.onboarding.mergePreview")}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)]">
+                      {totalPosts > 0 && <span>{t("ui.onboarding.postsCount", { count: totalPosts })}</span>}
+                      {totalHistory > 0 && <span>{t("ui.onboarding.dailySnapshots", { count: totalHistory })}</span>}
+                      {schemaTypes.map((s) => (
+                        <span key={s} className="rounded bg-[rgba(126,210,154,0.1)] px-1.5 py-0.5 text-[var(--accent-green)]">
+                          {s === "post_list" ? t("ui.onboarding.schemaPostList") : s === "post_analysis" ? t("ui.onboarding.schemaPostAnalysis") : s === "aggregate" ? t("ui.onboarding.schemaAggregate") : s === "timeseries" ? t("ui.onboarding.schemaTimeseries") : s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    {t("ui.onboarding.readyToAnalyze")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleLaunchImport}
+                    className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
+                    style={{
+                      background: "var(--accent-green)",
+                      color: "var(--bg-primary)",
+                    }}
+                  >
+                    {t("ui.common.launchDashboard")}
+                  </button>
+                </div>
+                </div>
+              )}
             </div>
+          )}
 
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
+          {/* URL paste mode */}
+          {mode === "url" && (
+            <>
+          <p
+            className="mt-4 rounded-md px-3 py-2 text-xs leading-5"
+            style={{
+              background: "rgba(210, 200, 126, 0.08)",
+              color: "var(--accent-yellow)",
+              border: "1px solid rgba(210, 200, 126, 0.15)",
+            }}
+          >
+            {t("ui.onboarding.tiktokSupported")}
+          </p>
+
+          <fieldset className="mt-8 flex flex-col gap-4">
+            <legend className="sr-only">{t("ui.onboarding.profileUrls")}</legend>
+            {entries.map((entry, index) => (
+              <div key={entry.id} className="flex items-center gap-3">
+                <div className="relative flex-1">
+                  <label
+                    htmlFor={`url-${index}`}
+                    className="sr-only"
+                  >
+                    {t("ui.onboarding.profileUrl", { index: index + 1 })}
+                  </label>
+                  <input
+                    id={`url-${index}`}
+                    type="url"
+                    placeholder="https://www.tiktok.com/@username"
+                    value={entry.url}
+                    onChange={(e) =>
+                      updateEntry(entries, setEntries, index, e.target.value)
+                    }
+                    className="h-12 w-full rounded-lg border bg-transparent px-4 pr-28 text-sm outline-none transition-colors focus:border-[var(--accent-green)]"
+                    style={{
+                      borderColor: "var(--border-medium)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                  {/* Gradient fade overlay to prevent text/badge overlap */}
+                  <div
+                    className="pointer-events-none absolute inset-y-[1px] right-[1px] w-28 rounded-r-lg"
+                    style={{
+                      background: "linear-gradient(to right, rgba(10,15,13,0) 0%, rgba(10,15,13,0.15) 15%, rgba(10,15,13,0.25) 30%, rgba(10,15,13,0.50) 50%, rgba(10,15,13,0.85) 85%, rgba(10,15,13,1) 100%)",
+                      opacity: entry.url.length > 30 ? 1 : 0,
+                      transition: "opacity 0.2s",
+                    }}
+                  />
+                  {entry.platform && (
+                    <span
+                      className={`badge ${platformBadgeColor[entry.platform] ?? ""} absolute right-3 top-1/2 -translate-y-1/2`}
+                    >
+                      {entry.platform}
+                    </span>
+                  )}
+                </div>
+                {entries.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeEntry(entries, setEntries, index)}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
+                    style={{ color: "var(--text-subtle)" }}
+                    aria-label={t("ui.onboarding.removeUrl", { index: index + 1 })}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      aria-hidden="true"
+                    >
+                      <path d="M4 4l8 8M12 4l-8 8" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            ))}
+          </fieldset>
+
+          {hasNonTikTok && (
+            <p
+              className="mt-3 text-xs"
+              style={{ color: "var(--accent-red)" }}
+            >
+              {t("ui.onboarding.douyinRedNoteNotSupported")}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => addEntry(entries, setEntries)}
+            className="mt-4 text-sm font-medium transition-colors hover:opacity-80"
+            style={{ color: "var(--accent-green)" }}
+          >
+            {t("ui.onboarding.addPlatform")}
+          </button>
+
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+              <Link
+                href="/dashboard?source=demo&persona=tutorial"
                 className="text-sm font-medium transition-colors hover:opacity-80"
                 style={{ color: "var(--text-subtle)" }}
               >
-                &larr; {t("ui.common.back")}
-              </button>
-              <button
-                type="button"
-                onClick={handleFinish}
-                className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors"
-                style={{
-                  background: "var(--accent-green)",
-                  color: "var(--bg-primary)",
-                }}
+                {t("ui.onboarding.skipDemo")}
+              </Link>
+              <Link
+                href="/dashboard?source=extension"
+                className="text-sm font-medium transition-colors hover:opacity-80"
+                style={{ color: "var(--accent-blue)" }}
               >
-                {t("ui.common.launchDashboard")}
-              </button>
+                {t("ui.onboarding.useExtension")}
+              </Link>
             </div>
+            <button
+              type="button"
+              onClick={handleLaunchUrl}
+              disabled={!hasValidEntry}
+              className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors disabled:opacity-40"
+              style={{
+                background: "var(--accent-green)",
+                color: "var(--bg-primary)",
+              }}
+            >
+              {t("ui.common.launchDashboard")}
+            </button>
           </div>
-        )}
+            </>
+          )}
+
+          {/* CDP auto collect mode */}
+          {mode === "browser" && (
+            <CDPSetupGuide />
+          )}
+        </div>
       </div>
     </div>
   );

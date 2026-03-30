@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import SiteHeader from "@/components/site-header";
 import SiteFooter from "@/components/site-footer";
 import ToastContainer from "@/components/ui/toast";
 import { LocaleInitializer } from "@/components/locale-initializer";
@@ -59,6 +60,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <LocaleInitializer>
+          <SiteHeader />
           <main id="main-content" className="flex-1">{children}</main>
           <SiteFooter />
           <ToastContainer />

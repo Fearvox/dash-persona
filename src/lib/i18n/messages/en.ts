@@ -969,6 +969,21 @@ const en: Record<string, string> = {
   'ui.pipeline.adapters': 'Adapters',
   'ui.pipeline.analysisEngine': 'Analysis Engine',
   'ui.pipeline.outputViews': 'Output Views',
+
+  // ===========================================================================
+  // Site navigation
+  // ===========================================================================
+  'ui.nav.siteNavigation': 'Site navigation',
+
+  // ===========================================================================
+  // Extension timeout
+  // ===========================================================================
+  'ui.extension.waiting': 'Waiting for Data Passport extension...',
+  'ui.extension.waitingDesc': 'Open the Data Passport extension on creator.douyin.com and click the Collect button',
+  'ui.extension.notDetected': 'Data Passport extension not detected',
+  'ui.extension.notDetectedDesc': 'No extension data received within 10 seconds. Please verify that the Data Passport extension is installed and that you clicked Collect on creator.douyin.com.',
+  'ui.extension.fallbackToDemo': 'View demo data',
+  'ui.extension.tryOtherMethod': 'Try another import method',
 };
 
 export default en;

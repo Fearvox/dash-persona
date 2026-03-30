@@ -176,7 +176,7 @@ export default async function TimelinePage({
         <h2 id="growth-history-heading" className="kicker mb-3">
           {t('ui.timeline.growthHistory')}
         </h2>
-        <GrowthTrendChart storeKeys={storeKeys} />
+        <GrowthTrendChart storeKeys={storeKeys} fallbackSnapshots={profile.history} />
       </section>
 
       {/* Tree visualization (interactive client component) */}

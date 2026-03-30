@@ -972,6 +972,21 @@ const zh: Record<string, string> = {
   'ui.pipeline.adapters': '适配器',
   'ui.pipeline.analysisEngine': '分析引擎',
   'ui.pipeline.outputViews': '输出视图',
+
+  // ===========================================================================
+  // 站点导航
+  // ===========================================================================
+  'ui.nav.siteNavigation': '站点导航',
+
+  // ===========================================================================
+  // 扩展超时
+  // ===========================================================================
+  'ui.extension.waiting': '等待 Data Passport 扩展...',
+  'ui.extension.waitingDesc': '请在 creator.douyin.com 上打开 Data Passport 扩展并点击「采集」按钮',
+  'ui.extension.notDetected': '未检测到 Data Passport 扩展',
+  'ui.extension.notDetectedDesc': '10 秒内未收到扩展数据。请确认已安装 Data Passport 扩展且在 creator.douyin.com 页面上点击了「采集」按钮。',
+  'ui.extension.fallbackToDemo': '查看演示数据',
+  'ui.extension.tryOtherMethod': '尝试其他导入方式',
 };
 
 export default zh;

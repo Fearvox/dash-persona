@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { t } from '@/lib/i18n';
 import { TextcraftEmpty } from '@/components/ui/textcraft';
@@ -13,6 +14,7 @@ import {
 } from '@/lib/textcraft';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
 import { loadProfiles } from '@/lib/store/profile-store';
+import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import { computePersonaScore, overallScore, generatePersonaTags } from '@/lib/engine';
 
 // ---------------------------------------------------------------------------
@@ -128,10 +130,13 @@ function platformLabel(platform: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Inner component (needs useSearchParams, so wrapped in Suspense)
 // ---------------------------------------------------------------------------
 
-export default function PortraitPage() {
+function PortraitContent() {
+  const searchParams = useSearchParams();
+  const isDemo = searchParams.get('source') === 'demo';
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [profile, setProfile] = useState<CreatorProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,18 +145,29 @@ export default function PortraitPage() {
 
   // Load creator data
   useEffect(() => {
-    loadProfiles()
-      .then((profiles) => {
-        const entries = Object.values(profiles);
-        if (entries.length > 0) {
-          setProfile(entries[0]);
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  }, []);
+    if (isDemo) {
+      // Demo mode: load from demo adapter
+      const demoProfiles = getDemoProfile('tutorial');
+      const firstProfile = demoProfiles['douyin'] ?? Object.values(demoProfiles)[0];
+      if (firstProfile) {
+        setProfile(firstProfile);
+      }
+      setLoading(false);
+    } else {
+      // Import/real mode: load from IndexedDB
+      loadProfiles()
+        .then((profiles) => {
+          const entries = Object.values(profiles);
+          if (entries.length > 0) {
+            setProfile(entries[0]);
+          }
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    }
+  }, [isDemo]);
 
   // Toast auto-dismiss
   useEffect(() => {
@@ -236,12 +252,14 @@ export default function PortraitPage() {
 
   // ---------- Render ----------
 
+  const backHref = isDemo ? '/dashboard?source=demo&persona=tutorial' : '/dashboard?source=import';
+
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-6 py-8">
       {/* Header */}
       <header className="flex items-center justify-between">
         <Link
-          href="/dashboard?source=import"
+          href={backHref}
           className="text-xs transition-colors hover:opacity-80"
           style={{ color: 'var(--text-subtle)' }}
         >
@@ -429,5 +447,25 @@ export default function PortraitPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page wrapper with Suspense for useSearchParams
+// ---------------------------------------------------------------------------
+
+export default function PortraitPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {t('ui.common.loading')}
+          </p>
+        </div>
+      }
+    >
+      <PortraitContent />
+    </Suspense>
   );
 }

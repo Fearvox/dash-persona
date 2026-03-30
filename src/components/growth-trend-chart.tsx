@@ -140,9 +140,11 @@ function EmptyState() {
 interface GrowthTrendChartProps {
   /** Storage key(s) to load snapshots for. */
   storeKeys: string[];
+  /** Optional fallback snapshots to display when IndexedDB is empty (e.g. demo mode). */
+  fallbackSnapshots?: HistorySnapshot[];
 }
 
-export default function GrowthTrendChart({ storeKeys }: GrowthTrendChartProps) {
+export default function GrowthTrendChart({ storeKeys, fallbackSnapshots }: GrowthTrendChartProps) {
   const [snapshots, setSnapshots] = useState<HistorySnapshot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeMetrics, setActiveMetrics] = useState<Set<MetricKey>>(
@@ -150,7 +152,7 @@ export default function GrowthTrendChart({ storeKeys }: GrowthTrendChartProps) {
   );
   const [range, setRange] = useState<RangeKey>('all');
 
-  // Load snapshots from IndexedDB
+  // Load snapshots from IndexedDB, fall back to provided snapshots
   useEffect(() => {
     if (typeof window === 'undefined') {
       setIsLoading(false);
@@ -182,14 +184,22 @@ export default function GrowthTrendChart({ storeKeys }: GrowthTrendChartProps) {
       );
 
       if (!cancelled) {
-        setSnapshots(deduped);
+        // Use IndexedDB data if available, otherwise fall back to provided snapshots
+        if (deduped.length > 0) {
+          setSnapshots(deduped);
+        } else if (fallbackSnapshots && fallbackSnapshots.length > 0) {
+          const fallbackSorted = [...fallbackSnapshots].sort(
+            (a, b) => new Date(a.fetchedAt).getTime() - new Date(b.fetchedAt).getTime(),
+          );
+          setSnapshots(fallbackSorted);
+        }
         setIsLoading(false);
       }
     }
 
     load();
     return () => { cancelled = true; };
-  }, [storeKeys]);
+  }, [storeKeys, fallbackSnapshots]);
 
   // Filter by time range
   const filteredData = useMemo(() => {
