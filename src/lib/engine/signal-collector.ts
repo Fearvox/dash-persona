@@ -453,6 +453,58 @@ function extractFreshnessDecay(profile: CreatorProfile): RawSignal[] {
 }
 
 // ---------------------------------------------------------------------------
+// Data completeness signal
+// ---------------------------------------------------------------------------
+
+/**
+ * Data completeness: measures how many optional high-value fields are
+ * populated in a CreatorProfile. This is a meta-signal about the data
+ * itself, not the creator's performance.
+ *
+ * Required fields (must be present for meaningful analysis):
+ *   - profile.nickname, profile.followers, posts.length > 0
+ *
+ * Optional high-value fields (each adds 0.25 to rawValue):
+ *   - history (any snapshots)
+ *   - fanPortrait (any demographic data)
+ *   - posts[].completionRate (at least one post has it)
+ *   - posts[].publishedAt (at least one post has it)
+ */
+function extractDataCompleteness(profile: CreatorProfile): RawSignal[] {
+  // Required fields check — if missing, completeness is 0
+  const hasRequiredFields =
+    profile.profile.nickname &&
+    profile.profile.followers != null &&
+    profile.posts.length > 0;
+
+  if (!hasRequiredFields) {
+    return [{
+      id: 'dataCompleteness',
+      category: 'content',
+      rawValue: 0,
+      confidence: 1.0,
+      source: 'computed: optional_fields_filled / total_optional_fields',
+    }];
+  }
+
+  const OPTIONAL_FIELD_COUNT = 4;
+  let filled = 0;
+
+  if (profile.history && profile.history.length > 0) filled++;
+  if (profile.fanPortrait) filled++;
+  if (profile.posts.some((p) => p.completionRate != null)) filled++;
+  if (profile.posts.some((p) => p.publishedAt != null)) filled++;
+
+  return [{
+    id: 'dataCompleteness',
+    category: 'content',
+    rawValue: filled / OPTIONAL_FIELD_COUNT,
+    confidence: 1.0,
+    source: 'computed: optional_fields_filled / total_optional_fields',
+  }];
+}
+
+// ---------------------------------------------------------------------------
 // Normalisation pass
 // ---------------------------------------------------------------------------
 
@@ -505,6 +557,7 @@ export function collectSignals(
     ...extractAudienceSignals(profile),
     ...extractEngagementVelocity(profile),
     ...extractFreshnessDecay(profile),
+    ...extractDataCompleteness(profile),
   ];
 
   const signals = normalizeSignals(raw, platform);

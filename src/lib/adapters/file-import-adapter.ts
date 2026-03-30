@@ -435,7 +435,7 @@ function parseTikTokContent(rows: Record<string, unknown>[], fileName: string): 
     return {
       postId: videoIdMatch ? videoIdMatch[1] : `tiktok-${i + 1}`,
       desc: String(row['Video title'] ?? ''),
-      publishedAt: undefined, // "Post time" is relative (e.g. "3月28日"), not ISO
+      publishedAt: normalizeTikTokDate(row['Post time']) || undefined,
       views: parseDouyinNum(row['Total views']),
       likes: parseDouyinNum(row['Total likes']),
       comments: parseDouyinNum(row['Total comments']),
@@ -476,10 +476,35 @@ function normalizeTikTokDates(rawDates: unknown[]): string[] {
   });
 }
 
-/** Single-date fallback for non-sequential contexts. */
+/**
+ * Single-date fallback for non-sequential contexts.
+ *
+ * Unlike the batch function (which tracks month transitions across a
+ * chronological sequence), this function handles a single isolated date
+ * string like "3月25日". It assumes the date refers to the current year
+ * and applies a cross-year guard: if the resulting date is more than
+ * 30 days in the future, it is almost certainly from the previous year.
+ */
 function normalizeTikTokDate(raw: unknown): string {
-  const results = normalizeTikTokDates([raw]);
-  return results[0] || '';
+  const s = String(raw ?? '').trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s;
+  const m = s.match(/(\d{1,2})月(\d{1,2})日/);
+  if (!m) return '';
+
+  const now = new Date();
+  let year = now.getFullYear();
+  const month = parseInt(m[1], 10);
+  const day = parseInt(m[2], 10);
+
+  const candidate = new Date(year, month - 1, day);
+  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 86_400_000);
+
+  // Cross-year guard: if inferred date is >30 days in the future, subtract a year
+  if (candidate.getTime() > thirtyDaysFromNow.getTime()) {
+    year--;
+  }
+
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 /** TikTok Overview.xlsx — 365 days of daily aggregate metrics */

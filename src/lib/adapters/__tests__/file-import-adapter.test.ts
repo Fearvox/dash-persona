@@ -197,6 +197,55 @@ describe('parseFileContent', () => {
     });
   });
 
+  describe('TikTok schema detection', () => {
+    function toBase64(rows: Record<string, unknown>[]): string {
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      return XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }) as string;
+    }
+
+    it('detects tiktok_content schema and parses post dates', () => {
+      const content = toBase64([
+        { 'Video title': 'Dance video', 'Total views': 5000, 'Total likes': 300, 'Total comments': 20, 'Total shares': 15, 'Video link': 'https://tiktok.com/video/123', 'Post time': '3月25日' },
+      ]);
+      const result = parseXlsxRaw(content, 'Content.xlsx');
+      expect(result.schema).toBe('tiktok_content');
+      expect(result.posts).toHaveLength(1);
+      expect(result.posts![0].desc).toBe('Dance video');
+      expect(result.posts![0].views).toBe(5000);
+      // publishedAt should be set (not undefined) after date normalization
+      expect(result.posts![0].publishedAt).toBeDefined();
+      expect(result.posts![0].publishedAt).toMatch(/^\d{4}-03-25$/);
+    });
+
+    it('handles cross-year boundary: future date >30 days rolls back a year', () => {
+      // Create a date that is definitely >30 days in the future from any reasonable "now"
+      // Use a date 6 months from now to ensure it triggers the guard
+      const now = new Date();
+      const futureMonth = ((now.getMonth() + 6) % 12) + 1; // 6 months ahead
+      const dateStr = `${futureMonth}月1日`;
+      const content = toBase64([
+        { 'Video title': 'Future post', 'Total views': 100, 'Total likes': 10, 'Total comments': 1, 'Total shares': 1, 'Video link': '', 'Post time': dateStr },
+      ]);
+      const result = parseXlsxRaw(content, 'Content.xlsx');
+      expect(result.posts![0].publishedAt).toBeDefined();
+      // The year should be current year or current year - 1 (not in the future)
+      const parsedYear = parseInt(result.posts![0].publishedAt!.slice(0, 4), 10);
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 86_400_000);
+      const parsedDate = new Date(result.posts![0].publishedAt!);
+      expect(parsedDate.getTime()).toBeLessThanOrEqual(thirtyDaysFromNow.getTime());
+    });
+
+    it('handles ISO date passthrough in Post time column', () => {
+      const content = toBase64([
+        { 'Video title': 'ISO date', 'Total views': 100, 'Total likes': 10, 'Total comments': 1, 'Total shares': 1, 'Video link': '', 'Post time': '2026-01-15' },
+      ]);
+      const result = parseXlsxRaw(content, 'Content.xlsx');
+      expect(result.posts![0].publishedAt).toBe('2026-01-15');
+    });
+  });
+
   describe('Multi-file merge', () => {
     function toBase64(rows: Record<string, unknown>[]): string {
       const ws = XLSX.utils.json_to_sheet(rows);

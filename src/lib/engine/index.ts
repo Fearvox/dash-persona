@@ -155,6 +155,8 @@ import { generateStrategySuggestions, type StrategySuggestion } from './strategy
 import { compareToBenchmarkByNiche, type BenchmarkResult } from './benchmark';
 import { detectNiche } from './niche-detect';
 import type { NicheDetectionResult } from './niche-detect';
+import { collectSignals } from './signal-collector';
+import type { SignalVector } from './signal-collector';
 
 export interface AllEngineResults {
   personaScores: Record<string, PersonaScore>;
@@ -163,6 +165,7 @@ export interface AllEngineResults {
   suggestions: StrategySuggestion[];
   benchmarkResult: BenchmarkResult & { niche: string; nicheLabel: string };
   nicheResult: NicheDetectionResult;
+  signalVectors: Record<string, SignalVector>;
   allPosts: Post[];
   bestPlatform: string;
 }
@@ -193,7 +196,7 @@ export async function runAllEngines(
   const bestPersonaScore = personaScores[bestPlatform] ?? Object.values(personaScores)[0];
   const bestProfile = profiles[bestPlatform] ?? Object.values(profiles)[0];
 
-  const [explanationEntries, suggestions, benchmarkResult, nicheResult] = await Promise.all([
+  const [explanationEntries, suggestions, benchmarkResult, nicheResult, signalEntries] = await Promise.all([
     // Explanations (per-platform, parallel)
     Promise.all(
       platformEntries.map(async ([platform, profile]) => {
@@ -207,12 +210,21 @@ export async function runAllEngines(
     Promise.resolve(compareToBenchmarkByNiche(bestProfile, bestPersonaScore)),
     // Niche detection
     Promise.resolve(detectNiche(bestProfile)),
+    // Signal vectors (per-platform, parallel)
+    Promise.all(
+      platformEntries.map(async ([platform, profile]) => {
+        const vector = collectSignals(profile, personaScores[platform]);
+        return [platform, vector] as const;
+      }),
+    ),
   ]);
 
   const explanations: Record<string, Record<string, ScoreExplanation>> =
     Object.fromEntries(explanationEntries);
 
   const allPosts: Post[] = Object.values(profiles).flatMap((p) => p.posts);
+
+  const signalVectors: Record<string, SignalVector> = Object.fromEntries(signalEntries);
 
   return {
     personaScores,
@@ -221,6 +233,7 @@ export async function runAllEngines(
     suggestions,
     benchmarkResult,
     nicheResult,
+    signalVectors,
     allPosts,
     bestPlatform,
   };

@@ -81,3 +81,66 @@ describe('signal-collector', () => {
     expect(er!.weight).toBe(5);
   });
 });
+
+describe('dataCompleteness signal', () => {
+  const profiles = getDemoProfile('tutorial');
+  const profile = profiles['douyin'];
+  const score = computePersonaScore(profile);
+
+  it('is always present in signal vector', () => {
+    const vector = collectSignals(profile, score);
+    const dc = vector.signals.find((s) => s.id === 'dataCompleteness');
+    expect(dc).toBeDefined();
+    expect(dc!.category).toBe('content');
+  });
+
+  it('has confidence = 1.0 (meta-signal)', () => {
+    const vector = collectSignals(profile, score);
+    const dc = vector.signals.find((s) => s.id === 'dataCompleteness');
+    expect(dc!.confidence).toBe(1.0);
+  });
+
+  it('rawValue is between 0 and 1', () => {
+    const vector = collectSignals(profile, score);
+    const dc = vector.signals.find((s) => s.id === 'dataCompleteness');
+    expect(dc!.rawValue).toBeGreaterThanOrEqual(0);
+    expect(dc!.rawValue).toBeLessThanOrEqual(1);
+  });
+
+  it('returns 0 rawValue for profile with no posts', () => {
+    const emptyProfile = {
+      ...profile,
+      posts: [],
+      profile: { ...profile.profile, followers: 0, nickname: '' },
+    };
+    const emptyScore = computePersonaScore(emptyProfile);
+    const vector = collectSignals(emptyProfile, emptyScore);
+    const dc = vector.signals.find((s) => s.id === 'dataCompleteness');
+    expect(dc).toBeDefined();
+    expect(dc!.rawValue).toBe(0);
+  });
+
+  it('increases rawValue when optional fields are populated', () => {
+    // Base profile without optional fields
+    const baseProfile = {
+      ...profile,
+      history: undefined,
+      fanPortrait: undefined,
+    };
+    const baseScore = computePersonaScore(baseProfile);
+    const baseVector = collectSignals(baseProfile, baseScore);
+    const baseDc = baseVector.signals.find((s) => s.id === 'dataCompleteness');
+
+    // Profile with history added
+    const enrichedProfile = {
+      ...profile,
+      history: [{ fetchedAt: '2026-01-01', profile: { followers: 100, likesTotal: 500, videosCount: 10 } }],
+      fanPortrait: { gender: { male: 60, female: 40 } },
+    };
+    const enrichedScore = computePersonaScore(enrichedProfile);
+    const enrichedVector = collectSignals(enrichedProfile, enrichedScore);
+    const enrichedDc = enrichedVector.signals.find((s) => s.id === 'dataCompleteness');
+
+    expect(enrichedDc!.rawValue).toBeGreaterThan(baseDc!.rawValue);
+  });
+});

@@ -308,8 +308,12 @@ export function generateContentPlan(
   // Collect all posts across all platforms
   const allPosts: Post[] = [];
   for (const profile of Object.values(profiles)) {
-    // Classify content to ensure contentType is set
-    classifyContent(profile.posts);
+    // Classify content to ensure contentType is set — skip if already classified
+    // (e.g. by computePersonaScore which runs earlier in the pipeline)
+    const alreadyClassified = profile.posts.length > 0 && profile.posts[0].contentType != null;
+    if (!alreadyClassified) {
+      classifyContent(profile.posts);
+    }
     allPosts.push(...profile.posts);
   }
 
