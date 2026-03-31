@@ -1,10 +1,14 @@
-import { app, BrowserWindow } from 'electron';
+import path from 'path';
+import { app, BrowserWindow, ipcMain, BrowserWindow as ElectronBrowserWindow } from 'electron';
 import { BrowserManager } from './browser';
-import { startServer, stopServer } from './server';
+import { startServer, stopServer, broadcastSSE } from './server';
 import { TrayManager } from './tray';
-import { initConfig } from './config';
+import { initConfig, getConfig, saveConfig } from './config';
 import { ensureDataDir } from './storage';
 import { getScheduler } from './scheduler';
+import { getBatchQueue } from './batch-queue';
+import { pruneRunLog } from './run-log';
+import type { CollectorConfig } from './config';
 import type { EnqueueRequest } from './scheduler';
 
 // ── Constants ────────────────────────────────────────────────
@@ -16,6 +20,82 @@ let browserManager: BrowserManager;
 let trayManager: TrayManager | null = null;
 let schedulerInstance: ReturnType<typeof getScheduler> | null = null;
 let browserRetries = 0;
+let progressWindow: ElectronBrowserWindow | null = null;
+let settingsWindow: ElectronBrowserWindow | null = null;
+let runLogWindow: ElectronBrowserWindow | null = null;
+
+// ── Window factory functions ─────────────────────────────────
+
+function openProgressWindow(): ElectronBrowserWindow {
+  if (progressWindow && !progressWindow.isDestroyed()) {
+    progressWindow.focus();
+    return progressWindow;
+  }
+  progressWindow = new ElectronBrowserWindow({
+    width: 680,
+    height: 480,
+    minWidth: 580,
+    minHeight: 360,
+    resizable: true,
+    title: 'Collection Progress',
+    backgroundColor: '#0a0f0d',
+    titleBarStyle: 'hiddenInset',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  progressWindow.loadFile(path.join(__dirname, '../ui/progress.html'));
+  progressWindow.on('closed', () => { progressWindow = null; });
+  return progressWindow;
+}
+
+function openSettingsWindow(): ElectronBrowserWindow {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.focus();
+    return settingsWindow;
+  }
+  settingsWindow = new ElectronBrowserWindow({
+    width: 480,
+    height: 520,
+    resizable: false,
+    title: 'Collector Settings',
+    backgroundColor: '#0a0f0d',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  settingsWindow.loadFile(path.join(__dirname, '../ui/settings.html'));
+  settingsWindow.on('closed', () => { settingsWindow = null; });
+  return settingsWindow;
+}
+
+function openRunLogWindow(): ElectronBrowserWindow {
+  if (runLogWindow && !runLogWindow.isDestroyed()) {
+    runLogWindow.focus();
+    return runLogWindow;
+  }
+  runLogWindow = new ElectronBrowserWindow({
+    width: 720,
+    height: 560,
+    minWidth: 560,
+    minHeight: 400,
+    resizable: true,
+    title: 'Collection History',
+    backgroundColor: '#0a0f0d',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  runLogWindow.loadFile(path.join(__dirname, '../ui/run-log.html'));
+  runLogWindow.on('closed', () => { runLogWindow = null; });
+  return runLogWindow;
+}
 
 // ── Single instance lock ─────────────────────────────────────
 const gotLock = app.requestSingleInstanceLock();
@@ -47,9 +127,9 @@ if (!gotLock) {
 
       // 2.5. Init scheduler (loads jobs.json, registers cron tasks, hooks powerMonitor)
       schedulerInstance = getScheduler();
-      // Enqueue function wired in step 6 after BatchQueue is available (Plan 04)
+      // Placeholder enqueue — replaced in step 6 below after BatchQueue is available
       schedulerInstance.setEnqueueFn((_requests: EnqueueRequest[]) => {
-        console.log('[main] Scheduler fired — BatchQueue not yet initialized (Phase 2 Plan 04)');
+        console.log('[main] Scheduler fired — BatchQueue not yet linked');
       });
       await schedulerInstance.init();
       console.log('[collector] Scheduler initialized');
@@ -67,6 +147,111 @@ if (!gotLock) {
       trayManager = new TrayManager(browserManager);
       trayManager.init();
       console.log('[collector] Tray initialized');
+
+      // 5.5 Init batch queue and wire IPC update callback
+      const batchQueue = getBatchQueue();
+
+      batchQueue.setOnUpdate((items) => {
+        // IPC -> progress window
+        if (progressWindow && !progressWindow.isDestroyed()) {
+          progressWindow.webContents.send('collection:status-update', items);
+        }
+        // SSE -> web app (Phase 3)
+        broadcastSSE('batch:update', items);
+
+        // Update tray icon based on batch state
+        const running = items.filter((i) => i.status === 'running' || i.status === 'queued');
+        const allDone = items.every((i) => ['done', 'failed', 'skipped'].includes(i.status));
+        if (allDone && items.length > 0) {
+          trayManager?.clearCollectionState();
+          const summary = {
+            total: items.length,
+            done: items.filter((i) => i.status === 'done').length,
+            failed: items.filter((i) => i.status === 'failed').length,
+          };
+          progressWindow?.webContents.send('collection:batch-complete', summary);
+          broadcastSSE('batch:complete', summary);
+        } else if (running.length > 0) {
+          trayManager?.setCollectionState('collecting', running.length);
+          // Auto-open progress window on first batch start
+          if (!progressWindow || progressWindow.isDestroyed()) {
+            openProgressWindow();
+          }
+        }
+      });
+
+      batchQueue.setOnCaptchaDetected((handle) => {
+        trayManager?.setCollectionState('captcha', 0);
+        const payload = { creatorId: handle, handle };
+        progressWindow?.webContents.send('collection:captcha-detected', payload);
+        broadcastSSE('captcha', { creatorUniqueId: handle, message: `CAPTCHA required for @${handle}` });
+      });
+
+      batchQueue.setOnCaptchaResolved((handle) => {
+        trayManager?.setCollectionState('collecting', 1);
+        progressWindow?.webContents.send('collection:captcha-resolved', { creatorId: handle });
+      });
+
+      // 6. Wire scheduler enqueue function to the real BatchQueue
+      const scheduler = getScheduler();
+      scheduler.setEnqueueFn((requests: EnqueueRequest[]) => {
+        batchQueue.enqueue(
+          requests.map((r) => ({
+            creatorUniqueId: r.creatorUniqueId,
+            platform: r.platform,
+            postCount: r.postCount,
+            context: r.triggeredBy === 'scheduler' ? 'scheduled' as const : 'manual' as const,
+          })),
+        );
+      });
+
+      // Wire missed-run tray updates (Review #2)
+      scheduler.setOnMissedRunsChanged((missed) => {
+        trayManager?.setMissedRunCount(missed.length);
+      });
+      trayManager?.setMissedRunCallbacks({
+        runMissedNow: () => scheduler.runMissedNow(),
+        skipMissed: () => scheduler.skipMissedRuns(),
+      });
+
+      console.log('[collector] BatchQueue and Scheduler linked');
+
+      // 7. Set tray callbacks for window opening and collection actions
+      trayManager?.setCollectionCallbacks({
+        openProgressWindow: () => openProgressWindow(),
+        cancelCollection: () => batchQueue.cancelAll(),
+        showBrowser: () => {
+          void browserManager.showLoginWindow();
+        },
+      });
+      trayManager?.setWindowCallbacks({
+        openSettings: () => openSettingsWindow(),
+        openRunLog: () => openRunLogWindow(),
+      });
+
+      // 8. Register IPC handlers
+      ipcMain.on('collection:cancel', () => {
+        batchQueue.cancelAll();
+      });
+
+      ipcMain.on('settings:load', (event) => {
+        event.sender.send('settings:loaded', getConfig());
+      });
+
+      ipcMain.on('settings:save', (_event, delta: Partial<CollectorConfig>) => {
+        saveConfig(delta);
+        // Re-send updated config to all settings windows
+        settingsWindow?.webContents.send('settings:loaded', getConfig());
+      });
+
+      ipcMain.on('settings:purge-runlog', async () => {
+        const config = getConfig();
+        await pruneRunLog(config.runLog.retention);
+      });
+
+      ipcMain.on('runlog:open', () => {
+        openRunLogWindow();
+      });
 
       console.log('[collector] Ready');
     } catch (err) {
