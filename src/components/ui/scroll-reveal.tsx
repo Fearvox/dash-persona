@@ -29,11 +29,13 @@ export default function ScrollReveal({ children, className = '', delay = 0 }: Sc
     // Opt into hidden state (only after mount, so SSR/no-JS stays visible)
     setMounted(true);
 
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           if (delay > 0) {
-            setTimeout(() => el.classList.add('revealed'), delay);
+            timer = setTimeout(() => el.classList.add('revealed'), delay);
           } else {
             el.classList.add('revealed');
           }
@@ -44,11 +46,14 @@ export default function ScrollReveal({ children, className = '', delay = 0 }: Sc
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (timer !== null) clearTimeout(timer);
+    };
   }, [delay]);
 
   return (
-    <div ref={ref} className={`${mounted ? 'reveal-on-scroll' : ''} ${className}`}>
+    <div ref={ref} className={[mounted ? 'reveal-on-scroll' : '', className].filter(Boolean).join(' ')}>
       {children}
     </div>
   );

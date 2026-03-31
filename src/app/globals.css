@@ -329,6 +329,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   .analyzing-enter-2 {
     opacity: 1 !important;
     visibility: visible !important;
+    pointer-events: auto !important;
   }
 }
 
