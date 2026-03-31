@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collector Settings</title>
+  <style>
+    :root {
+      --bg-primary: #0a0f0d;
+      --bg-card: #151d19;
+      --bg-input: #0e1512;
+      --text-primary: #e8fff6;
+      --text-secondary: #b8c4be;
+      --text-subtle: #8a9590;
+      --accent-green: #7ed29a;
+      --accent-red: #c87e7e;
+      --accent-yellow: #d2c87e;
+      --border-default: #2a3630;
+      --border-focus: #7ed29a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ────────────────────────────────────────── */
+    .header {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ── Content ───────────────────────────────────────── */
+    .content {
+      flex: 1;
+      padding: 0 24px;
+      overflow-y: auto;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before,
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-default);
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 36px;
+    }
+
+    .field-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--text-subtle);
+      margin-top: 4px;
+    }
+
+    /* ── Toggle ────────────────────────────────────────── */
+    .toggle {
+      width: 40px;
+      height: 22px;
+      border-radius: 11px;
+      background: var(--border-default);
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background 200ms;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .toggle[aria-checked="true"] {
+      background: var(--accent-green);
+    }
+
+    .toggle-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--bg-primary);
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 200ms;
+    }
+
+    .toggle[aria-checked="true"] .toggle-thumb {
+      transform: translateX(18px);
+    }
+
+    /* ── Select ────────────────────────────────────────── */
+    select {
+      width: 100%;
+      height: 36px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-default);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-size: 13px;
+      padding: 0 8px;
+      font-family: inherit;
+      appearance: auto;
+    }
+
+    select:focus {
+      outline: 2px solid var(--border-focus);
+      outline-offset: -1px;
+    }
+
+    .select-inline {
+      width: 180px;
+    }
+
+    /* ── Disabled overlay ──────────────────────────────── */
+    .scheduler-fields.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ── Next run display ──────────────────────────────── */
+    .next-run {
+      font-size: 12px;
+      color: var(--text-subtle);
+      font-family: ui-monospace, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Purge button ──────────────────────────────────── */
+    .btn-purge {
+      background: none;
+      border: 1px solid var(--accent-red);
+      color: var(--accent-red);
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-purge:hover { background: rgba(200,126,126,0.1); }
+    .btn-purge.hidden { display: none; }
+
+    /* ── Footer ────────────────────────────────────────── */
+    .footer {
+      height: 48px;
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 24px;
+      gap: 8px;
+      flex-shrink: 0;
+      border-top: 1px solid var(--border-default);
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+    }
+
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+    }
+    .btn-ghost:hover { border-color: var(--text-subtle); }
+
+    .btn-primary {
+      background: var(--accent-green);
+      color: var(--bg-primary);
+      font-weight: 600;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Settings</h1>
+  </div>
+
+  <div class="content">
+    <!-- Schedule section -->
+    <div class="section">
+      <div class="section-title">Schedule</div>
+      <div class="field">
+        <div class="field-row">
+          <span class="field-label">Enable scheduler</span>
+          <button type="button" role="switch" aria-checked="false" class="toggle" id="toggleScheduler">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+      </div>
+      <div class="scheduler-fields disabled" id="schedulerFields">
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Run every</span>
+            <select class="select-inline" id="selectInterval">
+              <option value="every-6h">Every 6 hours</option>
+              <option value="every-12h">Every 12 hours</option>
+              <option value="daily" selected>Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Next run</span>
+            <span class="next-run" id="nextRunDisplay">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collection section -->
+    <div class="section">
+      <div class="section-title">Collection</div>
+      <div class="field">
+        <div class="field-row">
+          <span class="field-label">Posts per creator</span>
+          <select class="select-inline" id="selectPostCount">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Run Log section -->
+    <div class="section">
+      <div class="section-title">Run Log</div>
+      <div class="field">
+        <div class="field-row">
+          <span class="field-label">Retain</span>
+          <select class="select-inline" id="selectRetention">
+            <option value="count-100">Last 100 entries</option>
+            <option value="count-500" selected>Last 500 entries</option>
+            <option value="days-30">Last 30 days</option>
+            <option value="days-90">Last 90 days</option>
+            <option value="all">All entries</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-row">
+          <span class="field-label"></span>
+          <button type="button" class="btn-purge" id="btnPurge">Purge old entries</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button type="button" class="btn btn-ghost" id="btnCancel">Cancel</button>
+    <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+  </div>
+
+  <script>
+    var INTERVAL_MS = {
+      'every-6h': 6 * 60 * 60 * 1000,
+      'every-12h': 12 * 60 * 60 * 1000,
+      'daily': 24 * 60 * 60 * 1000,
+      'weekly': 7 * 24 * 60 * 60 * 1000,
+    };
+
+    var toggleScheduler = document.getElementById('toggleScheduler');
+    var schedulerFields = document.getElementById('schedulerFields');
+    var selectInterval = document.getElementById('selectInterval');
+    var selectPostCount = document.getElementById('selectPostCount');
+    var selectRetention = document.getElementById('selectRetention');
+    var nextRunDisplay = document.getElementById('nextRunDisplay');
+    var btnPurge = document.getElementById('btnPurge');
+    var btnCancel = document.getElementById('btnCancel');
+    var btnSave = document.getElementById('btnSave');
+
+    function setToggle(enabled) {
+      toggleScheduler.setAttribute('aria-checked', enabled ? 'true' : 'false');
+      if (enabled) {
+        schedulerFields.classList.remove('disabled');
+      } else {
+        schedulerFields.classList.add('disabled');
+      }
+    }
+
+    function computeNextRun(intervalKey) {
+      var ms = INTERVAL_MS[intervalKey];
+      if (!ms) return '--';
+      var next = new Date(Date.now() + ms);
+      var yyyy = next.getFullYear();
+      var mm = String(next.getMonth() + 1).padStart(2, '0');
+      var dd = String(next.getDate()).padStart(2, '0');
+      var hh = String(next.getHours()).padStart(2, '0');
+      var mi = String(next.getMinutes()).padStart(2, '0');
+
+      var diffMs = ms;
+      var diffH = Math.floor(diffMs / (60 * 60 * 1000));
+      var diffM = Math.floor((diffMs % (60 * 60 * 1000)) / (60 * 1000));
+      var relText = diffH > 0 ? ('in ' + diffH + 'h ' + diffM + 'm') : ('in ' + diffM + 'm');
+
+      return yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + mi + ' (' + relText + ')';
+    }
+
+    function updateNextRunDisplay() {
+      nextRunDisplay.textContent = computeNextRun(selectInterval.value);
+    }
+
+    function retentionToSelectValue(retention) {
+      if (!retention) return 'count-500';
+      if (retention.mode === 'all') return 'all';
+      if (retention.mode === 'count') return 'count-' + retention.maxEntries;
+      if (retention.mode === 'days') return 'days-' + retention.maxDays;
+      return 'count-500';
+    }
+
+    function selectValueToRetention(val) {
+      if (val === 'all') return { mode: 'all' };
+      var parts = val.split('-');
+      if (parts[0] === 'count') return { mode: 'count', maxEntries: parseInt(parts[1], 10) };
+      if (parts[0] === 'days') return { mode: 'days', maxDays: parseInt(parts[1], 10) };
+      return { mode: 'count', maxEntries: 500 };
+    }
+
+    function updatePurgeVisibility() {
+      if (selectRetention.value === 'all') {
+        btnPurge.classList.add('hidden');
+      } else {
+        btnPurge.classList.remove('hidden');
+      }
+    }
+
+    function populateForm(config) {
+      // Scheduler
+      var enabled = config.scheduler && config.scheduler.enabled;
+      setToggle(enabled);
+      if (config.scheduler && config.scheduler.defaultInterval) {
+        selectInterval.value = config.scheduler.defaultInterval;
+      }
+      updateNextRunDisplay();
+
+      // Collection
+      if (config.scheduler && config.scheduler.postCount) {
+        selectPostCount.value = String(config.scheduler.postCount);
+      }
+
+      // Retention
+      if (config.runLog && config.runLog.retention) {
+        selectRetention.value = retentionToSelectValue(config.runLog.retention);
+      }
+      updatePurgeVisibility();
+    }
+
+    // ── Toggle click ─────────────────────────────────────
+    toggleScheduler.addEventListener('click', function() {
+      var current = toggleScheduler.getAttribute('aria-checked') === 'true';
+      setToggle(!current);
+    });
+
+    // ── Interval change → update next run ────────────────
+    selectInterval.addEventListener('change', function() {
+      updateNextRunDisplay();
+    });
+
+    // ── Retention change → update purge visibility ───────
+    selectRetention.addEventListener('change', function() {
+      updatePurgeVisibility();
+    });
+
+    // ── Purge ────────────────────────────────────────────
+    btnPurge.addEventListener('click', function() {
+      window.collector.settings.purgeRunLog();
+    });
+
+    // ── Cancel ───────────────────────────────────────────
+    btnCancel.addEventListener('click', function() {
+      window.close();
+    });
+
+    // ── Save ─────────────────────────────────────────────
+    btnSave.addEventListener('click', function() {
+      var delta = {
+        scheduler: {
+          enabled: toggleScheduler.getAttribute('aria-checked') === 'true',
+          defaultInterval: selectInterval.value,
+          postCount: parseInt(selectPostCount.value, 10),
+        },
+        runLog: {
+          retention: selectValueToRetention(selectRetention.value),
+        },
+      };
+      window.collector.settings.save(delta);
+      window.close();
+    });
+
+    // ── Load settings on startup ─────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      window.collector.settings.load();
+      window.collector.settings.onLoaded(function(config) {
+        populateForm(config);
+      });
+    });
+  </script>
+</body>
+</html>
