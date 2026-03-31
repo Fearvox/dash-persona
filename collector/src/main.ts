@@ -4,6 +4,8 @@ import { startServer, stopServer } from './server';
 import { TrayManager } from './tray';
 import { initConfig } from './config';
 import { ensureDataDir } from './storage';
+import { getScheduler } from './scheduler';
+import type { EnqueueRequest } from './scheduler';
 
 // ── Constants ────────────────────────────────────────────────
 const API_PORT = 3458;
@@ -12,6 +14,7 @@ const MAX_BROWSER_RETRIES = 3;
 // ── State ────────────────────────────────────────────────────
 let browserManager: BrowserManager;
 let trayManager: TrayManager | null = null;
+let schedulerInstance: ReturnType<typeof getScheduler> | null = null;
 let browserRetries = 0;
 
 // ── Single instance lock ─────────────────────────────────────
@@ -41,6 +44,15 @@ if (!gotLock) {
       // 2. Ensure data directory exists
       await ensureDataDir();
       console.log('[collector] Data directory ready');
+
+      // 2.5. Init scheduler (loads jobs.json, registers cron tasks, hooks powerMonitor)
+      schedulerInstance = getScheduler();
+      // Enqueue function wired in step 6 after BatchQueue is available (Plan 04)
+      schedulerInstance.setEnqueueFn((_requests: EnqueueRequest[]) => {
+        console.log('[main] Scheduler fired — BatchQueue not yet initialized (Phase 2 Plan 04)');
+      });
+      await schedulerInstance.init();
+      console.log('[collector] Scheduler initialized');
 
       // 3. Init browser
       browserManager = BrowserManager.getInstance();
@@ -82,6 +94,7 @@ if (!gotLock) {
     e.preventDefault();
     try {
       console.log('[collector] Shutting down…');
+      schedulerInstance?.destroy();
       trayManager?.destroy();
       await stopServer();
       console.log('[collector] Server stopped');
