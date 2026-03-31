@@ -1,9 +1,15 @@
 import { app } from 'electron';
-import { chromium, type BrowserContext, type Page } from 'playwright';
+import { chromium as chromiumBase } from 'playwright-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import type { BrowserContext, Page } from 'playwright';
 import path from 'path';
 import crypto from 'crypto';
 
-export type BrowserStatus = 'active' | 'standby' | 'error';
+// Apply stealth plugin once at module load
+chromiumBase.use(StealthPlugin());
+const chromium = chromiumBase;
+
+export type BrowserStatus = 'active' | 'standby' | 'error' | 'collecting' | 'captcha';
 
 export type StatusChangeCallback = (status: BrowserStatus, error?: string) => void;
 
@@ -50,8 +56,65 @@ export class BrowserManager {
 
     this.context = await chromium.launchPersistentContext(profileDir, {
       headless: false,
-      args: ['--no-sandbox'],
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--no-first-run',
+        '--no-zygote',
+        '--lang=zh-CN,zh',
+      ],
     });
+
+    // Apply init script to every page in this context
+    await this.context.addInitScript(() => {
+      // 1. Delete cdc_ properties injected by CDP/Playwright
+      const deleteProps = (obj: object): void => {
+        for (const key of Object.keys(obj)) {
+          if (key.startsWith('cdc_')) {
+            delete (obj as Record<string, unknown>)[key];
+          }
+        }
+      };
+      deleteProps(window);
+      deleteProps(document);
+
+      // 2. Override navigator.webdriver to undefined
+      Object.defineProperty(navigator, 'webdriver', {
+        get: () => undefined,
+        configurable: true,
+      });
+
+      // 3. Restore navigator.plugins (TikTok checks for empty array)
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5],
+        configurable: true,
+      });
+
+      // 4. Restore navigator.languages
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['zh-CN', 'zh', 'en'],
+        configurable: true,
+      });
+
+      // 5. Add chrome runtime stub
+      const w = window as unknown as { chrome?: { runtime: Record<string, unknown> } };
+      if (!w.chrome) {
+        w.chrome = { runtime: {} };
+      }
+    });
+
+    // 6. Patch Electron UA: remove the "Electron/X.Y.Z " fragment
+    const pages = this.context.pages();
+    const testPage = pages[0] ?? await this.context.newPage();
+    const ua: string = await testPage.evaluate(() => navigator.userAgent);
+    if (ua.includes('Electron')) {
+      await this.context.setExtraHTTPHeaders({
+        'User-Agent': ua.replace(/Electron\/[\d.]+ /, ''),
+      });
+    }
+    if (pages.length === 0) await testPage.close();
 
     this.context.on('close', () => {
       this.context = null;
