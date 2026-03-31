@@ -40,6 +40,14 @@
 
 **UI hint:** Yes — Collector UI gains progress bar, batch status table, and scheduler configuration panel.
 
+**Plan progress:**
+| Plan | Title | Status |
+|------|-------|--------|
+| 02-01 | TikTok Collection Engine | Complete |
+| 02-02 | Scheduler & Job Persistence | Complete |
+| 02-03 | Run Log System | Complete |
+| 02-04 | Batch Queue & Collector UI | Pending |
+
 **Success criteria:**
 1. User can collect a TikTok creator profile end-to-end without triggering a CAPTCHA or soft-ban (anti-fingerprint measures active).
 2. User can create a scheduled job (e.g. daily at 09:00) that persists across Collector restarts and fires correctly after a system wake/unlock.
