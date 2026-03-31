@@ -6,6 +6,7 @@
   },
   "files": [
     "dist/**/*",
+    "ui/**",
     "package.json"
   ],
   "mac": {
