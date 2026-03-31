@@ -1,6 +1,15 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import http from 'http';
+import { join } from 'path';
 import { BrowserManager } from './browser';
+import { atomicWriteJSON, getDataDir, ensureDataDir, classifyStorageError } from './storage';
+import {
+  validateCreatorSnapshot,
+  snapshotFilename,
+  SNAPSHOT_SCHEMA_VERSION,
+  type CreatorSnapshot,
+  type CreatorProfile,
+} from './snapshot-types';
 
 // ---------------------------------------------------------------------------
 // Error classification
@@ -36,7 +45,10 @@ export function createServer(browserManager: BrowserManager): express.Express {
   const app = express();
 
   // Parse text/plain bodies (cdp-adapter sends JS code and selectors this way)
-  app.use(express.text({ type: '*/*' }));
+  app.use(express.text({ type: 'text/*' }));
+
+  // Parse JSON bodies for /snapshot endpoint
+  app.use(express.json({ limit: '10mb' }));
 
   // Request timeout middleware — abort if handler takes >30s
   app.use((_req: Request, res: Response, next: NextFunction) => {
@@ -212,6 +224,74 @@ export function createServer(browserManager: BrowserManager): express.Express {
       res.json({ success: true });
     } catch (err) {
       const classified = classifyError(err);
+      res.status(500).json(classified);
+    }
+  });
+
+  // ── POST /snapshot ────────────────────────────────────────────
+  // Accept a CreatorProfile from the web app, wrap in CreatorSnapshot,
+  // validate, and atomically write to ~/.dashpersona/data/.
+
+  app.post('/snapshot', async (req: Request, res: Response) => {
+    const body = req.body as unknown;
+
+    if (!body || typeof body !== 'object') {
+      res.status(400).json({
+        error: 'Request body must be a JSON object containing a CreatorProfile',
+        code: 'INVALID_REQUEST_BODY',
+      });
+      return;
+    }
+
+    const profile = body as CreatorProfile;
+
+    const platform = profile?.platform;
+    const uniqueId = profile?.profile?.uniqueId;
+
+    if (!platform || typeof platform !== 'string') {
+      res.status(400).json({
+        error: 'Missing or invalid "platform" field in profile',
+        code: 'MISSING_PLATFORM',
+      });
+      return;
+    }
+    if (!uniqueId || typeof uniqueId !== 'string') {
+      res.status(400).json({
+        error: 'Missing or invalid "profile.uniqueId" field',
+        code: 'MISSING_UNIQUE_ID',
+      });
+      return;
+    }
+
+    const collectedAt = new Date().toISOString();
+
+    const snapshot: CreatorSnapshot = {
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
+      collectedAt,
+      platform,
+      uniqueId,
+      profile,
+    };
+
+    const validation = validateCreatorSnapshot(snapshot);
+    if (!validation.valid) {
+      res.status(422).json({
+        error: 'Profile data failed validation — snapshot not written',
+        code: 'WRITE_VALIDATION_FAILED',
+        details: validation.errors,
+        remediation: 'Ensure the profile data is complete and conforms to CreatorProfile schema.',
+      });
+      return;
+    }
+
+    try {
+      await ensureDataDir();
+      const filename = snapshotFilename(platform, uniqueId, collectedAt);
+      const filePath = join(getDataDir(), filename);
+      await atomicWriteJSON(filePath, snapshot);
+      res.json({ success: true, filename, collectedAt, filePath });
+    } catch (err) {
+      const classified = classifyStorageError(err, getDataDir());
       res.status(500).json(classified);
     }
   });

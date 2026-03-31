@@ -2,6 +2,8 @@ import { app, BrowserWindow } from 'electron';
 import { BrowserManager } from './browser';
 import { startServer, stopServer } from './server';
 import { TrayManager } from './tray';
+import { initConfig } from './config';
+import { ensureDataDir } from './storage';
 
 // ── Constants ────────────────────────────────────────────────
 const API_PORT = 3458;
@@ -32,16 +34,24 @@ if (!gotLock) {
 
   app.whenReady().then(async () => {
     try {
-      // 1. Init browser
+      // 1. Init config store (must be first — other modules may read config)
+      initConfig();
+      console.log('[collector] Config initialized');
+
+      // 2. Ensure data directory exists
+      await ensureDataDir();
+      console.log('[collector] Data directory ready');
+
+      // 3. Init browser
       browserManager = BrowserManager.getInstance();
       await browserManager.init();
       console.log('[collector] Browser context initialized');
 
-      // 2. Start HTTP API server
+      // 4. Start HTTP API server
       await startServer(browserManager, API_PORT);
       console.log(`[collector] Server started on port ${API_PORT}`);
 
-      // 3. Init tray
+      // 5. Init tray
       trayManager = new TrayManager(browserManager);
       trayManager.init();
       console.log('[collector] Tray initialized');
