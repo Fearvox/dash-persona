@@ -121,9 +121,11 @@ const CRC_TABLE: number[] = (() => {
 
 // Pre-build status icons
 const STATUS_COLORS: Record<BrowserStatus, string> = {
-  active: '#7ed29a',  // green — logged in, ready
-  standby: '#d2c87e', // yellow — running, not logged in
-  error: '#c87e7e',   // red — crash or failure
+  active: '#7ed29a',     // green — logged in, ready
+  standby: '#d2c87e',    // yellow — running, not logged in
+  error: '#c87e7e',      // red — crash or failure
+  collecting: '#7eb8d2', // blue — collection in progress
+  captcha: '#f0f545',    // highlight — CAPTCHA needs attention
 };
 
 const REFRESH_INTERVAL_MS = 30_000;
@@ -136,18 +138,32 @@ export class TrayManager {
   private douyinLoggedIn = false;
   private xhsLoggedIn = false;
   private lastError: string | null = null;
+  /** Transient status that takes precedence over periodic recomputation. */
+  private lockedStatus: BrowserStatus | null = null;
 
   constructor(browserManager: BrowserManager) {
     this.browserManager = browserManager;
   }
 
+  /**
+   * Lock the tray status to a transient state (collecting/captcha).
+   * Periodic recomputation via updateStatus() will be a no-op while locked.
+   */
+  lockStatus(status: 'collecting' | 'captcha'): void {
+    this.lockedStatus = status;
+    this.applyStatus(status);
+  }
+
+  /** Clear the transient lock, allowing periodic recomputation to resume. */
+  unlockStatus(): void {
+    this.lockedStatus = null;
+  }
+
   init(): void {
     // Lazy-build icons (nativeImage requires Electron app ready)
-    this.icons = {
-      active: createCircleIcon(STATUS_COLORS.active),
-      standby: createCircleIcon(STATUS_COLORS.standby),
-      error: createCircleIcon(STATUS_COLORS.error),
-    };
+    this.icons = Object.fromEntries(
+      Object.entries(STATUS_COLORS).map(([k, v]) => [k, createCircleIcon(v)])
+    ) as Record<BrowserStatus, NativeImage>;
 
     this.tray = new Tray(this.icons.standby);
     this.tray.setToolTip('DashPersona Collector');
@@ -186,6 +202,12 @@ export class TrayManager {
   }
 
   updateStatus(status: BrowserStatus): void {
+    // If a transient status (collecting/captcha) is locked, do not override it
+    if (this.lockedStatus !== null) return;
+    this.applyStatus(status);
+  }
+
+  private applyStatus(status: BrowserStatus): void {
     if (!this.tray || !this.icons) return;
     this.tray.setImage(this.icons[status]);
   }

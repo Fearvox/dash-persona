@@ -1,6 +1,16 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import http from 'http';
+import { join } from 'path';
 import { BrowserManager } from './browser';
+import { atomicWriteJSON, getDataDir, ensureDataDir, classifyStorageError } from './storage';
+import { collectAndSave, classifyTikTokError } from './tiktok-collector';
+import {
+  validateCreatorSnapshot,
+  snapshotFilename,
+  SNAPSHOT_SCHEMA_VERSION,
+  type CreatorSnapshot,
+  type CreatorProfile,
+} from './snapshot-types';
 
 // ---------------------------------------------------------------------------
 // Error classification
@@ -36,10 +46,17 @@ export function createServer(browserManager: BrowserManager): express.Express {
   const app = express();
 
   // Parse text/plain bodies (cdp-adapter sends JS code and selectors this way)
-  app.use(express.text({ type: '*/*' }));
+  app.use(express.text({ type: 'text/*' }));
 
-  // Request timeout middleware — abort if handler takes >30s
-  app.use((_req: Request, res: Response, next: NextFunction) => {
+  // Parse JSON bodies for /snapshot endpoint
+  app.use(express.json({ limit: '10mb' }));
+
+  // Request timeout middleware — applies to all routes EXCEPT /collect (which can take 90s+)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path === '/collect') {
+      next();
+      return;
+    }
     const timer = setTimeout(() => {
       if (!res.headersSent) {
         res.status(504).json({ error: 'Request timed out', code: 'REQUEST_TIMEOUT' });
@@ -212,6 +229,107 @@ export function createServer(browserManager: BrowserManager): express.Express {
       res.json({ success: true });
     } catch (err) {
       const classified = classifyError(err);
+      res.status(500).json(classified);
+    }
+  });
+
+  // ── POST /snapshot ────────────────────────────────────────────
+  // Accept a CreatorProfile from the web app, wrap in CreatorSnapshot,
+  // validate, and atomically write to ~/.dashpersona/data/.
+
+  app.post('/snapshot', async (req: Request, res: Response) => {
+    const body = req.body as unknown;
+
+    if (!body || typeof body !== 'object') {
+      res.status(400).json({
+        error: 'Request body must be a JSON object containing a CreatorProfile',
+        code: 'INVALID_REQUEST_BODY',
+      });
+      return;
+    }
+
+    const profile = body as CreatorProfile;
+
+    const platform = profile?.platform;
+    const uniqueId = profile?.profile?.uniqueId;
+
+    if (!platform || typeof platform !== 'string') {
+      res.status(400).json({
+        error: 'Missing or invalid "platform" field in profile',
+        code: 'MISSING_PLATFORM',
+      });
+      return;
+    }
+    if (!uniqueId || typeof uniqueId !== 'string') {
+      res.status(400).json({
+        error: 'Missing or invalid "profile.uniqueId" field',
+        code: 'MISSING_UNIQUE_ID',
+      });
+      return;
+    }
+
+    const collectedAt = new Date().toISOString();
+
+    const snapshot: CreatorSnapshot = {
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
+      collectedAt,
+      platform,
+      uniqueId,
+      profile,
+    };
+
+    const validation = validateCreatorSnapshot(snapshot);
+    if (!validation.valid) {
+      res.status(422).json({
+        error: 'Profile data failed validation — snapshot not written',
+        code: 'WRITE_VALIDATION_FAILED',
+        details: validation.errors,
+        remediation: 'Ensure the profile data is complete and conforms to CreatorProfile schema.',
+      });
+      return;
+    }
+
+    try {
+      await ensureDataDir();
+      const filename = snapshotFilename(platform, uniqueId, collectedAt);
+      const filePath = join(getDataDir(), filename);
+      await atomicWriteJSON(filePath, snapshot);
+      res.json({ success: true, filename, collectedAt, filePath });
+    } catch (err) {
+      const classified = classifyStorageError(err, getDataDir());
+      res.status(500).json(classified);
+    }
+  });
+
+  // ── POST /collect ─────────────────────────────────────────────
+  // Trigger TikTok collection for a given handle. Returns snapshot metadata.
+  // Request body: { handle: string; postCount?: number }
+  // NOTE: This endpoint does NOT log to run-log — BatchQueue is the single
+  // run-log owner (Review #1, #4). It does NOT persist snapshots separately —
+  // that is done inside collectTikTok(). This endpoint only orchestrates.
+
+  app.post('/collect', async (req: Request, res: Response) => {
+    const body = req.body as { handle?: unknown; postCount?: unknown };
+
+    const handle = typeof body.handle === 'string' ? body.handle.trim() : '';
+    if (!handle) {
+      res.status(400).json({
+        error: 'Missing or invalid "handle" field',
+        code: 'MISSING_HANDLE',
+      });
+      return;
+    }
+
+    const postCount =
+      typeof body.postCount === 'number' && body.postCount > 0
+        ? Math.min(body.postCount, 100)
+        : 20;
+
+    try {
+      const result = await collectAndSave({ handle, postCount });
+      res.json(result);
+    } catch (err) {
+      const classified = classifyTikTokError(err);
       res.status(500).json(classified);
     }
   });
