@@ -93,42 +93,42 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STOR-01 | — | Pending |
-| STOR-02 | — | Pending |
-| STOR-03 | — | Pending |
-| STOR-04 | — | Pending |
-| COLL-01 | — | Pending |
-| COLL-02 | — | Pending |
-| COLL-03 | — | Pending |
-| COLL-04 | — | Pending |
-| COLL-05 | — | Pending |
-| COLL-06 | — | Pending |
-| COLL-07 | — | Pending |
-| COLL-08 | — | Pending |
-| DASH-01 | — | Pending |
-| DASH-02 | — | Pending |
-| DASH-03 | — | Pending |
-| DASH-04 | — | Pending |
-| HIST-01 | — | Pending |
-| HIST-02 | — | Pending |
-| HIST-03 | — | Pending |
-| HIST-04 | — | Pending |
-| HIST-05 | — | Pending |
-| COMP-01 | — | Pending |
-| COMP-02 | — | Pending |
-| COMP-03 | — | Pending |
-| COMP-04 | — | Pending |
-| COMP-05 | — | Pending |
-| EXPT-01 | — | Pending |
-| EXPT-02 | — | Pending |
-| EXPT-03 | — | Pending |
-| EXPT-04 | — | Pending |
-| EXPT-05 | — | Pending |
+| STOR-01 | 1 | Pending |
+| STOR-02 | 1 | Pending |
+| STOR-03 | 1 | Pending |
+| STOR-04 | 1 | Pending |
+| COLL-01 | 2 | Pending |
+| COLL-02 | 2 | Pending |
+| COLL-03 | 2 | Pending |
+| COLL-04 | 2 | Pending |
+| COLL-05 | 2 | Pending |
+| COLL-06 | 2 | Pending |
+| COLL-07 | 2 | Pending |
+| COLL-08 | 2 | Pending |
+| DASH-01 | 3 | Pending |
+| DASH-02 | 3 | Pending |
+| DASH-03 | 3 | Pending |
+| DASH-04 | 3 | Pending |
+| HIST-01 | 4 | Pending |
+| HIST-02 | 4 | Pending |
+| HIST-03 | 4 | Pending |
+| HIST-04 | 4 | Pending |
+| HIST-05 | 4 | Pending |
+| COMP-01 | 4 | Pending |
+| COMP-02 | 4 | Pending |
+| COMP-03 | 4 | Pending |
+| COMP-04 | 4 | Pending |
+| COMP-05 | 4 | Pending |
+| EXPT-01 | 5 | Pending |
+| EXPT-02 | 5 | Pending |
+| EXPT-03 | 5 | Pending |
+| EXPT-04 | 5 | Pending |
+| EXPT-05 | 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 31 total
-- Mapped to phases: 0 ⚠️
-- Unmapped: 31 ⚠️
+- Mapped to phases: 31
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-31*
