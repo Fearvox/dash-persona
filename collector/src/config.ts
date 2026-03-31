@@ -24,6 +24,13 @@ import { getDashPersonaDir, getDataDir } from './storage';
  * Phase 1 active: schemaVersion, dataDir, preferences.
  * Phase 2 reserved: scheduler (empty defaults, populated by Phase 2).
  */
+export type SchedulerInterval = 'every-6h' | 'every-12h' | 'daily' | 'weekly';
+
+export type RetentionPolicy =
+  | { mode: 'count'; maxEntries: number }
+  | { mode: 'days'; maxDays: number }
+  | { mode: 'all' };
+
 export interface CollectorConfig {
   /** Config format version. Increment on breaking schema changes. */
   schemaVersion: string;
@@ -38,16 +45,21 @@ export interface CollectorConfig {
   };
 
   /**
-   * Scheduler configuration (Phase 2 reserved).
-   * Present with empty/disabled defaults so Phase 2 can populate without migration.
+   * Scheduler configuration.
+   * Job definitions are persisted separately in ~/.dashpersona/jobs.json.
    */
   scheduler: {
-    /** Whether the scheduler is active. Always false until Phase 2. */
+    /** Whether the scheduler is active. */
     enabled: boolean;
-    /** Default collection interval label. Phase 2 will expand this. */
-    defaultInterval: string;
-    /** Job definitions. Phase 2 populates this array. */
-    jobs: unknown[];
+    /** Default collection interval for new jobs. */
+    defaultInterval: SchedulerInterval;
+    /** Default number of posts to collect per creator. */
+    postCount: number;
+  };
+
+  /** Run log retention configuration. */
+  runLog: {
+    retention: RetentionPolicy;
   };
 }
 
@@ -65,7 +77,10 @@ function buildDefaults(): CollectorConfig {
     scheduler: {
       enabled: false,
       defaultInterval: 'daily',
-      jobs: [],
+      postCount: 20,
+    },
+    runLog: {
+      retention: { mode: 'count', maxEntries: 500 },
     },
   };
 }
@@ -129,6 +144,25 @@ export function getConfig(): CollectorConfig {
     throw new Error('[collector] Config not initialized — call initConfig() first');
   }
   return config;
+}
+
+/**
+ * Persist a config delta to disk.
+ * Merges the provided partial config into the active config and saves.
+ *
+ * @throws Error if initConfig() has not been called yet.
+ */
+export function saveConfig(delta: Partial<CollectorConfig>): void {
+  const current = getConfig();
+  const updated: CollectorConfig = {
+    ...current,
+    ...delta,
+    scheduler: { ...current.scheduler, ...(delta.scheduler ?? {}) },
+    runLog: { ...current.runLog, ...(delta.runLog ?? {}) },
+    preferences: { ...current.preferences, ...(delta.preferences ?? {}) },
+  };
+  config = updated;
+  writeFileSync(getConfigPath(), JSON.stringify(updated, null, 2), 'utf-8');
 }
 
 /**
