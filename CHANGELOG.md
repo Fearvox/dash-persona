@@ -10,11 +10,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ### Added
 
+- **Animation system** — Button micro-interactions (hover lift, active compress), card hover lift effect, scroll-triggered output wall reveals with stagger, file drop zone drag feedback, nav pill transitions.
+- **ScrollReveal component** — IntersectionObserver-based scroll entrance animations with mount-first pattern (SSR/no-JS safe).
 - **DASH Collector headless mode** — Electron collector supports headless Chromium for CI/server environments.
 - **XHS multi-login** — Red Note adapter supports multiple account sessions with cookie isolation.
 - **Builder pipeline visualization** — Interactive @xyflow/react pipeline view with elkjs auto-layout.
 - **Analyzing shimmer transition** — 2-second shimmer animation from landing page to dashboard analysis state.
 - **Pipeline horizontal scroll** — Responsive horizontal scrolling on wide screens for pipeline view.
+
+### Fixed
+
+- **prefers-reduced-motion** — Comprehensive reduced-motion support: universal animation/transition kill, visibility and pointer-events reset for scroll-reveal elements.
+- **ScrollReveal a11y** — Hidden elements removed from tab order via `visibility: hidden` + `pointer-events: none`; setTimeout cleanup prevents memory leaks on unmount.
 
 ### Changed
 
