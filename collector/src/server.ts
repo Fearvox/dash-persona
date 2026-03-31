@@ -12,6 +12,17 @@ import {
   type CreatorProfile,
 } from './snapshot-types';
 
+// ── SSE client registry ─────────────────────────────────────────────────────
+const sseClients = new Set<Response>();
+
+/** Broadcast an SSE event to all connected web app clients (D-10 secondary). */
+export function broadcastSSE(event: string, data: unknown): void {
+  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const client of sseClients) {
+    client.write(payload);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Error classification
 // ---------------------------------------------------------------------------
@@ -73,6 +84,39 @@ export function createServer(browserManager: BrowserManager): express.Express {
       res.json({ status: 'ok' });
     } else {
       res.status(503).json({ status: 'error', message: 'Browser not ready' });
+    }
+  });
+
+  // ── GET /events (SSE) ────────────────────────────────────────────
+  // Server-Sent Events stream for real-time collection status.
+  // Web app subscribes to this endpoint in Phase 3.
+
+  app.get('/events', (_req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.flushHeaders();
+
+    // Initial heartbeat so client knows the connection is live
+    res.write('event: connected\ndata: {}\n\n');
+
+    sseClients.add(res);
+
+    _req.on('close', () => {
+      sseClients.delete(res);
+    });
+  });
+
+  // ── GET /run-log ─────────────────────────────────────────────────
+  app.get('/run-log', async (_req: Request, res: Response) => {
+    try {
+      const { loadRunLog } = await import('./run-log');
+      const entries = await loadRunLog();
+      const sorted = [...entries].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+      res.json({ entries: sorted, total: entries.length });
+    } catch (err) {
+      res.status(500).json({ entries: [], total: 0, error: String(err) });
     }
   });
 
