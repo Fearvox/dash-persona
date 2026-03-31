@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collection History</title>
+  <style>
+    :root {
+      --bg-primary: #0a0f0d;
+      --bg-card: #151d19;
+      --text-primary: #e8fff6;
+      --text-secondary: #b8c4be;
+      --text-subtle: #8a9590;
+      --accent-green: #7ed29a;
+      --accent-red: #c87e7e;
+      --accent-yellow: #d2c87e;
+      --accent-highlight: #f0f545;
+      --border-default: #2a3630;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Toolbar ───────────────────────────────────────── */
+    .toolbar {
+      height: 48px;
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .toolbar select {
+      height: 30px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-default);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-size: 12px;
+      padding: 0 8px;
+      font-family: inherit;
+    }
+
+    .toolbar select:focus {
+      outline: 2px solid var(--accent-green);
+      outline-offset: -1px;
+    }
+
+    .filter-platform { width: 120px; }
+    .filter-status { width: 100px; }
+
+    .toolbar-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-subtle);
+    }
+
+    /* ── Table ─────────────────────────────────────────── */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      height: 36px;
+      background: var(--bg-card);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      text-align: left;
+      padding: 0 8px;
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .col-ts { width: 160px; }
+    .col-platform { width: 80px; }
+    .col-status { width: 90px; }
+    .col-duration { width: 80px; text-align: right; }
+
+    tbody tr {
+      height: 38px;
+      border-bottom: 1px solid rgba(42,54,48,0.4);
+      cursor: default;
+    }
+
+    tbody tr.has-error { cursor: pointer; }
+
+    tbody td {
+      padding: 0 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    td.col-ts {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--text-subtle);
+      font-variant-numeric: tabular-nums;
+    }
+
+    td.col-duration {
+      text-align: right;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Status pill */
+    .pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .pill-success { background: rgba(126,210,154,0.15); color: var(--accent-green); }
+    .pill-failed { background: rgba(200,126,126,0.15); color: var(--accent-red); }
+    .pill-captcha { background: rgba(240,245,69,0.15); color: var(--accent-highlight); }
+    .pill-skipped { background: rgba(138,149,144,0.1); color: var(--text-subtle); }
+
+    /* Error detail row */
+    .error-detail { display: none; }
+    .error-detail.visible { display: table-row; }
+    .error-detail td {
+      padding: 8px 16px 8px 52px;
+      font-size: 11px;
+      color: var(--text-subtle);
+      background: #1a0f0f;
+      border-left: 3px solid var(--accent-red);
+    }
+    .error-code { color: var(--accent-red); font-family: ui-monospace, monospace; font-size: 11px; }
+    .error-remediation { color: var(--text-subtle); margin-top: 4px; }
+
+    /* ── Empty state ───────────────────────────────────── */
+    .empty-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      color: var(--text-subtle);
+      gap: 8px;
+    }
+    .empty-state.visible { display: flex; }
+    .empty-state-title { font-size: 14px; color: var(--text-secondary); }
+    .empty-state-hint { font-size: 12px; }
+
+    /* ── Footer ────────────────────────────────────────── */
+    .footer {
+      height: 40px;
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font-size: 11px;
+      color: var(--text-subtle);
+      flex-shrink: 0;
+      border-top: 1px solid var(--border-default);
+      gap: 4px;
+    }
+
+    .footer-link {
+      color: var(--accent-green);
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      background: none;
+      font-size: 11px;
+      font-family: inherit;
+    }
+    .footer-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <select class="filter-platform" id="filterPlatform">
+      <option value="">All platforms</option>
+      <option value="tiktok">TikTok</option>
+      <option value="douyin">Douyin</option>
+      <option value="xhs">XHS</option>
+    </select>
+    <select class="filter-status" id="filterStatus">
+      <option value="">All statuses</option>
+      <option value="success">Success</option>
+      <option value="failed">Failed</option>
+      <option value="captcha">Captcha</option>
+      <option value="skipped">Skipped</option>
+    </select>
+    <span class="toolbar-count" id="toolbarCount">Showing 0 of 0</span>
+  </div>
+
+  <div class="table-container" id="tableContainer">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-ts">Timestamp</th>
+          <th>Creator</th>
+          <th class="col-platform">Platform</th>
+          <th class="col-status">Status</th>
+          <th class="col-duration">Duration</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <div class="empty-state-title">No collections yet</div>
+    <div class="empty-state-hint">Start collecting a creator to see history here.</div>
+  </div>
+
+  <div class="footer">
+    <span id="footerInfo"></span>
+    <span>&middot;</span>
+    <button type="button" class="footer-link" id="footerSettings">Settings</button>
+  </div>
+
+  <script>
+    var allEntries = [];
+    var totalCount = 0;
+
+    var tableContainer = document.getElementById('tableContainer');
+    var tableBody = document.getElementById('tableBody');
+    var emptyState = document.getElementById('emptyState');
+    var filterPlatform = document.getElementById('filterPlatform');
+    var filterStatus = document.getElementById('filterStatus');
+    var toolbarCount = document.getElementById('toolbarCount');
+    var footerInfo = document.getElementById('footerInfo');
+    var footerSettings = document.getElementById('footerSettings');
+
+    function formatTimestamp(iso) {
+      if (!iso) return '\u2014';
+      var d = new Date(iso);
+      var yyyy = d.getFullYear();
+      var mm = String(d.getMonth() + 1).padStart(2, '0');
+      var dd = String(d.getDate()).padStart(2, '0');
+      var hh = String(d.getHours()).padStart(2, '0');
+      var mi = String(d.getMinutes()).padStart(2, '0');
+      var ss = String(d.getSeconds()).padStart(2, '0');
+      return yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + mi + ':' + ss;
+    }
+
+    function formatDuration(ms) {
+      if (ms == null || ms <= 0) return '\u2014';
+      var totalSec = Math.floor(ms / 1000);
+      var min = Math.floor(totalSec / 60);
+      var sec = totalSec % 60;
+      return min + ':' + String(sec).padStart(2, '0');
+    }
+
+    function getFiltered() {
+      var platform = filterPlatform.value;
+      var status = filterStatus.value;
+      return allEntries.filter(function(e) {
+        if (platform && e.platform !== platform) return false;
+        if (status && e.status !== status) return false;
+        return true;
+      });
+    }
+
+    function buildDataRow(entry, idx) {
+      var tr = document.createElement('tr');
+      tr.setAttribute('data-index', idx);
+      if (entry.status === 'failed' && entry.error) {
+        tr.classList.add('has-error');
+      }
+
+      var tdTs = document.createElement('td');
+      tdTs.className = 'col-ts';
+      tdTs.textContent = formatTimestamp(entry.timestamp);
+      tdTs.title = entry.timestamp || '';
+
+      var tdCreator = document.createElement('td');
+      tdCreator.textContent = '@' + (entry.creatorUniqueId || '');
+
+      var tdPlatform = document.createElement('td');
+      tdPlatform.className = 'col-platform';
+      tdPlatform.textContent = entry.platform || '';
+
+      var tdStatus = document.createElement('td');
+      tdStatus.className = 'col-status';
+      var pill = document.createElement('span');
+      pill.className = 'pill pill-' + entry.status;
+      pill.textContent = (entry.status || '').toUpperCase();
+      tdStatus.appendChild(pill);
+
+      var tdDuration = document.createElement('td');
+      tdDuration.className = 'col-duration';
+      tdDuration.textContent = formatDuration(entry.durationMs);
+
+      tr.appendChild(tdTs);
+      tr.appendChild(tdCreator);
+      tr.appendChild(tdPlatform);
+      tr.appendChild(tdStatus);
+      tr.appendChild(tdDuration);
+
+      return tr;
+    }
+
+    function buildErrorDetailRow(entry, idx) {
+      var tr = document.createElement('tr');
+      tr.className = 'error-detail';
+      tr.setAttribute('data-error-for', idx);
+
+      var td = document.createElement('td');
+      td.colSpan = 5;
+
+      var code = document.createElement('div');
+      code.className = 'error-code';
+      code.textContent = entry.error.code;
+
+      var msg = document.createElement('div');
+      msg.textContent = entry.error.message;
+
+      var rem = document.createElement('div');
+      rem.className = 'error-remediation';
+      rem.textContent = entry.error.remediation;
+
+      td.appendChild(code);
+      td.appendChild(msg);
+      td.appendChild(rem);
+      tr.appendChild(td);
+      return tr;
+    }
+
+    function renderTable() {
+      var filtered = getFiltered();
+
+      while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
+
+      if (allEntries.length === 0) {
+        tableContainer.style.display = 'none';
+        emptyState.classList.add('visible');
+        toolbarCount.textContent = 'Showing 0 of 0';
+        footerInfo.textContent = '0 entries';
+        return;
+      }
+
+      emptyState.classList.remove('visible');
+      tableContainer.style.display = '';
+
+      toolbarCount.textContent = 'Showing ' + filtered.length + ' of ' + totalCount;
+      footerInfo.textContent = totalCount + ' entries';
+
+      filtered.forEach(function(entry, idx) {
+        tableBody.appendChild(buildDataRow(entry, idx));
+        if (entry.status === 'failed' && entry.error) {
+          tableBody.appendChild(buildErrorDetailRow(entry, idx));
+        }
+      });
+    }
+
+    function fetchEntries() {
+      fetch('http://127.0.0.1:3458/run-log')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          allEntries = data.entries || [];
+          totalCount = data.total || allEntries.length;
+          renderTable();
+        })
+        .catch(function() {
+          // Silently ignore fetch errors
+        });
+    }
+
+    // ── Filter change ────────────────────────────────────
+    filterPlatform.addEventListener('change', renderTable);
+    filterStatus.addEventListener('change', renderTable);
+
+    // ── Row click → toggle error detail ──────────────────
+    tableBody.addEventListener('click', function(e) {
+      var row = e.target.closest('tr[data-index]');
+      if (!row) return;
+      var idx = row.getAttribute('data-index');
+      var errorRow = tableBody.querySelector('tr[data-error-for="' + idx + '"]');
+      if (errorRow) {
+        errorRow.classList.toggle('visible');
+      }
+    });
+
+    // ── Footer settings link ─────────────────────────────
+    footerSettings.addEventListener('click', function() {
+      if (window.collector && window.collector.runlog) {
+        // Opening settings from run-log is not a direct IPC channel,
+        // but we can use settings.load to trigger the settings window indirectly
+      }
+    });
+
+    // ── Init ─────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchEntries();
+      // Auto-refresh every 10 seconds
+      setInterval(fetchEntries, 10000);
+    });
+  </script>
+</body>
+</html>
