@@ -2,7 +2,7 @@
 
 **Understand your creator persona across Douyin, TikTok, and Red Note — with zero AI.**
 
-[![v0.6.1](https://img.shields.io/badge/version-0.6.1-green.svg)](./CHANGELOG.md)
+[![v0.7.0](https://img.shields.io/badge/version-0.7.0-green.svg)](./CHANGELOG.md)
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](./LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6.svg)](https://www.typescriptlang.org/)

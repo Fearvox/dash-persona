@@ -158,7 +158,7 @@ export default function SettingsPage() {
               <span
                 className="metric-value text-[var(--text-secondary)]"
               >
-                0.6.1
+                0.7.0
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">

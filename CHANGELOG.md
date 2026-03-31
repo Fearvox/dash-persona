@@ -6,6 +6,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ---
 
+## [0.7.0] - 2026-03-30
+
+### Added
+
+- **DASH Collector headless mode** — Electron collector supports headless Chromium for CI/server environments.
+- **XHS multi-login** — Red Note adapter supports multiple account sessions with cookie isolation.
+- **Builder pipeline visualization** — Interactive @xyflow/react pipeline view with elkjs auto-layout.
+- **Analyzing shimmer transition** — 2-second shimmer animation from landing page to dashboard analysis state.
+- **Pipeline horizontal scroll** — Responsive horizontal scrolling on wide screens for pipeline view.
+
+### Changed
+
+- **Inline style migration** — Migrated all remaining `style={{}}` to Tailwind utility classes across 54+ files.
+- **Portrait polish** — Refined portrait page layout, spacing, and typography for data density.
+- **Error UX improvements** — Unified error states with actionable recovery CTAs across all pages.
+- **Electron builder config** — Fixed electron-builder `.dmg` packaging configuration.
+
+---
+
 ## [0.6.1] - 2026-03-30
 
 ### Changed
