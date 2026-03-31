@@ -17,8 +17,8 @@
  *  platforms without requiring a schema change. */
 export type Platform = 'douyin' | 'tiktok' | 'xhs' | (string & {});
 
-/** How the data was ingested. */
-export type DataSource = 'demo' | 'html_parse' | 'manual_import' | 'extension' | 'browser' | 'cdp';
+/** How the data was ingested. 'collector' = Electron Collector desktop app. */
+export type DataSource = 'demo' | 'html_parse' | 'manual_import' | 'extension' | 'browser' | 'cdp' | 'collector';
 
 // ---------------------------------------------------------------------------
 // Post
