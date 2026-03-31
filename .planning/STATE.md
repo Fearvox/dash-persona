@@ -22,7 +22,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 ## Current Status
 
 - **Active phase:** 2
-- **Phase status:** Executing (Plan 03 complete, Plan 04 remaining)
+- **Phase status:** Executing (Plan 04 complete — all 4 plans in Phase 02 done)
 - **Blockers:** None
 
 ## Phase Progress
@@ -48,8 +48,8 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 | COLL-03 | 2 | Pending |
 | COLL-04 | 2 | Pending |
 | COLL-05 | 2 | Pending |
-| COLL-06 | 2 | Pending |
-| COLL-07 | 2 | Pending |
+| COLL-06 | 2 | Complete |
+| COLL-07 | 2 | Complete |
 | COLL-08 | 2 | Complete |
 | DASH-01 | 3 | Pending |
 | DASH-02 | 3 | Pending |

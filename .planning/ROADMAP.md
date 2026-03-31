@@ -46,7 +46,7 @@
 | 02-01 | TikTok Collection Engine | Complete |
 | 02-02 | Scheduler & Job Persistence | Complete |
 | 02-03 | Run Log System | Complete |
-| 02-04 | Batch Queue & Collector UI | Pending |
+| 02-04 | Batch Queue & Collector UI | Complete |
 
 **Success criteria:**
 1. User can collect a TikTok creator profile end-to-end without triggering a CAPTCHA or soft-ban (anti-fingerprint measures active).
