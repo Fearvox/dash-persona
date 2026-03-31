@@ -312,27 +312,88 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 .animate-stagger-3 { animation-delay: 300ms; }
 .animate-stagger-4 { animation-delay: 400ms; }
 
-/* ── Reduced motion: pause all code art animations ── */
+/* ── Reduced motion: disable ALL animations ── */
 @media (prefers-reduced-motion: reduce) {
-  .code-drift-span {
-    animation: none !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  .scroll-indicator .animate-bounce {
-    animation: none !important;
-  }
-  .animate-stagger {
-    animation: none !important;
-    opacity: 1 !important;
-  }
-  .analyzing-shimmer-bar::after {
-    animation: none !important;
-  }
+  .animate-stagger,
+  .reveal-on-scroll,
   .analyzing-enter-0,
   .analyzing-enter-1,
   .analyzing-enter-2 {
-    animation: none !important;
     opacity: 1 !important;
+    visibility: visible !important;
   }
+}
+
+/* ── Button micro-interactions ── */
+.btn-primary,
+.btn-outline {
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1),
+              color 0.15s cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 0.15s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.15s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-primary:hover,
+.btn-outline:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary:active,
+.btn-outline:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* ── Card hover lift ── */
+.card-interactive {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-medium);
+  background-color: var(--bg-card-hover);
+}
+
+.card-interactive:active {
+  transform: translateY(0);
+}
+
+/* ── Scroll-triggered reveal ── */
+.reveal-on-scroll {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(16px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              visibility 0s 0.5s;
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              visibility 0s 0s;
+}
+
+/* ── Nav indicator ── */
+.nav-pill {
+  transition: color 0.15s cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 0.15s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ── Print styles for PDF export ── */
