@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collection Progress</title>
+  <style>
+    :root {
+      --bg-primary: #0a0f0d;
+      --bg-card: #151d19;
+      --text-primary: #e8fff6;
+      --text-secondary: #b8c4be;
+      --text-subtle: #8a9590;
+      --accent-green: #7ed29a;
+      --accent-red: #c87e7e;
+      --accent-yellow: #d2c87e;
+      --accent-blue: #7eb8d2;
+      --accent-highlight: #f0f545;
+      --border-default: #2a3630;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-app-region: drag;
+    }
+
+    button, select, input { -webkit-app-region: no-drag; }
+
+    /* ── Header ────────────────────────────────────────── */
+    .header {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .header-status {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+    }
+
+    .header-status.active { background: rgba(126,210,154,0.15); color: var(--accent-green); }
+    .header-status.complete { background: rgba(126,210,154,0.15); color: var(--accent-green); }
+    .header-status.captcha { background: rgba(240,245,69,0.15); color: var(--accent-highlight); }
+
+    .btn-cancel {
+      background: none;
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-cancel:hover { border-color: var(--accent-red); color: var(--accent-red); }
+    .btn-cancel.hidden { display: none; }
+
+    /* ── Progress bar ──────────────────────────────────── */
+    .progress-track {
+      height: 2px;
+      background: var(--bg-card);
+      flex-shrink: 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent-green);
+      width: 0%;
+      transition: width 400ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ── CAPTCHA banner ────────────────────────────────── */
+    .captcha-banner {
+      display: none;
+      background: #1a1a0a;
+      border-left: 3px solid var(--accent-highlight);
+      padding: 8px 16px;
+      font-size: 12px;
+      color: var(--accent-highlight);
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .captcha-banner.visible { display: flex; }
+    .captcha-banner .btn-show-browser {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--accent-highlight);
+      color: var(--accent-highlight);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* ── Table ─────────────────────────────────────────── */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-app-region: no-drag;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      height: 36px;
+      background: var(--bg-card);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      text-align: left;
+      padding: 0 8px;
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .col-num { width: 36px; text-align: center; }
+    .col-platform { width: 80px; }
+    .col-status { width: 100px; }
+    .col-elapsed { width: 72px; text-align: right; }
+
+    tbody tr {
+      height: 40px;
+      border-bottom: 1px solid rgba(42,54,48,0.4);
+      transition: opacity 150ms;
+      cursor: default;
+    }
+
+    tbody td {
+      padding: 0 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    td.col-num { text-align: center; color: var(--text-subtle); font-size: 11px; }
+    td.col-elapsed { text-align: right; font-family: ui-monospace, monospace; font-size: 11px; font-variant-numeric: tabular-nums; }
+
+    /* Row states */
+    tr.status-queued { opacity: 0.6; }
+    tr.status-running { border-left: 3px solid var(--accent-yellow); animation: pulse 2s ease-in-out infinite; }
+    tr.status-done { }
+    tr.status-failed { background: #1a0f0f; border-left: 3px solid var(--accent-red); cursor: pointer; }
+    tr.status-captcha { background: #1a1a0a; border-left: 3px solid var(--accent-highlight); }
+    tr.status-skipped { opacity: 0.4; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Status pill */
+    .pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .pill-queued { background: rgba(138,149,144,0.15); color: var(--text-subtle); }
+    .pill-running { background: rgba(210,200,126,0.15); color: var(--accent-yellow); }
+    .pill-done { background: rgba(126,210,154,0.15); color: var(--accent-green); }
+    .pill-failed { background: rgba(200,126,126,0.15); color: var(--accent-red); }
+    .pill-captcha { background: rgba(240,245,69,0.15); color: var(--accent-highlight); }
+    .pill-skipped { background: rgba(138,149,144,0.1); color: var(--text-subtle); }
+
+    /* Error detail row */
+    .error-detail {
+      display: none;
+    }
+    .error-detail.visible { display: table-row; }
+    .error-detail td {
+      padding: 8px 16px 8px 52px;
+      font-size: 11px;
+      color: var(--text-subtle);
+      background: #1a0f0f;
+      border-left: 3px solid var(--accent-red);
+    }
+    .error-code { color: var(--accent-red); font-family: ui-monospace, monospace; font-size: 11px; }
+    .error-remediation { color: var(--text-subtle); margin-top: 4px; }
+
+    /* ── Footer ────────────────────────────────────────── */
+    .footer {
+      height: 48px;
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 11px;
+      color: var(--text-subtle);
+      flex-shrink: 0;
+      border-top: 1px solid var(--border-default);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="header-title" id="headerTitle">Collecting...</span>
+    <span class="header-status" id="headerStatus"></span>
+    <button type="button" class="btn-cancel hidden" id="btnCancel">Cancel</button>
+  </div>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="captcha-banner" id="captchaBanner">
+    <span id="captchaText">CAPTCHA required</span>
+    <button type="button" class="btn-show-browser" id="btnShowBrowser">Show Browser</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th class="col-creator">Creator</th>
+          <th class="col-platform">Platform</th>
+          <th class="col-status">Status</th>
+          <th class="col-elapsed">Elapsed</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span id="footerElapsed">Total elapsed: 0:00</span>
+    <span id="footerStats">Done: 0 · Failed: 0 · Queued: 0</span>
+  </div>
+
+  <script>
+    var STATUS_LABELS = {
+      queued: 'QUEUED',
+      running: 'RUNNING',
+      done: 'DONE',
+      failed: 'FAILED',
+      captcha: 'CAPTCHA',
+      skipped: 'SKIPPED',
+    };
+
+    var currentItems = [];
+    var batchStartTime = null;
+
+    var tableBody = document.getElementById('tableBody');
+    var headerTitle = document.getElementById('headerTitle');
+    var headerStatus = document.getElementById('headerStatus');
+    var btnCancel = document.getElementById('btnCancel');
+    var progressFill = document.getElementById('progressFill');
+    var captchaBanner = document.getElementById('captchaBanner');
+    var captchaText = document.getElementById('captchaText');
+    var footerElapsed = document.getElementById('footerElapsed');
+    var footerStats = document.getElementById('footerStats');
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.textContent;
+    }
+
+    function formatElapsed(ms) {
+      if (ms == null || ms <= 0) return '\u2014';
+      var totalSec = Math.floor(ms / 1000);
+      var min = Math.floor(totalSec / 60);
+      var sec = totalSec % 60;
+      return min + ':' + String(sec).padStart(2, '0');
+    }
+
+    function getRunningElapsed(item) {
+      if (item.status === 'running' && item.startedAt) {
+        return Date.now() - new Date(item.startedAt).getTime();
+      }
+      return item.durationMs;
+    }
+
+    function buildRow(item, idx) {
+      var tr = document.createElement('tr');
+      tr.className = 'status-' + item.status;
+      tr.setAttribute('data-index', idx);
+
+      var tdNum = document.createElement('td');
+      tdNum.className = 'col-num';
+      tdNum.textContent = String(idx + 1);
+
+      var tdCreator = document.createElement('td');
+      tdCreator.className = 'col-creator';
+      tdCreator.textContent = '@' + item.creatorUniqueId;
+
+      var tdPlatform = document.createElement('td');
+      tdPlatform.className = 'col-platform';
+      tdPlatform.textContent = item.platform;
+
+      var tdStatus = document.createElement('td');
+      tdStatus.className = 'col-status';
+      var pill = document.createElement('span');
+      pill.className = 'pill pill-' + item.status;
+      pill.textContent = STATUS_LABELS[item.status] || item.status;
+      tdStatus.appendChild(pill);
+
+      var tdElapsed = document.createElement('td');
+      tdElapsed.className = 'col-elapsed';
+      tdElapsed.textContent = formatElapsed(getRunningElapsed(item));
+
+      tr.appendChild(tdNum);
+      tr.appendChild(tdCreator);
+      tr.appendChild(tdPlatform);
+      tr.appendChild(tdStatus);
+      tr.appendChild(tdElapsed);
+
+      return tr;
+    }
+
+    function buildErrorRow(item, idx) {
+      var tr = document.createElement('tr');
+      tr.className = 'error-detail';
+      tr.setAttribute('data-error-for', idx);
+
+      var td = document.createElement('td');
+      td.colSpan = 5;
+
+      var code = document.createElement('div');
+      code.className = 'error-code';
+      code.textContent = item.error.code;
+
+      var msg = document.createElement('div');
+      msg.textContent = item.error.message;
+
+      var rem = document.createElement('div');
+      rem.className = 'error-remediation';
+      rem.textContent = item.error.remediation;
+
+      td.appendChild(code);
+      td.appendChild(msg);
+      td.appendChild(rem);
+      tr.appendChild(td);
+      return tr;
+    }
+
+    function renderTable(items) {
+      currentItems = items;
+
+      if (!batchStartTime && items.length > 0) {
+        batchStartTime = Date.now();
+      }
+
+      var total = items.length;
+      var doneCount = items.filter(function(i) { return i.status === 'done'; }).length;
+      var failedCount = items.filter(function(i) { return i.status === 'failed'; }).length;
+      var queuedCount = items.filter(function(i) { return i.status === 'queued'; }).length;
+      var runningCount = items.filter(function(i) { return i.status === 'running'; }).length;
+      var completedCount = items.filter(function(i) {
+        return i.status === 'done' || i.status === 'failed' || i.status === 'skipped';
+      }).length;
+
+      // Header
+      headerTitle.textContent = 'Collecting ' + total + ' creator' + (total !== 1 ? 's' : '');
+
+      var allDone = items.every(function(i) {
+        return i.status === 'done' || i.status === 'failed' || i.status === 'skipped';
+      });
+      if (allDone && total > 0) {
+        headerStatus.textContent = 'Complete';
+        headerStatus.className = 'header-status complete';
+        btnCancel.classList.add('hidden');
+      } else if (items.some(function(i) { return i.status === 'captcha'; })) {
+        headerStatus.textContent = 'CAPTCHA';
+        headerStatus.className = 'header-status captcha';
+        btnCancel.classList.remove('hidden');
+      } else if (runningCount > 0) {
+        headerStatus.textContent = 'Running';
+        headerStatus.className = 'header-status active';
+        btnCancel.classList.remove('hidden');
+      } else {
+        headerStatus.textContent = '';
+        headerStatus.className = 'header-status';
+        btnCancel.classList.add('hidden');
+      }
+
+      // Progress bar
+      var pct = total > 0 ? (completedCount / total) * 100 : 0;
+      progressFill.style.width = pct + '%';
+
+      // Footer
+      footerStats.textContent = 'Done: ' + doneCount + ' \u00b7 Failed: ' + failedCount + ' \u00b7 Queued: ' + queuedCount;
+
+      // Build table using DOM methods
+      while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
+
+      items.forEach(function(item, idx) {
+        tableBody.appendChild(buildRow(item, idx));
+        if (item.status === 'failed' && item.error) {
+          tableBody.appendChild(buildErrorRow(item, idx));
+        }
+      });
+    }
+
+    function showCaptchaBanner(payload) {
+      captchaText.textContent = 'CAPTCHA required for @' + (payload.handle || payload.creatorId || '');
+      captchaBanner.classList.add('visible');
+    }
+
+    function hideCaptchaBanner() {
+      captchaBanner.classList.remove('visible');
+    }
+
+    // ── Event listeners ──────────────────────────────────
+    btnCancel.addEventListener('click', function() {
+      window.collector.batch.cancel();
+    });
+
+    document.getElementById('btnShowBrowser').addEventListener('click', function() {
+      // Show browser is handled by the main process tray callback
+    });
+
+    tableBody.addEventListener('click', function(e) {
+      var row = e.target.closest('tr[data-index]');
+      if (!row) return;
+      var idx = row.getAttribute('data-index');
+      var errorRow = tableBody.querySelector('tr[data-error-for="' + idx + '"]');
+      if (errorRow) {
+        errorRow.classList.toggle('visible');
+      }
+    });
+
+    // ── IPC listeners ────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      window.collector.batch.onStatusUpdate(function(items) { renderTable(items); });
+      window.collector.batch.onBatchComplete(function(summary) {
+        headerStatus.textContent = 'Complete';
+        headerStatus.className = 'header-status complete';
+        btnCancel.classList.add('hidden');
+      });
+      window.collector.batch.onCaptchaDetected(function(payload) { showCaptchaBanner(payload); });
+      window.collector.batch.onCaptchaResolved(function() { hideCaptchaBanner(); });
+    });
+
+    // ── Live elapsed timer ───────────────────────────────
+    setInterval(function() {
+      if (currentItems.length === 0) return;
+
+      var rows = tableBody.querySelectorAll('tr[data-index]');
+      currentItems.forEach(function(item, idx) {
+        if (item.status === 'running' && item.startedAt) {
+          var elapsed = Date.now() - new Date(item.startedAt).getTime();
+          if (rows[idx]) {
+            var elapsedCell = rows[idx].querySelector('.col-elapsed');
+            if (elapsedCell) elapsedCell.textContent = formatElapsed(elapsed);
+          }
+        }
+      });
+
+      if (batchStartTime) {
+        footerElapsed.textContent = 'Total elapsed: ' + formatElapsed(Date.now() - batchStartTime);
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
