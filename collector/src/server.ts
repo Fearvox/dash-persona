@@ -3,6 +3,7 @@ import http from 'http';
 import { join } from 'path';
 import { BrowserManager } from './browser';
 import { atomicWriteJSON, getDataDir, ensureDataDir, classifyStorageError } from './storage';
+import { collectAndSave, classifyTikTokError } from './tiktok-collector';
 import {
   validateCreatorSnapshot,
   snapshotFilename,
@@ -50,8 +51,12 @@ export function createServer(browserManager: BrowserManager): express.Express {
   // Parse JSON bodies for /snapshot endpoint
   app.use(express.json({ limit: '10mb' }));
 
-  // Request timeout middleware — abort if handler takes >30s
-  app.use((_req: Request, res: Response, next: NextFunction) => {
+  // Request timeout middleware — applies to all routes EXCEPT /collect (which can take 90s+)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path === '/collect') {
+      next();
+      return;
+    }
     const timer = setTimeout(() => {
       if (!res.headersSent) {
         res.status(504).json({ error: 'Request timed out', code: 'REQUEST_TIMEOUT' });
@@ -292,6 +297,39 @@ export function createServer(browserManager: BrowserManager): express.Express {
       res.json({ success: true, filename, collectedAt, filePath });
     } catch (err) {
       const classified = classifyStorageError(err, getDataDir());
+      res.status(500).json(classified);
+    }
+  });
+
+  // ── POST /collect ─────────────────────────────────────────────
+  // Trigger TikTok collection for a given handle. Returns snapshot metadata.
+  // Request body: { handle: string; postCount?: number }
+  // NOTE: This endpoint does NOT log to run-log — BatchQueue is the single
+  // run-log owner (Review #1, #4). It does NOT persist snapshots separately —
+  // that is done inside collectTikTok(). This endpoint only orchestrates.
+
+  app.post('/collect', async (req: Request, res: Response) => {
+    const body = req.body as { handle?: unknown; postCount?: unknown };
+
+    const handle = typeof body.handle === 'string' ? body.handle.trim() : '';
+    if (!handle) {
+      res.status(400).json({
+        error: 'Missing or invalid "handle" field',
+        code: 'MISSING_HANDLE',
+      });
+      return;
+    }
+
+    const postCount =
+      typeof body.postCount === 'number' && body.postCount > 0
+        ? Math.min(body.postCount, 100)
+        : 20;
+
+    try {
+      const result = await collectAndSave({ handle, postCount });
+      res.json(result);
+    } catch (err) {
+      const classified = classifyTikTokError(err);
       res.status(500).json(classified);
     }
   });
