@@ -141,6 +141,22 @@ export class TrayManager {
   /** Transient status that takes precedence over periodic recomputation. */
   private lockedStatus: BrowserStatus | null = null;
 
+  // ── Collection state ─────────────────────────────────────────
+  private collectionCreatorCount = 0;
+  private currentCollectionStatus: 'collecting' | 'captcha' | null = null;
+
+  // ── Window/action callbacks (set by main.ts) ─────────────────
+  private onOpenProgressWindow: (() => void) | null = null;
+  private onCancelCollection: (() => void) | null = null;
+  private onShowBrowser: (() => void) | null = null;
+  private onOpenSettings: (() => void) | null = null;
+  private onOpenRunLog: (() => void) | null = null;
+
+  // ── Missed run callbacks ──────────────────────────────────────
+  private missedRunCount = 0;
+  private onRunMissedNow: (() => void) | null = null;
+  private onSkipMissed: (() => void) | null = null;
+
   constructor(browserManager: BrowserManager) {
     this.browserManager = browserManager;
   }
@@ -157,6 +173,66 @@ export class TrayManager {
   /** Clear the transient lock, allowing periodic recomputation to resume. */
   unlockStatus(): void {
     this.lockedStatus = null;
+  }
+
+  setCollectionState(status: 'collecting' | 'captcha', creatorCount: number): void {
+    this.currentCollectionStatus = status;
+    this.collectionCreatorCount = creatorCount;
+    // Use lockStatus (Review #3) to prevent periodic recomputation from overriding
+    this.lockStatus(status);
+    if (this.tray) {
+      const tooltip =
+        status === 'captcha'
+          ? 'DashPersona Collector — CAPTCHA required'
+          : `DashPersona Collector — Collecting ${creatorCount} creator${creatorCount !== 1 ? 's' : ''}…`;
+      this.tray.setToolTip(tooltip);
+      this.tray.setContextMenu(this.buildMenu());
+    }
+  }
+
+  clearCollectionState(): void {
+    this.currentCollectionStatus = null;
+    this.collectionCreatorCount = 0;
+    // Unlock tray status so periodic recomputation can resume (Review #3)
+    this.unlockStatus();
+    if (this.tray) {
+      this.tray.setToolTip('DashPersona Collector — Ready');
+      this.tray.setContextMenu(this.buildMenu());
+    }
+  }
+
+  setCollectionCallbacks(callbacks: {
+    openProgressWindow: () => void;
+    cancelCollection: () => void;
+    showBrowser: () => void;
+  }): void {
+    this.onOpenProgressWindow = callbacks.openProgressWindow;
+    this.onCancelCollection = callbacks.cancelCollection;
+    this.onShowBrowser = callbacks.showBrowser;
+  }
+
+  setWindowCallbacks(callbacks: {
+    openSettings: () => void;
+    openRunLog: () => void;
+  }): void {
+    this.onOpenSettings = callbacks.openSettings;
+    this.onOpenRunLog = callbacks.openRunLog;
+  }
+
+  /** Called by Scheduler.setOnMissedRunsChanged callback. */
+  setMissedRunCount(count: number): void {
+    this.missedRunCount = count;
+    if (this.tray) {
+      this.tray.setContextMenu(this.buildMenu());
+    }
+  }
+
+  setMissedRunCallbacks(callbacks: {
+    runMissedNow: () => void;
+    skipMissed: () => void;
+  }): void {
+    this.onRunMissedNow = callbacks.runMissedNow;
+    this.onSkipMissed = callbacks.skipMissed;
   }
 
   init(): void {
@@ -213,16 +289,54 @@ export class TrayManager {
   }
 
   buildMenu(): Menu {
-    const douyinLabel = this.douyinLoggedIn
-      ? 'Douyin 状态：已登录 ✓'
-      : 'Douyin 状态：未登录 ✗';
-    const xhsLabel = this.xhsLoggedIn
-      ? 'XHS 状态：已登录 ✓'
-      : 'XHS 状态：未登录 ✗';
-
     const autoLaunch = app.getLoginItemSettings().openAtLogin;
 
+    // ── Collection state items ────────────────────────────────────
+    const collectionItems: Electron.MenuItemConstructorOptions[] =
+      this.currentCollectionStatus === 'collecting'
+        ? [
+            {
+              label: 'Show Progress Window',
+              click: () => { this.onOpenProgressWindow?.(); },
+            },
+            {
+              label: 'Cancel Collection',
+              click: () => { this.onCancelCollection?.(); },
+            },
+            { type: 'separator' },
+          ]
+        : this.currentCollectionStatus === 'captcha'
+        ? [
+            {
+              label: 'Show Browser — Solve CAPTCHA',
+              click: () => { this.onShowBrowser?.(); },
+            },
+            { type: 'separator' },
+          ]
+        : [];
+
+    // ── Missed run items (Review #2) ─────────────────────────────
+    const missedRunItems: Electron.MenuItemConstructorOptions[] =
+      this.missedRunCount > 0
+        ? [
+            { type: 'separator' },
+            {
+              label: `Missed runs (${this.missedRunCount})`,
+              enabled: false,  // label only
+            },
+            {
+              label: '  Run all now',
+              click: () => { this.onRunMissedNow?.(); },
+            },
+            {
+              label: '  Skip all',
+              click: () => { this.onSkipMissed?.(); },
+            },
+          ]
+        : [];
+
     return Menu.buildFromTemplate([
+      ...collectionItems,
       {
         label: this.douyinLoggedIn
           ? 'Douyin 已登录 ✓'
@@ -247,6 +361,7 @@ export class TrayManager {
             { label: `⚠ ${this.lastError}`, enabled: false },
           ]
         : []),
+      ...missedRunItems,
       { type: 'separator' },
       {
         label: '开机自启动',
@@ -255,6 +370,15 @@ export class TrayManager {
         click: (menuItem: { checked: boolean }) => {
           app.setLoginItemSettings({ openAtLogin: menuItem.checked });
         },
+      },
+      { type: 'separator' },
+      {
+        label: 'Settings',
+        click: () => { this.onOpenSettings?.(); },
+      },
+      {
+        label: 'Collection History',
+        click: () => { this.onOpenRunLog?.(); },
       },
       { type: 'separator' },
       {
