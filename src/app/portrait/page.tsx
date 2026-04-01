@@ -13,7 +13,7 @@ import {
   type PortraitMetric,
 } from '@/lib/textcraft';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
-import { loadProfiles } from '@/lib/store/profile-store';
+import { resolveProfiles } from '@/lib/store/profile-store';
 import { getDemoProfile } from '@/lib/adapters/demo-adapter';
 import { computePersonaScore, overallScore, generatePersonaTags } from '@/lib/engine';
 
@@ -142,8 +142,9 @@ function PortraitContent() {
   const [loading, setLoading] = useState(true);
   const [expandedMetric, setExpandedMetric] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [canGoBack, setCanGoBack] = useState(false);
 
-  // Load creator data
+  // Load creator data — unified via resolveProfiles()
   useEffect(() => {
     if (isDemo) {
       // Demo mode: load from demo adapter
@@ -153,20 +154,21 @@ function PortraitContent() {
         setProfile(firstProfile);
       }
       setLoading(false);
-    } else {
-      // Import/real mode: load from IndexedDB
-      loadProfiles()
-        .then((profiles) => {
-          const entries = Object.values(profiles);
-          if (entries.length > 0) {
-            setProfile(entries[0]);
-          }
-          setLoading(false);
-        })
-        .catch(() => {
-          setLoading(false);
-        });
+      return;
     }
+
+    // Real/import mode: resolveProfiles() checks sessionStorage cache →
+    // IndexedDB → /api/profiles (collector) in priority order.
+    // Data is persisted to IndexedDB so it survives page navigation.
+    resolveProfiles()
+      .then((resolved) => {
+        const entries = Object.values(resolved);
+        if (entries.length > 0) {
+          setProfile(entries[0]);
+        }
+      })
+      .catch(() => { /* ignore */ })
+      .finally(() => setLoading(false));
   }, [isDemo]);
 
   // Toast auto-dismiss
@@ -175,6 +177,11 @@ function PortraitContent() {
     const timer = setTimeout(() => setToast(null), 2000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  // Detect if browser history has entries (so back button works)
+  useEffect(() => {
+    setCanGoBack(window.history.length > 1);
+  }, []);
 
   // ---------- No data state ----------
 
@@ -207,7 +214,7 @@ function PortraitContent() {
   const nickname = profile.profile?.nickname ?? profile.profile?.uniqueId ?? 'Unknown';
   const platform = platformLabel(profile.platform ?? 'unknown');
   const postCount = profile.posts?.length ?? 0;
-  const window = `${postCount} posts`;
+  const postWindow = `${postCount} posts`;
   const metrics = deriveMetrics(profile);
   const tags = deriveTags(profile);
   const trendData = deriveTrend(profile);
@@ -215,7 +222,7 @@ function PortraitContent() {
   const portraitData: PortraitData = {
     name: nickname,
     platform,
-    window,
+    window: postWindow,
     tags,
     metrics,
     trendData,
@@ -251,18 +258,32 @@ function PortraitContent() {
 
   // ---------- Render ----------
 
-  const backHref = isDemo ? '/dashboard?source=demo&persona=tutorial' : '/dashboard?source=import';
+  const backHref = isDemo
+    ? '/dashboard?source=demo&persona=tutorial'
+    : canGoBack
+      ? '#'
+      : '/dashboard?source=import';
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-6 py-8">
       {/* Header */}
       <header className="flex items-center justify-between">
-        <Link
-          href={backHref}
-          className="text-xs transition-colors hover:opacity-80 text-[var(--text-subtle)]"
-        >
-          {t('ui.common.backToDashboard')}
-        </Link>
+        {backHref === '#' ? (
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="text-xs transition-colors hover:opacity-80 text-[var(--text-subtle)] cursor-pointer bg-transparent border-none p-0"
+          >
+            {t('ui.common.backToDashboard')}
+          </button>
+        ) : (
+          <Link
+            href={backHref}
+            className="text-xs transition-colors hover:opacity-80 text-[var(--text-subtle)]"
+          >
+            {t('ui.common.backToDashboard')}
+          </Link>
+        )}
         <h1
           className="font-mono text-xs font-medium uppercase tracking-widest text-[var(--text-secondary)]"
         >
@@ -283,7 +304,7 @@ function PortraitContent() {
 \u2503  \u2588\u2588 ${padEndCols(sliceCols(nickname, 22), 22)} \u2503
 \u2503${' '.repeat(28)}\u2503
 \u2503  \u25B8 ${padEndCols(platform, 24)}\u2503
-\u2503  \u25B8 ${padEndCols(window, 24)}\u2503
+\u2503  \u25B8 ${padEndCols(postWindow, 24)}\u2503
 \u2517\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u251B`}
         </pre>
 

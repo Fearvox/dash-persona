@@ -969,6 +969,10 @@ const en: Record<string, string> = {
   'ui.a11y.toggleToChinese': 'Switch to Chinese',
   'ui.a11y.loadingPipeline': 'Loading pipeline visualization',
 
+  // Locale toggle button
+  'ui.locale.showEn': 'EN',   // shown when current locale is zh
+  'ui.locale.showZh': '中文', // shown when current locale is en
+
   // ===========================================================================
   // Pipeline skeleton labels
   // ===========================================================================

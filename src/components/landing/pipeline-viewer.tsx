@@ -19,6 +19,7 @@ import {
 import PipelineModuleNode from './pipeline-nodes';
 import type { PipelineNode } from './pipeline-nodes';
 import PipelineSkeleton from './pipeline-skeleton';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
 // ELK layout
@@ -69,9 +70,9 @@ async function computeLayout(direction: LayoutDirection): Promise<LayoutResult> 
       type: 'pipeline' as const,
       position: { x: child.x ?? 0, y: child.y ?? 0 },
       data: {
-        label: mod.label,
+        labelKey: mod.labelKey,
+        descKey: mod.descKey,
         codeName: mod.codeName,
-        description: mod.description,
         color: mod.color,
         horizontal: isHorizontal,
       },

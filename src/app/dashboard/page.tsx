@@ -16,6 +16,7 @@ import ExtensionDataLoader from '@/components/extension-data-loader';
 import ForYouCard from '@/components/for-you-card';
 import NicheDetectCard from '@/components/niche-detect-card';
 import ImportDashboardLoader from '@/components/import-dashboard-loader';
+import { getProfiles } from '@/lib/api/profiles';
 import ExportButton from '@/components/export-button';
 import { UpgradeBanner } from '@/components/upgrade-banner';
 import AnalysisDeltaBadge from '@/components/analysis-delta-badge';
@@ -103,7 +104,7 @@ export default async function DashboardPage({
           </p>
           <Link
             href="/onboarding"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
+            className="btn-primary inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold bg-[var(--accent-green)] text-[var(--bg-primary)]"
           >
             {t('ui.common.goToOnboarding')}
           </Link>
@@ -346,7 +347,7 @@ export default async function DashboardPage({
 
             <Link
               href={`/calendar?source=${sourceParam}&persona=${personaType}`}
-              className="card flex items-start gap-3 p-4 transition-colors"
+              className="card card-interactive flex items-start gap-3 p-4"
             >
               <span
                 className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm bg-[rgba(126,_210,_154,_0.12)] text-[var(--accent-green)]"
@@ -374,7 +375,7 @@ export default async function DashboardPage({
 
             <Link
               href={`/timeline?source=${sourceParam}&persona=${personaType}`}
-              className="card flex items-start gap-3 p-4 transition-colors"
+              className="card card-interactive flex items-start gap-3 p-4"
             >
               <span
                 className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm bg-[rgba(126,_184,_210,_0.12)] text-[var(--accent-blue)]"
@@ -404,7 +405,7 @@ export default async function DashboardPage({
 
             <Link
               href={`/compare?source=${sourceParam}&persona=${personaType}`}
-              className="card flex items-start gap-3 p-4 transition-colors"
+              className="card card-interactive flex items-start gap-3 p-4"
             >
               <span
                 className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm bg-[rgba(210,_200,_126,_0.12)] text-[var(--accent-yellow)]"
@@ -435,7 +436,7 @@ export default async function DashboardPage({
           <div className="animate-stagger animate-stagger-4">
             <Link
               href="/settings"
-              className="card flex items-center gap-3 p-4 transition-colors"
+              className="card card-interactive flex items-center gap-3 p-4"
             >
               <span
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm bg-[rgba(255,_255,_255,_0.06)] text-[var(--text-secondary)]"

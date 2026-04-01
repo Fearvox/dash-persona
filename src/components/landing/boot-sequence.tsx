@@ -76,19 +76,19 @@ export default function BootSequence() {
         <div className="mt-10 flex flex-col gap-4 sm:flex-row">
           <Link
             href="/dashboard?source=demo&persona=tutorial"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
+            className="btn-primary inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold bg-[var(--accent-green)] text-[var(--bg-primary)]"
           >
             {t('ui.landing.tryDemo')}
           </Link>
           <Link
             href="/onboarding"
-            className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--border-medium)] px-8 text-sm font-semibold transition-colors hover:bg-white/5 text-[var(--text-primary)]"
+            className="btn-outline inline-flex h-12 items-center justify-center rounded-full border border-[var(--border-medium)] px-8 text-sm font-semibold hover:bg-white/5 text-[var(--text-primary)]"
           >
             {t('ui.landing.getStarted')}
           </Link>
           <Link
             href="/install"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-medium transition-colors hover:bg-white/5 text-[var(--accent-yellow)]"
+            className="btn-outline inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-medium hover:bg-white/5 text-[var(--accent-yellow)]"
           >
             {t('ui.landing.installFull')}
           </Link>

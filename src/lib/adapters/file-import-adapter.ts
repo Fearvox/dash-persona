@@ -127,18 +127,27 @@ const COLUMN_MAP: Record<string, string> = {
   title: 'desc',
   '视频名称': 'desc',
   '作品名称': 'desc',
+  '笔记标题': 'desc',           // XHS (Red Note)
+  '首次发布时间': 'publishedAt', // XHS
   '发布时间': 'publishedAt',
   '播放量': 'views',
+  '观看量': 'views',            // XHS
   '点赞量': 'likes',
+  '点赞': 'likes',              // XHS
   '分享量': 'shares',
+  '分享': 'shares',             // XHS
   '评论量': 'comments',
+  '评论': 'comments',           // XHS
   '收藏量': 'saves',
+  '收藏': 'saves',             // XHS
   '完播率': 'completionRate',
   '5s完播率': 'completionRate',
   '2s跳出率': 'bounceRate',
   '封面点击率': 'coverClickRate',
   '平均播放时长': 'avgWatchDuration',
+  '人均观看时长': 'avgWatchDuration', // XHS (seconds per person)
   '粉丝增量': 'followerDelta',
+  '涨粉': 'followerDelta',       // XHS
   '主页访问量': 'profileViews',
   views: 'views',
   plays: 'views',
@@ -271,7 +280,23 @@ type TikTokSchemaType =
   | 'tiktok_follower_activity';
 
 /** Union of all recognised XLSX export schema types across platforms. */
-type ExportSchemaType = DouyinSchemaType | TikTokSchemaType;
+type ExportSchemaType = DouyinSchemaType | TikTokSchemaType | XhsSchemaType | DouyinAggregateSchemaType;
+
+/** XHS (Red Note / 小红书) export schema types. */
+type XhsSchemaType = 'xhs_notes';
+
+/**
+ * Douyin 30-day aggregate export schema types:
+ * - douyin_interaction: 点赞/评论/收藏/分享 + 环比 (近30日互动数据)
+ * - douyin_posting:     总发布/发布视频/发布图文 + 环比 (近30日发布数据)
+ * - douyin_follower:    净涨粉/新增关注/取消关注/主页访客 + 环比 (近30日涨粉数据)
+ * - douyin_view:        曝光/观看/封面点击率/平均观看时长 + 环比 (近30日观看数据)
+ */
+type DouyinAggregateSchemaType =
+  | 'douyin_interaction'
+  | 'douyin_posting'
+  | 'douyin_follower'
+  | 'douyin_view';
 
 function detectExportSchema(columns: string[]): ExportSchemaType {
   const colSet = new Set(columns);
@@ -301,6 +326,13 @@ function detectExportSchema(columns: string[]): ExportSchemaType {
   // TikTok FollowerActivity.xlsx: "Hour" + "Active followers"
   if (colSet.has('Hour') && colSet.has('Active followers')) return 'tiktok_follower_activity';
 
+  // --- XHS (小红书 / Red Note) detection ---
+  // Must check BEFORE Douyin since XHS also has "点赞" etc.
+  // XHS files have "笔记标题" as the first meaningful header row.
+  if (colSet.has('笔记标题') && colSet.has('首次发布时间')) {
+    return 'xhs_notes';
+  }
+
   // --- Douyin detection ---
 
   // Type A: 作品列表 — has 作品名称 + interaction metrics
@@ -321,6 +353,27 @@ function detectExportSchema(columns: string[]): ExportSchemaType {
   // Type B: 投稿分析 — has 视频名称 or just 播放量 with per-row data
   if (colSet.has('视频名称') || (colSet.has('播放量') && colSet.has('5s完播率'))) {
     return 'post_analysis';
+  }
+
+  // --- Douyin 30-day aggregate files (指标/数值 format) ---
+  // 近30日互动数据: has 点赞 (not 点赞量) + 收藏 + 评论/分享 + 环比 columns
+  if (colSet.has('指标') && colSet.has('数值') && colSet.has('点赞')) {
+    return 'douyin_interaction';
+  }
+
+  // 近30日发布数据: has 总发布/发布视频/发布图文
+  if (colSet.has('指标') && colSet.has('数值') && colSet.has('总发布')) {
+    return 'douyin_posting';
+  }
+
+  // 近30日涨粉数据: has 净涨粉
+  if (colSet.has('指标') && colSet.has('数值') && colSet.has('净涨粉')) {
+    return 'douyin_follower';
+  }
+
+  // 近30日观看数据: has 曝光/观看/封面点击率
+  if (colSet.has('指标') && colSet.has('数值') && colSet.has('曝光')) {
+    return 'douyin_view';
   }
 
   return 'unknown';
@@ -567,6 +620,117 @@ function parseTikTokFollowerTerritory(rows: Record<string, unknown>[]): { fanPor
   return { fanPortrait: { provinces } };
 }
 
+// ---------------------------------------------------------------------------
+// XHS (Red Note) parsers
+// ---------------------------------------------------------------------------
+
+/** XHS 笔记列表明细表.xlsx — post list with Chinese column names */
+function parseXhsNotes(rows: Record<string, unknown>[], fileName: string): { posts: CreatorProfile['posts'] } {
+  // Known XHS placeholder texts that appear as merged header rows.
+  // These pass the non-empty title check but are not real posts.
+  const XHS_PLACEHOLDER_PATTERNS = [
+    '最多导出排序后前1000条笔记',
+    '最多导出排序后前',
+  ];
+
+  // Filter to rows that have a real 笔记标题 AND are not known placeholders,
+  // AND have either a valid publish time or at least one non-zero metric.
+  const dataRows = rows.filter((row) => {
+    const v = row['笔记标题'];
+    if (v === null || v === undefined) return false;
+    const title = String(v).trim();
+    if (title === '') return false;
+
+    // Reject known placeholder text
+    if (XHS_PLACEHOLDER_PATTERNS.some((pat) => title.includes(pat))) return false;
+
+    // Require a valid publish time OR at least one non-zero metric
+    const rawDate = String(row['首次发布时间'] ?? '').trim();
+    const hasValidDate = /\d{4}年\d{1,2}月\d{1,2}日/.test(rawDate);
+    const hasMetric =
+      parseDouyinNum(row['观看量']) > 0 ||
+      parseDouyinNum(row['点赞']) > 0 ||
+      parseDouyinNum(row['评论']) > 0 ||
+      parseDouyinNum(row['分享']) > 0 ||
+      parseDouyinNum(row['收藏']) > 0;
+
+    return hasValidDate || hasMetric;
+  });
+
+  const posts = dataRows.map((row, i) => {
+    // Parse XHS date format: "2026年03月25日09时49分34秒"
+    const rawDate = String(row['首次发布时间'] ?? '');
+    let publishedAt: string | undefined;
+    const dateMatch = rawDate.match(/(\d{4})年(\d{1,2})月(\d{1,2})日(\d{1,2})时(\d{1,2})分(\d{1,2})秒?/);
+    if (dateMatch) {
+      publishedAt = `${dateMatch[1]}-${dateMatch[2].padStart(2, '0')}-${dateMatch[3].padStart(2, '0')}T${dateMatch[4].padStart(2, '0')}:${dateMatch[5].padStart(2, '0')}:${dateMatch[6].padStart(2, '0')}Z`;
+    }
+
+    return {
+      postId: `xhs-${i + 1}`,
+      desc: String(row['笔记标题'] ?? ''),
+      publishedAt,
+      views: parseDouyinNum(row['观看量']),
+      likes: parseDouyinNum(row['点赞']),
+      comments: parseDouyinNum(row['评论']),
+      shares: parseDouyinNum(row['分享']),
+      saves: parseDouyinNum(row['收藏']),
+      avgWatchDuration: parseDouyinNum(row['人均观看时长']),
+    };
+  });
+
+  void fileName;
+  return { posts: posts as CreatorProfile['posts'] };
+}
+
+// ---------------------------------------------------------------------------
+// Douyin 30-day aggregate parsers
+// ---------------------------------------------------------------------------
+
+/** 近30日互动数据.xlsx — 点赞/评论/收藏/分享 + 环比 stats */
+function parseDouyinInteraction(rows: Record<string, unknown>[]): { aggregate: Record<string, unknown> } {
+  const result: Record<string, unknown> = {};
+  for (const row of rows) {
+    const key = String(row['指标'] ?? '');
+    const val = parseDouyinNum(row['数值']);
+    result[key] = val;
+  }
+  return { aggregate: result };
+}
+
+/** 近30日发布数据.xlsx — 总发布/发布视频/发布图文 + 环比 stats */
+function parseDouyinPosting(rows: Record<string, unknown>[]): { aggregate: Record<string, unknown> } {
+  const result: Record<string, unknown> = {};
+  for (const row of rows) {
+    const key = String(row['指标'] ?? '');
+    const val = parseDouyinNum(row['数值']);
+    result[key] = val;
+  }
+  return { aggregate: result };
+}
+
+/** 近30日涨粉数据.xlsx — 净涨粉/新增关注/取消关注/主页访客 + 环比 stats */
+function parseDouyinFollower(rows: Record<string, unknown>[]): { aggregate: Record<string, unknown> } {
+  const result: Record<string, unknown> = {};
+  for (const row of rows) {
+    const key = String(row['指标'] ?? '');
+    const val = parseDouyinNum(row['数值']);
+    result[key] = val;
+  }
+  return { aggregate: result };
+}
+
+/** 近30日观看数据.xlsx — 曝光/观看/封面点击率/平均观看时长 + 环比 stats */
+function parseDouyinView(rows: Record<string, unknown>[]): { aggregate: Record<string, unknown> } {
+  const result: Record<string, unknown> = {};
+  for (const row of rows) {
+    const key = String(row['指标'] ?? '');
+    const val = parseDouyinNum(row['数值']);
+    result[key] = val;
+  }
+  return { aggregate: result };
+}
+
 /** TikTok FollowerActivity.xlsx — active followers by hour, aggregated across all dates */
 function parseTikTokFollowerActivity(rows: Record<string, unknown>[]): { fanPortrait: Partial<FanPortrait> } {
   // Accumulate counts per hour across all dates, then average
@@ -631,6 +795,16 @@ export function parseXlsxRaw(content: string, fileName: string): XlsxParseResult
       return { schema, fileName, ...parseAggregate(rows) };
     case 'timeseries':
       return { schema, fileName, ...parseTimeseries(rows) };
+    case 'xhs_notes':
+      return { schema, fileName, ...parseXhsNotes(rows, fileName) };
+    case 'douyin_interaction':
+      return { schema, fileName, ...parseDouyinInteraction(rows) };
+    case 'douyin_posting':
+      return { schema, fileName, ...parseDouyinPosting(rows) };
+    case 'douyin_follower':
+      return { schema, fileName, ...parseDouyinFollower(rows) };
+    case 'douyin_view':
+      return { schema, fileName, ...parseDouyinView(rows) };
     case 'tiktok_content':
       return { schema, fileName, ...parseTikTokContent(rows, fileName) };
     case 'tiktok_overview':
@@ -672,14 +846,18 @@ export function parseXlsxRaw(content: string, fileName: string): XlsxParseResult
 function parseXlsx(content: string, fileName: string): CreatorProfile[] {
   const result = parseXlsxRaw(content, fileName);
   const isTikTok = result.schema.startsWith('tiktok_');
+  const isXhs = result.schema === 'xhs_notes';
+
+  const platform = isTikTok ? 'tiktok' : isXhs ? 'xhs' : 'douyin';
+  const nickname = isTikTok ? 'TikTok Creator' : isXhs ? 'Red Note Creator' : 'Douyin Creator';
 
   const profile: CreatorProfile = {
-    platform: isTikTok ? 'tiktok' : 'douyin',
+    platform,
     profileUrl: '',
     fetchedAt: new Date().toISOString(),
     source: 'manual_import',
     profile: {
-      nickname: isTikTok ? 'TikTok Creator' : 'Douyin Creator',
+      nickname,
       uniqueId: `import-${Date.now()}`,
       followers: 0,
       likesTotal: (result.posts ?? []).reduce((sum, p) => sum + p.likes, 0),
@@ -688,6 +866,7 @@ function parseXlsx(content: string, fileName: string): CreatorProfile[] {
     posts: result.posts ?? [],
     history: result.history,
     ...(result.fanPortrait ? { fanPortrait: result.fanPortrait as FanPortrait } : {}),
+    ...(result.aggregate ? { bio: JSON.stringify(result.aggregate) } : {}),
   };
 
   const validation = validateCreatorProfile(profile);
@@ -729,6 +908,7 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
 
   // Detect platform from schema types present
   const hasTikTok = results.some((r) => r.schema.startsWith('tiktok_'));
+  const hasXhs = results.some((r) => r.schema === 'xhs_notes');
 
   // First pass: collect all data by schema type
   for (const r of results) {
@@ -746,7 +926,7 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
       }
     } else if (r.schema === 'post_analysis' && r.posts && !hasPostList) {
       posts = r.posts;
-    } else if (r.schema === 'tiktok_content' && r.posts) {
+    } else if ((r.schema === 'tiktok_content' || r.schema === 'xhs_notes') && r.posts) {
       posts = r.posts;
     }
 
@@ -755,9 +935,16 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
       history = [...(history ?? []), ...r.history];
     }
 
-    // --- Aggregate (Douyin only) ---
-    if (r.schema === 'aggregate' && r.aggregate) {
-      aggregate = r.aggregate;
+    // --- Aggregate (Douyin 30-day files) ---
+    if (
+      (r.schema === 'aggregate' ||
+        r.schema === 'douyin_interaction' ||
+        r.schema === 'douyin_posting' ||
+        r.schema === 'douyin_follower' ||
+        r.schema === 'douyin_view') &&
+      r.aggregate
+    ) {
+      aggregate = { ...aggregate, ...r.aggregate };
     }
 
     // --- Fan portrait (TikTok) ---
@@ -799,8 +986,8 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
       ? (history[history.length - 1]?.profile.followers ?? 0)
       : 0;
 
-  const platform = hasTikTok ? 'tiktok' : 'douyin';
-  const nickname = hasTikTok ? 'TikTok Creator' : 'Douyin Creator';
+  const platform = hasTikTok ? 'tiktok' : hasXhs ? 'xhs' : 'douyin';
+  const nickname = hasTikTok ? 'TikTok Creator' : hasXhs ? 'Red Note Creator' : 'Douyin Creator';
 
   const profile: CreatorProfile = {
     platform,
@@ -813,7 +1000,7 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
       followers: latestFollowers,
       likesTotal: posts.reduce((sum, p) => sum + p.likes, 0),
       videosCount: posts.length,
-      ...(aggregate ? { bio: `投稿汇总: ${(aggregate.period as string) ?? ''}` } : {}),
+      ...(aggregate ? { bio: `数据汇总: ${Object.entries(aggregate).map(([k, v]) => `${k}=${v}`).join(', ')}` } : {}),
     },
     posts,
     ...(history && history.length > 0 ? { history } : {}),

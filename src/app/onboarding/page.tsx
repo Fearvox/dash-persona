@@ -354,7 +354,7 @@ export default function OnboardingPage() {
                   <button
                     type="button"
                     onClick={handleLaunchImport}
-                    className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
+                    className="btn-primary inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold bg-[var(--accent-green)] text-[var(--bg-primary)]"
                   >
                     {t("ui.common.launchDashboard")}
                   </button>
@@ -468,7 +468,7 @@ export default function OnboardingPage() {
               type="button"
               onClick={handleLaunchUrl}
               disabled={!hasValidEntry}
-              className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
+              className="btn-primary inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold disabled:opacity-40 bg-[var(--accent-green)] text-[var(--bg-primary)]"
             >
               {t("ui.common.launchDashboard")}
             </button>

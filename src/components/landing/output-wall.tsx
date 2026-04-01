@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { t } from '@/lib/i18n';
+import ScrollReveal from '@/components/ui/scroll-reveal';
 
 // ---------------------------------------------------------------------------
 // Output view data
@@ -110,13 +111,11 @@ export function OutputWall() {
         </p>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {outputViews.map((view) => (
+          {outputViews.map((view, i) => (
+            <ScrollReveal key={view.name} delay={i * 100} className={view.span === 2 ? 'col-span-1 sm:col-span-2' : ''}>
             <Link
-              key={view.name}
               href={view.href}
-              className={`card group flex flex-col overflow-hidden transition-all${
-                view.span === 2 ? ' col-span-1 sm:col-span-2' : ''
-              }`}
+              className="card card-interactive group flex flex-col overflow-hidden"
             >
               {/* Cover: gradient + noise + icon */}
               <div
@@ -167,6 +166,7 @@ export function OutputWall() {
                 </p>
               </div>
             </Link>
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -176,13 +176,13 @@ export function OutputWall() {
         <div className="flex gap-4">
           <Link
             href="/dashboard?source=demo&persona=tutorial"
-            className="inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)]"
+            className="btn-primary inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold bg-[var(--accent-green)] text-[var(--bg-primary)]"
           >
             {t('ui.landing.tryDemo')}
           </Link>
           <Link
             href="/onboarding"
-            className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--border-medium)] px-8 text-sm font-semibold transition-colors hover:bg-white/5 text-[var(--text-primary)]"
+            className="btn-outline inline-flex h-12 items-center justify-center rounded-full border border-[var(--border-medium)] px-8 text-sm font-semibold hover:bg-white/5 text-[var(--text-primary)]"
           >
             {t('ui.landing.getStarted')}
           </Link>

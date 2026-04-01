@@ -2,10 +2,12 @@ import { t } from '@/lib/i18n';
 
 export interface PipelineModule {
   id: string;
-  label: string;           // Human-readable (e.g., "Collects your profile")
+  /** i18n key suffix for the label (e.g. "in-douyin" → t("pipeline.in-douyin.label")) */
+  labelKey: string;
   codeName: string;        // Technical name (e.g., "HTMLParseAdapter")
   category: 'input' | 'adapter' | 'schema' | 'engine' | 'output';
-  description: string;     // One-line description
+  /** i18n key suffix for the description (e.g. "in-douyin" → t("pipeline.in-douyin.desc")) */
+  descKey: string;
   color: string;           // CSS variable reference
 }
 
@@ -15,14 +17,16 @@ export interface PipelineRoute {
   color: string;
 }
 
-/** Build pipeline modules with localized labels/descriptions. */
+/** Build pipeline modules. i18n keys (labelKey/descKey) are stored here;
+ *  actual label/description strings are resolved at render time in
+ *  PipelineModuleNode so they respect the current locale. */
 function buildModules(): PipelineModule[] {
   const m = (id: string, codeName: string, category: PipelineModule['category'], color: string): PipelineModule => ({
     id,
-    label: t(`pipeline.${id}.label`),
+    labelKey: `pipeline.${id}.label`,
     codeName,
     category,
-    description: t(`pipeline.${id}.desc`),
+    descKey: `pipeline.${id}.desc`,
     color,
   });
 
@@ -86,11 +90,11 @@ export const PIPELINE_ROUTES: PipelineRoute[] = [
   { from: 'eng-explain', to: 'out-dashboard', color: 'var(--accent-green)' },
 ];
 
-// Category metadata for visual grouping
-export const CATEGORY_META: Record<string, { label: string; color: string }> = {
-  input: { label: t('pipeline.category.input'), color: 'var(--accent-blue)' },
-  schema: { label: t('pipeline.category.schema'), color: 'var(--accent-highlight)' },
-  adapter: { label: t('pipeline.category.adapter'), color: 'var(--accent-yellow)' },
-  engine: { label: t('pipeline.category.engine'), color: 'var(--accent-green)' },
-  output: { label: t('pipeline.category.output'), color: 'var(--accent-highlight)' },
+// Category metadata for visual grouping — keys resolved at render time
+export const CATEGORY_META: Record<string, { labelKey: string; color: string }> = {
+  input: { labelKey: 'pipeline.category.input', color: 'var(--accent-blue)' },
+  schema: { labelKey: 'pipeline.category.schema', color: 'var(--accent-highlight)' },
+  adapter: { labelKey: 'pipeline.category.adapter', color: 'var(--accent-yellow)' },
+  engine: { labelKey: 'pipeline.category.engine', color: 'var(--accent-green)' },
+  output: { labelKey: 'pipeline.category.output', color: 'var(--accent-highlight)' },
 };

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { t } from '@/lib/i18n';
 
 const NAV_LINKS = [
-  { href: '/dashboard?source=demo&persona=tutorial', key: 'ui.common.dashboard' },
+  { href: '/dashboard', key: 'ui.common.dashboard' },
   { href: '/portrait', key: 'ui.portrait.title' },
   { href: '/pipeline', key: 'ui.pipeline.title' },
   { href: '/settings', key: 'ui.common.settings' },
@@ -49,10 +49,7 @@ export default function SiteHeader() {
               <Link
                 key={key}
                 href={href}
-                className="nav-pill"
-                style={{
-                  color: isActive ? 'var(--accent-green)' : undefined,
-                }}
+                className={`nav-pill ${isActive ? 'text-[var(--accent-green)]' : ''}`}
                 aria-current={isActive ? 'page' : undefined}
               >
                 {t(key)}

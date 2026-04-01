@@ -81,7 +81,7 @@ export default function FileDropZone({ onFilesSelected, results, isProcessing }:
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={isDragOver ? 'text-[var(--accent-green)]' : 'text-[var(--text-subtle)]'}
+          className={`transition-all duration-300 ${isDragOver ? 'scale-110 -translate-y-1 text-[var(--accent-green)]' : 'text-[var(--text-subtle)]'}`}
           aria-hidden="true"
         >
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -113,11 +113,12 @@ export default function FileDropZone({ onFilesSelected, results, isProcessing }:
           {results.map((r, i) => (
             <div
               key={`${r.fileName}-${i}`}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs animate-stagger ${
                 r.status === 'success'
                   ? 'bg-[rgba(126,210,154,0.08)] text-[var(--accent-green)]'
                   : 'bg-[rgba(200,126,126,0.08)] text-[var(--accent-red)]'
               }`}
+              style={{ animationDelay: `${i * 80}ms` }}
             >
               <span className="font-mono">{r.fileName}</span>
               <span className="ml-auto">

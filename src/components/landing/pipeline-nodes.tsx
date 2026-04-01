@@ -4,25 +4,30 @@ import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps, Node } from '@xyflow/react';
 import type { PipelineModule } from '@/lib/pipeline/pipeline-config';
+import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
-// Node data shape
+// Node data shape — uses i18n keys (resolved at render time)
 // ---------------------------------------------------------------------------
 
 type PipelineNodeData = Pick<
   PipelineModule,
-  'label' | 'codeName' | 'description' | 'color'
+  'labelKey' | 'descKey' | 'codeName'
 > & {
+  color: string;
   horizontal?: boolean;
 };
 
 export type PipelineNode = Node<PipelineNodeData, 'pipeline'>;
 
 // ---------------------------------------------------------------------------
-// Component
+// Component — resolves i18n keys on every render so locale changes propagate
 // ---------------------------------------------------------------------------
 
 function PipelineModuleNode({ data }: NodeProps<PipelineNode>) {
+  const label = t(data.labelKey);
+  const description = data.descKey ? t(data.descKey) : '';
+
   return (
     <div
       className="w-[160px] bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] px-3 py-2.5 relative transition-[border-color,transform] duration-150 ease-in-out cursor-default hover:border-[var(--border-medium)] hover:scale-[1.01]"
@@ -37,7 +42,7 @@ function PipelineModuleNode({ data }: NodeProps<PipelineNode>) {
       <p
         className="text-[13px] font-medium text-[var(--text-primary)] m-0 mt-0.5 leading-[1.3]"
       >
-        {data.label}
+        {label}
       </p>
 
       {/* Code name */}
@@ -48,11 +53,11 @@ function PipelineModuleNode({ data }: NodeProps<PipelineNode>) {
       </p>
 
       {/* Description */}
-      {data.description && (
+      {description && (
         <p
           className="text-[11px] text-[var(--text-subtle)] mt-1 mb-0 leading-[1.3] overflow-hidden text-ellipsis whitespace-nowrap"
         >
-          {data.description}
+          {description}
         </p>
       )}
 

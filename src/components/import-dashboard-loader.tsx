@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { t } from '@/lib/i18n';
 import type { CreatorProfile } from '@/lib/schema/creator-data';
-import { loadProfiles } from '@/lib/store/profile-store';
+import { resolveProfiles } from '@/lib/store/profile-store';
 import { runAllEngines, type AllEngineResults } from '@/lib/engine';
 import DashboardInteractive from '@/components/dashboard-interactive';
 import PlatformComparison from '@/components/platform-comparison';
@@ -18,33 +18,23 @@ export default function ImportDashboardLoader() {
   const [profiles, setProfiles] = useState<Record<string, CreatorProfile> | null>(null);
 
   useEffect(() => {
-    // Try sessionStorage first (fast, sync)
-    const raw = sessionStorage.getItem('dashpersona-import-profiles');
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as Record<string, CreatorProfile>;
-        for (const p of Object.values(parsed)) {
-          if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
+    // Unified loading: resolveProfiles() checks sessionStorage cache →
+    // IndexedDB → /api/profiles (collector) in priority order.
+    // All sources persist to IndexedDB so data survives navigation.
+    resolveProfiles()
+      .then((resolved) => {
+        if (Object.keys(resolved).length > 0) {
+          for (const p of Object.values(resolved)) {
+            if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
+          }
+          setProfiles(resolved);
+        } else {
+          router.replace('/onboarding');
         }
-        setProfiles(parsed);
-        return;
-      } catch { /* fall through to IndexedDB */ }
-    }
-
-    // Fallback: load from IndexedDB (persists across sessions)
-    loadProfiles().then((stored) => {
-      if (Object.keys(stored).length > 0) {
-        for (const p of Object.values(stored)) {
-          if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
-        }
-        sessionStorage.setItem('dashpersona-import-profiles', JSON.stringify(stored));
-        setProfiles(stored);
-      } else {
+      })
+      .catch(() => {
         router.replace('/onboarding');
-      }
-    }).catch(() => {
-      router.replace('/onboarding');
-    });
+      });
   }, [router]);
 
   // All hooks must be called unconditionally (Rules of Hooks)
