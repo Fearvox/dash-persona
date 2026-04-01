@@ -12,8 +12,8 @@ export async function GET() {
     const res = await fetch(CDP_HEALTH_URL, { signal: controller.signal });
     clearTimeout(timeout);
 
-    const data: unknown = await res.json();
-    return NextResponse.json(data);
+    const data = (await res.json()) as { status?: string };
+    return NextResponse.json({ connected: data.status === 'ok' });
   } catch {
     return NextResponse.json({ connected: false });
   }
