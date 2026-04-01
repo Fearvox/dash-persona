@@ -6,6 +6,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Unified profile resolver** (`resolveProfiles()` in profile-store.ts) — Single source of truth for all pages. Data priority: sessionStorage cache → IndexedDB → /api/profiles (Collector). Collector data is persisted to IndexedDB on first fetch so it survives page navigation.
+- **XHS (Red Note) notes import** — Parse `笔记标题明细表.xlsx` exports from XHS Creator Center. Handles Chinese date format (`2026年03月25日09时49分34秒`), filters placeholder banner rows.
+- **Douyin 30-day aggregate import** — Four new schema types: `douyin_interaction`, `douyin_posting`, `douyin_follower`, `douyin_view`. Parses `指标/数值` key-value format with `环比` (period-over-period) columns.
+- **Shared `getProfiles()`** (`src/lib/api/profiles.ts`) — Extracted from API route so both the HTTP endpoint and server-component Dashboard share the same data logic.
+- **Phase 02 Collector features** — TikTok collection engine, cron-based scheduler, run log persistence with retention policies, BatchQueue sequential job state machine, batch progress / settings / history HTML windows, SSE endpoint for live updates, tray states for collection and CAPTCHA.
+
+### Fixed
+
+- **Data persistence across navigation** — Imported data no longer reverts to demo when switching between dashboard, portrait, pipeline, and other pages. All pages use `resolveProfiles()` instead of independent loading chains.
+- **Snapshot ordering** — Newest collector snapshot per platform now wins (was: oldest overwrote newest due to `for-of` over newest-first array).
+- **XHS placeholder row** — Merged banner text "最多导出排序后前1000条笔记" no longer imported as a real post with zeroed metrics.
+- **CDP-collect API response** — Returns `{connected: true}` matching frontend expectation.
+- **XHS login URL** — Collector navigates to root path for login; adds desktop notification on login required.
+
+### Changed
+
+- **Profile API route** slimmed from 196 lines to 15-line thin wrapper around shared `getProfiles()`.
+- **Dashboard and Portrait pages** each reduced ~60 lines of duplicated loading logic to a single `resolveProfiles()` call.
+- **UI polish** — `card-interactive` hover class, `btn-primary` button class, landing component tweaks, pipeline config cleanup.
+
+---
+
 ## [0.7.0] - 2026-03-30
 
 ### Added

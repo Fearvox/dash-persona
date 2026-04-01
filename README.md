@@ -66,10 +66,10 @@ claude skill install --global github.com/eze-is/web-access
 |---|---|---|---|
 | Setup difficulty | No install needed | Download and run | Command line required |
 | Sample data exploration | Yes | Yes | Yes |
-| File import (XLSX/JSON/CSV) | Yes | — | Yes |
+| File import (XLSX/JSON/CSV) | Yes | Yes | Yes |
 | Real-time CDP data collection | — | Yes | Yes |
 | Trending topic analysis | — | — | Yes |
-| Persistent data across sessions | — | Yes | Yes |
+| Persistent data across sessions | Yes (after import) | Yes | Yes |
 | Persistent cookies across sessions | — | Yes | — |
 | 18-signal intelligence framework | Yes | Yes | Yes |
 | All 11 analysis engines | Yes | Yes | Yes |
