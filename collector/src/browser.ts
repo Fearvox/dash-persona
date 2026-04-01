@@ -202,10 +202,10 @@ export class BrowserManager {
     if (!this.context) return;
 
     const targets: Array<{ platform: 'douyin' | 'xhs'; url: string }> = platform
-      ? [{ platform, url: platform === 'douyin' ? 'https://creator.douyin.com' : 'https://www.xiaohongshu.com/user/profile/' }]
+      ? [{ platform, url: platform === 'douyin' ? 'https://creator.douyin.com' : 'https://www.xiaohongshu.com/' }]
       : [
           { platform: 'douyin', url: 'https://creator.douyin.com' },
-          { platform: 'xhs', url: 'https://www.xiaohongshu.com/user/profile/' },
+          { platform: 'xhs', url: 'https://www.xiaohongshu.com/' },
         ];
 
     for (const target of targets) {

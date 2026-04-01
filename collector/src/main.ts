@@ -220,8 +220,16 @@ if (!gotLock) {
       trayManager?.setCollectionCallbacks({
         openProgressWindow: () => openProgressWindow(),
         cancelCollection: () => batchQueue.cancelAll(),
-        showBrowser: () => {
-          void browserManager.showLoginWindow();
+        showBrowser: async () => {
+          await browserManager.showLoginWindow();
+          // If neither platform is logged in, show desktop notification to guide user
+          const [douyin, xhs] = await Promise.all([
+            browserManager.isLoggedIn('douyin'),
+            browserManager.isLoggedIn('xhs'),
+          ]);
+          if (!douyin && !xhs) {
+            trayManager?.showLoginRequiredNotification();
+          }
         },
       });
       trayManager?.setWindowCallbacks({

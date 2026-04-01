@@ -1,4 +1,4 @@
-import { Tray, Menu, nativeImage, app, type NativeImage } from 'electron';
+import { Tray, Menu, nativeImage, app, Notification, type NativeImage } from 'electron';
 import { deflateSync } from 'zlib';
 import { BrowserManager, type BrowserStatus } from './browser';
 
@@ -418,6 +418,20 @@ export class TrayManager {
     if (this.tray) {
       this.tray.setContextMenu(this.buildMenu());
     }
+  }
+
+  /**
+   * Show a desktop notification guiding the user to complete login.
+   * Call this after opening login windows so the user knows to act.
+   */
+  showLoginRequiredNotification(): void {
+    if (!Notification.isSupported()) return;
+    const notification = new Notification({
+      title: 'DASH Collector — 需要登录',
+      body: '请在打开的浏览器窗口中扫码登录 Douyin 和小红书。登录成功后此提示将自动消失。',
+      silent: false,
+    });
+    notification.show();
   }
 
   destroy(): void {
