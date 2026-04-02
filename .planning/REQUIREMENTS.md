@@ -25,10 +25,10 @@
 
 ### Dashboard (DASH)
 
-- [ ] **DASH-01**: Dashboard consumes real Collector data from `/api/profiles` instead of Demo adapter when profiles exist
-- [ ] **DASH-02**: Every data display shows `collectedAt` timestamp — the primary signal of data trust
+- [x] **DASH-01**: Dashboard consumes real Collector data from `/api/profiles` instead of Demo adapter when profiles exist
+- [x] **DASH-02**: Every data display shows `collectedAt` timestamp — the primary signal of data trust
 - [ ] **DASH-03**: Loading states visible for any operation over 300ms
-- [ ] **DASH-04**: Actionable error messages with specific guidance (e.g. "check browser session is active")
+- [x] **DASH-04**: Actionable error messages with specific guidance (e.g. "check browser session is active")
 
 ### History (HIST)
 
@@ -105,10 +105,10 @@
 | COLL-06 | 2 | Pending |
 | COLL-07 | 2 | Pending |
 | COLL-08 | 2 | Pending |
-| DASH-01 | 3 | Pending |
-| DASH-02 | 3 | Pending |
+| DASH-01 | 3 | Complete |
+| DASH-02 | 3 | Complete |
 | DASH-03 | 3 | Pending |
-| DASH-04 | 3 | Pending |
+| DASH-04 | 3 | Complete |
 | HIST-01 | 4 | Pending |
 | HIST-02 | 4 | Pending |
 | HIST-03 | 4 | Pending |
