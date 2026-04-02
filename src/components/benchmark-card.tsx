@@ -1,13 +1,25 @@
 'use client';
 
 import type { BenchmarkResult, MetricBenchmark } from '@/lib/engine';
+import type { CreatorProfile } from '@/lib/schema/creator-data';
 import { t } from '@/lib/i18n';
 
 interface BenchmarkCardProps {
   benchmarkResult: BenchmarkResult & { niche: string; nicheLabel: string };
+  /** Current creator profile to add/remove from comparison. */
+  profile?: CreatorProfile;
+  /** Called when the user clicks "Add to Compare". */
+  onAddToCompare?: (profile: CreatorProfile) => void;
+  /** True when this profile is already in the comparison set. */
+  isInComparison?: boolean;
 }
 
-export default function BenchmarkCard({ benchmarkResult }: BenchmarkCardProps) {
+export default function BenchmarkCard({
+  benchmarkResult,
+  profile,
+  onAddToCompare,
+  isInComparison,
+}: BenchmarkCardProps) {
   const { metrics, nicheLabel, summary } = benchmarkResult;
 
   return (
@@ -29,6 +41,20 @@ export default function BenchmarkCard({ benchmarkResult }: BenchmarkCardProps) {
       >
         {summary}
       </p>
+
+      {profile && onAddToCompare && (
+        <button
+          type="button"
+          onClick={() => onAddToCompare(profile)}
+          className={`mt-4 w-full rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+            isInComparison
+              ? 'bg-[rgba(126,_210,_154,_0.15)] text-[var(--accent-green)] border border-[rgba(126,_210,_154,_0.3)]'
+              : 'bg-[rgba(126,_210,_154,_0.08)] text-[var(--text-secondary)] border border-[rgba(126,_210,_154,_0.15)] hover:border-[rgba(126,_210,_154,_0.4)]'
+          }`}
+        >
+          {isInComparison ? 'In comparison' : 'Add to Compare'}
+        </button>
+      )}
     </div>
   );
 }

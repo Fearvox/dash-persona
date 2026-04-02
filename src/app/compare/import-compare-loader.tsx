@@ -271,6 +271,14 @@ export default function ImportCompareLoader() {
         <p className="text-sm text-[var(--text-subtle)]">
           {platformKeys.map((p) => PLATFORM_LABELS[p] ?? p).join(' vs ')}
         </p>
+        <div className="mt-2 flex gap-3">
+          <Link
+            href="/compare?mode=multi"
+            className="nav-pill text-xs"
+          >
+            Compare multiple creators
+          </Link>
+        </div>
       </header>
 
       <DataSourceBanner source={result?.source ?? 'demo'} reason={result?.reason} />

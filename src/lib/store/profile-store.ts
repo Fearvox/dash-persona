@@ -54,6 +54,7 @@ const DB_NAME = 'dashpersona-profiles';
 const DB_VERSION = 2;
 const STORE_NAME = 'profiles';
 const SESSION_KEY = 'dashpersona-import-profiles';
+const COMPARISON_KEY = 'dashpersona-comparison-set';
 
 // ---------------------------------------------------------------------------
 // IndexedDB helpers
@@ -442,4 +443,56 @@ export async function clearProfiles(): Promise<void> {
   } catch {
     // IndexedDB unavailable
   }
+}
+
+// ---------------------------------------------------------------------------
+// Comparison set (sessionStorage)
+// ---------------------------------------------------------------------------
+
+/** Platform-scoped creator IDs currently in the comparison set. */
+export type ComparisonSet = Record<string, string[]>;
+
+/** Read the current comparison set from sessionStorage. */
+export function getComparisonSet(): ComparisonSet {
+  try {
+    const raw = sessionStorage.getItem(COMPARISON_KEY);
+    if (raw) return JSON.parse(raw) as ComparisonSet;
+  } catch { /* ignore */ }
+  return {};
+}
+
+/** Persist a full comparison set to sessionStorage. */
+export function setComparisonSet(set: ComparisonSet): void {
+  try {
+    sessionStorage.setItem(COMPARISON_KEY, JSON.stringify(set));
+  } catch { /* ignore */ }
+}
+
+/** Add a creator profile to the comparison set. Idempotent per platform. */
+export function addToComparison(profile: CreatorProfile): void {
+  const set = getComparisonSet();
+  const key = profile.platform;
+  if (!set[key]) set[key] = [];
+  if (!set[key].includes(profile.profileUrl ?? profile.platform)) {
+    set[key].push(profile.profileUrl ?? profile.platform);
+  }
+  setComparisonSet(set);
+}
+
+/** Remove a creator from the comparison set. */
+export function removeFromComparison(profile: CreatorProfile): void {
+  const set = getComparisonSet();
+  const key = profile.platform;
+  if (!set[key]) return;
+  const id = profile.profileUrl ?? profile.platform;
+  set[key] = set[key].filter((v) => v !== id);
+  if (set[key].length === 0) delete set[key];
+  setComparisonSet(set);
+}
+
+/** Clear the entire comparison set. */
+export function clearComparison(): void {
+  try {
+    sessionStorage.removeItem(COMPARISON_KEY);
+  } catch { /* ignore */ }
 }

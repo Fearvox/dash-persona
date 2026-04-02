@@ -17,7 +17,7 @@ import {
   type EngagementProfile,
   type ContentDistribution,
 } from './persona';
-import { adaptiveThreshold } from './stats';
+import { adaptiveThreshold, empiricalPercentile } from './stats';
 import { t } from '@/lib/i18n';
 
 // ---------------------------------------------------------------------------
@@ -64,6 +64,40 @@ export interface CrossPlatformComparison {
   bestEngagementPlatform: string | null;
   /** Platform with the most followers. */
   largestAudiencePlatform: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Multi-creator comparison types
+// ---------------------------------------------------------------------------
+
+/** Per-creator summary for multi-creator comparison. */
+export interface CreatorSummary {
+  id: string;
+  platform: string;
+  profileUrl: string;
+  nickname: string;
+  followers: number;
+  totalViews: number;
+  totalEngagement: number;
+  overallEngagementRate: number;
+  postCount: number;
+}
+
+/** A single metric comparison across all creators. */
+export interface MetricComparison {
+  metric: string;
+  values: Record<string, number>;
+  normalized: Record<string, number>;
+  ranks: Record<string, number>;
+  bestCreatorId: string | null;
+}
+
+/** Cross-creator comparison result for benchmarking multiple creators. */
+export interface MultiCreatorComparison {
+  summaries: CreatorSummary[];
+  metrics: MetricComparison[];
+  bestPerMetric: Record<string, string>;
+  metricNames: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -306,3 +340,129 @@ export function comparePlatforms(
  * (by content hash) returns cached result without recomputing.
  */
 export const comparePlatformsCached = memoize(comparePlatforms);
+
+// ---------------------------------------------------------------------------
+// Multi-creator comparison
+// ---------------------------------------------------------------------------
+
+const MULTI_CREATOR_METRICS = [
+  'followers',
+  'overallEngagementRate',
+  'postCount',
+  'totalViews',
+  'totalEngagement',
+] as const;
+
+type MultiCreatorMetric = (typeof MULTI_CREATOR_METRICS)[number];
+
+/**
+ * Build a CreatorSummary from a CreatorProfile.
+ * Does NOT call computeEngagementProfile — uses a lightweight derivation.
+ */
+function buildCreatorSummary(profile: CreatorProfile): CreatorSummary {
+  const totalViews = profile.posts.reduce((s, p) => s + p.views, 0);
+  const totalEngagement = profile.posts.reduce(
+    (s, p) => s + p.likes + p.comments + p.shares + p.saves,
+    0,
+  );
+  const overallEngagementRate =
+    totalViews > 0 ? totalEngagement / totalViews : 0;
+
+  return {
+    id: profile.profileUrl,
+    platform: profile.platform,
+    profileUrl: profile.profileUrl,
+    nickname: profile.profile.nickname,
+    followers: profile.profile.followers,
+    totalViews,
+    totalEngagement,
+    overallEngagementRate,
+    postCount: profile.posts.length,
+  };
+}
+
+/**
+ * Extract a numeric metric value from a CreatorSummary by metric name.
+ */
+function extractMetric(summary: CreatorSummary, metric: MultiCreatorMetric): number {
+  switch (metric) {
+    case 'followers':
+      return summary.followers;
+    case 'overallEngagementRate':
+      return summary.overallEngagementRate;
+    case 'postCount':
+      return summary.postCount;
+    case 'totalViews':
+      return summary.totalViews;
+    case 'totalEngagement':
+      return summary.totalEngagement;
+    default:
+      return 0;
+  }
+}
+
+/**
+ * Compare multiple creators across a fixed set of engagement and reach metrics.
+ *
+ * Each metric is normalised using the Hazen plotting-position percentile so that
+ * creators are ranked on a 0-100 scale relative to the cohort.  The creator
+ * with the highest normalised value for a metric is recorded as the winner.
+ *
+ * @param profiles  Array of CreatorProfile (one per creator/platform).
+ * @returns MultiCreatorComparison with per-creator summaries, per-metric
+ *          comparisons, and a best-per-metric lookup.
+ */
+export function compareMultiCreator(
+  profiles: CreatorProfile[],
+): MultiCreatorComparison {
+  const summaries = profiles.map(buildCreatorSummary);
+
+  const metrics: MetricComparison[] = [];
+  const bestPerMetric: Record<string, string> = {};
+
+  for (const metric of MULTI_CREATOR_METRICS) {
+    // Collect all values for this metric across the cohort
+    const allValues = summaries.map((s) => extractMetric(s, metric));
+    const sorted = [...allValues].sort((a, b) => a - b);
+
+    const values: Record<string, number> = {};
+    const normalized: Record<string, number> = {};
+    const ranks: Record<string, number> = {};
+
+    summaries.forEach((s, idx) => {
+      values[s.id] = allValues[idx];
+      normalized[s.id] = empiricalPercentile(allValues[idx], sorted);
+    });
+
+    // Rank by normalised value descending (rank 1 = best)
+    const sortedByNorm = [...summaries].sort(
+      (a, b) => normalized[b.id] - normalized[a.id],
+    );
+    sortedByNorm.forEach((s, idx) => {
+      ranks[s.id] = idx + 1;
+    });
+
+    const bestCreator = sortedByNorm[0];
+    bestPerMetric[metric] = bestCreator?.id ?? null;
+
+    metrics.push({
+      metric,
+      values,
+      normalized,
+      ranks,
+      bestCreatorId: bestCreator?.id ?? null,
+    });
+  }
+
+  return {
+    summaries,
+    metrics,
+    bestPerMetric,
+    metricNames: [...MULTI_CREATOR_METRICS],
+  };
+}
+
+/**
+ * Memoized version of compareMultiCreator.
+ */
+export const compareMultiCreatorCached = memoize(compareMultiCreator);

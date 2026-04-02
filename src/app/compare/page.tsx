@@ -15,18 +15,21 @@ import { PLATFORM_LABELS, VALID_PERSONAS, scoreColor } from '@/lib/utils/constan
 import CompareTable from './compare-table';
 import CompareRadarChart from './compare-radar-chart';
 import ImportCompareLoader from './import-compare-loader';
+import CompareMultiClient from './compare-multi-client';
 
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ source?: string; persona?: string }>;
+  searchParams: Promise<{ source?: string; persona?: string; mode?: string }>;
 }): Promise<Metadata> {
   const params = await searchParams;
   return {
     title:
       params.source === 'demo'
         ? 'Demo Comparison — DashPersona'
-        : 'Cross-Platform Comparison — DashPersona',
+        : params.mode === 'multi'
+          ? 'Multi-Creator Comparison — DashPersona'
+          : 'Cross-Platform Comparison — DashPersona',
   };
 }
 
@@ -66,11 +69,16 @@ export interface ContentOverlapEntry {
 // ---------------------------------------------------------------------------
 
 interface ComparePageProps {
-  searchParams: Promise<{ source?: string; persona?: string }>;
+  searchParams: Promise<{ source?: string; persona?: string; mode?: string }>;
 }
 
 export default async function ComparePage({ searchParams }: ComparePageProps) {
   const params = await searchParams;
+
+  // --- Multi-creator mode ---
+  if (params.mode === 'multi') {
+    return <CompareMultiClient />;
+  }
 
   // --- Import mode ---
   if (params.source === 'import') {
