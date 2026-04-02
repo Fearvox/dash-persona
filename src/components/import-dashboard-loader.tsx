@@ -23,11 +23,11 @@ export default function ImportDashboardLoader() {
     // All sources persist to IndexedDB so data survives navigation.
     resolveProfiles()
       .then((resolved) => {
-        if (Object.keys(resolved).length > 0) {
-          for (const p of Object.values(resolved)) {
+        if (Object.keys(resolved.profiles).length > 0) {
+          for (const p of Object.values(resolved.profiles)) {
             if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
           }
-          setProfiles(resolved);
+          setProfiles(resolved.profiles);
         } else {
           router.replace('/onboarding');
         }

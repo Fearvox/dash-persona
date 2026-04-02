@@ -162,7 +162,7 @@ function PortraitContent() {
     // Data is persisted to IndexedDB so it survives page navigation.
     resolveProfiles()
       .then((resolved) => {
-        const entries = Object.values(resolved);
+        const entries = Object.values(resolved.profiles);
         if (entries.length > 0) {
           setProfile(entries[0]);
         }
