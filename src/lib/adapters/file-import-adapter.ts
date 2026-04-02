@@ -469,6 +469,7 @@ function parseTimeseries(rows: Record<string, unknown>[]): { history: CreatorPro
           likesTotal: metricCol === '作品点赞' ? val : 0,
           videosCount: 0,
         },
+        followerGrowthRate: 0,
       };
     });
 
@@ -572,6 +573,7 @@ function parseTikTokOverview(rows: Record<string, unknown>[]): { history: Creato
         likesTotal: parseDouyinNum(row['Likes']),
         videosCount: 0,
       },
+      followerGrowthRate: 0,
     }))
     .filter((e) => e.fetchedAt.length > 0); // drop unparseable dates
   return { history };
@@ -589,6 +591,7 @@ function parseTikTokFollowerHistory(rows: Record<string, unknown>[]): { history:
         likesTotal: 0,
         videosCount: 0,
       },
+      followerGrowthRate: 0,
     }))
     .filter((e) => e.fetchedAt.length > 0);
   return { history };
@@ -967,6 +970,7 @@ export function mergeXlsxResults(results: XlsxParseResult[]): CreatorProfile {
             likesTotal: existing.profile.likesTotal || snap.profile.likesTotal,
             videosCount: existing.profile.videosCount || snap.profile.videosCount,
           },
+          followerGrowthRate: 0,
         });
       } else {
         byDate.set(snap.fetchedAt, snap);

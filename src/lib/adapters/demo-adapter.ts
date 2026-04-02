@@ -397,6 +397,7 @@ function generateHistory(
         likesTotal: Math.max(Math.round(likes), 0),
         videosCount: Math.max(Math.round(videos), 0),
       },
+      followerGrowthRate: 0,
     });
 
     likes += likeBaseGrowth + rng.int(-1_000, 2_000);

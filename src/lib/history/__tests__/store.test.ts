@@ -18,6 +18,7 @@ function makeSnapshot(fetchedAt: string, followers = 1000): HistorySnapshot {
   return {
     fetchedAt,
     profile: { followers, likesTotal: 5000, videosCount: 10 },
+    followerGrowthRate: 0,
   };
 }
 

@@ -178,6 +178,7 @@ describe('computeGrowthDelta', () => {
         {
           fetchedAt: now,
           profile: { followers: 1000, likesTotal: 5000, videosCount: 50 },
+          followerGrowthRate: 0,
         },
       ],
     };

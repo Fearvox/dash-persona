@@ -116,6 +116,11 @@ function validateHistorySnapshot(snap: unknown, index: number, errors: string[])
   requireNonNegativeNumber(sp, 'followers', errors);
   requireNonNegativeNumber(sp, 'likesTotal', errors);
   requireNonNegativeNumber(sp, 'videosCount', errors);
+  // followerGrowthRate is optional for backward compat — older snapshots may not have it
+  const followerGrowthRate = (snap as Record<string, unknown>).followerGrowthRate;
+  if (followerGrowthRate !== undefined && typeof followerGrowthRate !== 'number') {
+    errors.push(`${prefix}.followerGrowthRate must be a number`);
+  }
 }
 
 // ---------------------------------------------------------------------------

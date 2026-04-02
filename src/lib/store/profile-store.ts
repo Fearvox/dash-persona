@@ -51,7 +51,7 @@ interface SourceMeta {
 // ---------------------------------------------------------------------------
 
 const DB_NAME = 'dashpersona-profiles';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'profiles';
 const SESSION_KEY = 'dashpersona-import-profiles';
 
@@ -82,7 +82,7 @@ function openDB(): Promise<IDBDatabase> {
 // ---------------------------------------------------------------------------
 
 async function readFromIndexedDB(): Promise<{
-  profiles: Record<string, CreatorProfile>;
+  profiles: Record<string, CreatorProfile[]>;
   meta: SourceMeta | null;
 }> {
   try {
@@ -93,20 +93,27 @@ async function readFromIndexedDB(): Promise<{
     const profilesReq = store.get('current');
     const metaReq = store.get('current-meta');
 
-    const [profiles, meta] = await new Promise<
-      [Record<string, CreatorProfile> | undefined, SourceMeta | undefined]
+    const [raw, meta] = await new Promise<
+      [unknown, SourceMeta | undefined]
     >((resolve, reject) => {
-      tx.oncomplete = () =>
-        resolve([
-          profilesReq.result as Record<string, CreatorProfile> | undefined,
-          metaReq.result as SourceMeta | undefined,
-        ]);
+      tx.oncomplete = () => resolve([profilesReq.result, metaReq.result]);
       tx.onerror = () => reject(tx.error);
     });
     db.close();
 
-    if (profiles && typeof profiles === 'object' && Object.keys(profiles).length > 0) {
-      return { profiles, meta: meta ?? null };
+    if (raw && typeof raw === 'object' && Object.keys(raw).length > 0) {
+      const profiles = raw as Record<string, CreatorProfile[] | CreatorProfile>;
+      // Backward compat: old format stored CreatorProfile per platform — wrap in array
+      const converted: Record<string, CreatorProfile[]> = {};
+      for (const [platform, value] of Object.entries(profiles)) {
+        if (Array.isArray(value)) {
+          converted[platform] = value;
+        } else {
+          // Legacy single-profile format — wrap in array
+          converted[platform] = [value];
+        }
+      }
+      return { profiles: converted, meta: meta ?? null };
     }
   } catch {
     // IndexedDB unavailable
@@ -119,7 +126,7 @@ async function readFromIndexedDB(): Promise<{
 // ---------------------------------------------------------------------------
 
 async function writeToIndexedDB(
-  profiles: Record<string, CreatorProfile>,
+  profiles: Record<string, CreatorProfile[]>,
   meta?: SourceMeta,
 ): Promise<void> {
   try {
@@ -203,36 +210,43 @@ async function fetchAndPersistCollectorData(): Promise<ResolvedProfiles> {
     const data = (await res.json()) as ApiResponse;
 
     if (data.source === 'real' && Array.isArray(data.profiles) && data.profiles.length > 0) {
-      const loaded: Record<string, CreatorProfile> = {};
+      // Collect ALL snapshots per platform (newest-first from API), store as arrays.
+      const loaded: Record<string, CreatorProfile[]> = {};
       for (const snap of data.profiles) {
-        // Snapshots are sorted newest-first. Keep the first (newest) per platform.
-        if (loaded[snap.platform]) continue;
         const p = snap.profile;
         if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
-        loaded[snap.platform] = p;
+        if (!loaded[snap.platform]) loaded[snap.platform] = [];
+        loaded[snap.platform].push(p);
       }
       const collectedAt = data.profiles[0]?.collectedAt;
       const result: ResolvedProfiles = {
-        profiles: loaded,
+        profiles: Object.fromEntries(
+          Object.entries(loaded).map(([platform, arr]) => [platform, arr[0]]),
+        ),
         source: 'real',
         collectedAt,
       };
       // Persist collector data to IndexedDB so it survives navigation
-      await saveProfiles(loaded, { source: 'real', collectedAt });
+      await writeToIndexedDB(loaded, { source: 'real', collectedAt });
+      // Sync sessionStorage cache with the flattened (single-per-platform) view
+      writeSessionCache(result);
       return result;
     }
 
     if (data.source === 'demo') {
-      const loaded: Record<string, CreatorProfile> = {};
+      const loaded: Record<string, CreatorProfile[]> = {};
       if (Array.isArray(data.profiles)) {
         for (const p of data.profiles as unknown as CreatorProfile[]) {
           if (p.platform) {
-            loaded[p.platform] = p;
+            if (!loaded[p.platform]) loaded[p.platform] = [];
+            loaded[p.platform].push(p);
           }
         }
       }
       return {
-        profiles: loaded,
+        profiles: Object.fromEntries(
+          Object.entries(loaded).map(([platform, arr]) => [platform, arr[0]]),
+        ),
         source: 'demo',
         reason: data.reason,
       };
@@ -274,15 +288,26 @@ export async function saveProfiles(
 ): Promise<void> {
   // Merge with existing IndexedDB data (not sessionStorage — IndexedDB is truth)
   const existing = await readFromIndexedDB();
-  const merged = { ...existing.profiles, ...newProfiles };
+
+  // Convert single profiles to arrays for internal storage.
+  // Caller passes the full merged map — each platform key is a complete
+  // replacement, not an incremental delta. Re-importing the same profile
+  // should update in place, not append a duplicate entry.
+  const arrays: Record<string, CreatorProfile[]> = {};
+  for (const [platform, profile] of Object.entries(newProfiles)) {
+    arrays[platform] = [profile];
+  }
 
   // Persist to IndexedDB (with meta if provided)
-  await writeToIndexedDB(merged, meta);
+  await writeToIndexedDB(arrays, meta);
 
-  // Sync sessionStorage cache
+  // Sync sessionStorage cache with flattened (single-per-platform) view for backward compat
+  const flattened = Object.fromEntries(
+    Object.entries(arrays).map(([platform, arr]) => [platform, arr[0]]),
+  );
   const resolvedMeta = meta ?? existing.meta;
   writeSessionCache({
-    profiles: merged,
+    profiles: flattened,
     source: resolvedMeta?.source ?? 'real',
     collectedAt: resolvedMeta?.collectedAt,
     reason: resolvedMeta?.reason,
@@ -305,18 +330,22 @@ export async function loadProfiles(): Promise<Record<string, CreatorProfile>> {
   const cached = readSessionCache();
   if (cached) return cached.profiles;
 
-  // Fall back to IndexedDB
+  // Fall back to IndexedDB — flatten arrays to single profile per platform
   const stored = await readFromIndexedDB();
   if (Object.keys(stored.profiles).length > 0) {
-    // Re-sync sessionStorage cache
+    // Flatten arrays to single profile per platform for backward compat return type
+    const flattened = Object.fromEntries(
+      Object.entries(stored.profiles).map(([platform, arr]) => [platform, arr[0]]),
+    );
+    // Re-sync sessionStorage cache with flattened view
     writeSessionCache({
-      profiles: stored.profiles,
+      profiles: flattened,
       source: stored.meta?.source ?? 'real',
       collectedAt: stored.meta?.collectedAt,
       reason: stored.meta?.reason,
       code: stored.meta?.code,
     });
-    return stored.profiles;
+    return flattened;
   }
 
   return {};
@@ -342,8 +371,12 @@ export async function resolveProfiles(): Promise<ResolvedProfiles> {
   // 2. IndexedDB (persistent store — survives tab close)
   const stored = await readFromIndexedDB();
   if (Object.keys(stored.profiles).length > 0) {
+    // Flatten arrays to single profile per platform for backward compat
+    const flattened = Object.fromEntries(
+      Object.entries(stored.profiles).map(([platform, arr]) => [platform, arr[0]]),
+    );
     const resolved: ResolvedProfiles = {
-      profiles: stored.profiles,
+      profiles: flattened,
       source: stored.meta?.source ?? 'real',
       collectedAt: stored.meta?.collectedAt,
       reason: stored.meta?.reason,
@@ -366,6 +399,25 @@ export async function resolveProfiles(): Promise<ResolvedProfiles> {
 
   // No real data found anywhere
   return { profiles: {}, source: 'empty' };
+}
+
+/**
+ * Returns ALL stored profiles as a flat array, regardless of platform.
+ * Use this when iterating all profiles for comparison, selection UIs, etc.
+ * Prefers sessionStorage cache for speed; falls back to IndexedDB.
+ */
+export async function getAllProfiles(): Promise<CreatorProfile[]> {
+  // Try sessionStorage cache first (fast path)
+  const cached = readSessionCache();
+  if (cached) return Object.values(cached.profiles);
+
+  // Fall back to IndexedDB
+  const stored = await readFromIndexedDB();
+  const all: CreatorProfile[] = [];
+  for (const arr of Object.values(stored.profiles)) {
+    all.push(...arr);
+  }
+  return all;
 }
 
 /**

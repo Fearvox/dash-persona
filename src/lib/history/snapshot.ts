@@ -12,6 +12,15 @@ import { profileKey, MAX_SNAPSHOTS } from './store';
  * Extract a lightweight HistorySnapshot from the current state of a profile.
  */
 export function extractSnapshot(profile: CreatorProfile): HistorySnapshot {
+  // Compute followerGrowthRate by comparing to the most recent prior snapshot
+  const history = profile.history;
+  const priorFollowers =
+    history && history.length > 0 ? history[history.length - 1].profile.followers : null;
+  const followerGrowthRate =
+    priorFollowers !== null && priorFollowers > 0
+      ? ((profile.profile.followers - priorFollowers) / priorFollowers) * 100
+      : 0;
+
   return {
     fetchedAt: profile.fetchedAt,
     profile: {
@@ -19,6 +28,7 @@ export function extractSnapshot(profile: CreatorProfile): HistorySnapshot {
       likesTotal: profile.profile.likesTotal,
       videosCount: profile.profile.videosCount,
     },
+    followerGrowthRate: Math.round(followerGrowthRate * 10) / 10,
   };
 }
 

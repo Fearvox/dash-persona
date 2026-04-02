@@ -134,7 +134,7 @@ describe('dataCompleteness signal', () => {
     // Profile with history added
     const enrichedProfile = {
       ...profile,
-      history: [{ fetchedAt: '2026-01-01', profile: { followers: 100, likesTotal: 500, videosCount: 10 } }],
+      history: [{ fetchedAt: '2026-01-01', profile: { followers: 100, likesTotal: 500, videosCount: 10 }, followerGrowthRate: 0 }],
       fanPortrait: { gender: { male: 60, female: 40 } },
     };
     const enrichedScore = computePersonaScore(enrichedProfile);

@@ -129,6 +129,12 @@ export interface HistorySnapshot {
     likesTotal: number;
     videosCount: number;
   };
+
+  /**
+   * Follower growth rate (%) from the previous snapshot to this one.
+   * Positive = growth, negative = decline, 0 = no change or no prior snapshot.
+   */
+  followerGrowthRate: number;
 }
 
 // ---------------------------------------------------------------------------
