@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 02 Executed — Awaiting Verification
-last_updated: "2026-03-31T23:30:00.000Z"
+last_updated: "2026-04-01T23:00:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 1
@@ -25,6 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 - **Phase status:** All 4 plans executed — awaiting phase verification (gsd:verify-work)
 - **Blockers:** None
 - **Next action:** Run phase verification, then advance to Phase 03
+- **2026-04-01 hotfix:** Unified profile store (resolveProfiles), snapshot ordering fix, XHS parser fix, data persistence across navigation
 
 ## Phase Progress
 
