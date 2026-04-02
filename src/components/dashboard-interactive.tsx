@@ -11,6 +11,11 @@ import type { AnalysisSnapshot } from '@/lib/history/analysis-types';
 import BenchmarkCard from './benchmark-card';
 import { useProfileHistory } from '@/lib/history';
 import { useAnalysisDelta } from '@/lib/history/use-analysis-delta';
+import {
+  addToComparison,
+  removeFromComparison,
+  getComparisonSet,
+} from '@/lib/store/profile-store';
 import PersonaOverview from './persona-overview';
 import GrowthSparklines from './growth-sparklines';
 import PostDrawer from './post-drawer';
@@ -60,6 +65,46 @@ export default function DashboardInteractive({
   const [drawerTitle, setDrawerTitle] = useState(t('ui.components.postsTitle'));
   const [drawerFilterIds, setDrawerFilterIds] = useState<string[] | undefined>(
     undefined,
+  );
+
+  // Comparison set state — keyed by profile identity (profileUrl or platform)
+  const [comparisonIds, setComparisonIds] = useState<Record<string, string[]>>(() =>
+    getComparisonSet(),
+  );
+
+  /** Primary profile for the BenchmarkCard add-to-compare action. */
+  const primaryProfile = useMemo<CreatorProfile | undefined>(() => {
+    const vals = Object.values(profiles);
+    return vals.length > 0 ? vals[0] : undefined;
+  }, [profiles]);
+
+  /** True when primaryProfile is already in the comparison set. */
+  const isPrimaryInComparison = useMemo(() => {
+    if (!primaryProfile) return false;
+    const set = comparisonIds[primaryProfile.platform];
+    const id = primaryProfile.profileUrl ?? primaryProfile.platform;
+    return set ? set.includes(id) : false;
+  }, [primaryProfile, comparisonIds]);
+
+  const handleAddToCompare = useCallback(
+    (profile: CreatorProfile) => {
+      const id = profile.profileUrl ?? profile.platform;
+      const current = comparisonIds[profile.platform] ?? [];
+      if (current.includes(id)) {
+        removeFromComparison(profile);
+        setComparisonIds(getComparisonSet());
+      } else {
+        addToComparison(profile);
+        setComparisonIds(getComparisonSet());
+      }
+    },
+    [comparisonIds],
+  );
+
+  /** Total number of unique creator IDs across all platforms in the set. */
+  const comparisonCount = useMemo(
+    () => Object.values(comparisonIds).reduce((acc, arr) => acc + arr.length, 0),
+    [comparisonIds],
   );
 
   const openDrawerWithIds = useCallback((postIds: string[]) => {
@@ -121,7 +166,12 @@ export default function DashboardInteractive({
 
       {/* Benchmark comparison */}
       {benchmarkResult && (
-        <BenchmarkCard benchmarkResult={benchmarkResult} />
+        <BenchmarkCard
+          benchmarkResult={benchmarkResult}
+          profile={primaryProfile}
+          onAddToCompare={handleAddToCompare}
+          isInComparison={isPrimaryInComparison}
+        />
       )}
 
       {/* Persona Score heading */}
@@ -153,6 +203,19 @@ export default function DashboardInteractive({
         title={drawerTitle}
         filterPostIds={drawerFilterIds}
       />
+
+      {/* Floating compare button — appears when 2+ creators are selected */}
+      {comparisonCount >= 2 && (
+        <Link
+          href="/compare?mode=multi"
+          className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-lg transition-colors bg-[var(--accent-green)] text-[var(--bg-primary)] hover:bg-[var(--accent-green)]/90"
+        >
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
+          Compare ({comparisonCount})
+        </Link>
+      )}
     </>
   );
 }
