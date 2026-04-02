@@ -995,6 +995,29 @@ const en: Record<string, string> = {
   'ui.extension.notDetectedDesc': 'No extension data received within 10 seconds. Please verify that the Data Passport extension is installed and that you clicked Collect on creator.douyin.com.',
   'ui.extension.fallbackToDemo': 'View demo data',
   'ui.extension.tryOtherMethod': 'Try another import method',
+
+  // ===========================================================================
+  // Data source awareness
+  // ===========================================================================
+  'ui.data.source.demoBanner': 'You are viewing demo data. Collect a real creator profile using the DashPersona Collector app, or import data via the onboarding page.',
+  'ui.data.source.demoBannerAction': 'Import data',
+  'ui.data.source.collectedAt': 'Collected {time}',
+  'ui.data.source.staleWarning': 'Data is over 7 days old',
+
+  // ===========================================================================
+  // Data error messages
+  // ===========================================================================
+  'ui.data.error.readPermissionDenied': 'Permission denied reading data directory.',
+  'ui.data.error.readPermissionDeniedFix': 'Check that ~/.dashpersona/data/ is readable by your user account. Run: chmod -R u+r ~/.dashpersona/data/',
+  'ui.data.error.readDirError': 'Could not read the data directory.',
+  'ui.data.error.readDirErrorFix': 'Verify ~/.dashpersona/data/ exists and is not corrupted. Try restarting the Collector app.',
+  'ui.data.error.parseError': 'One or more snapshot files are invalid.',
+  'ui.data.error.parseErrorFix': 'Re-collect the affected creator profiles. If the problem persists, delete the invalid files from ~/.dashpersona/data/ and collect again.',
+  'ui.data.error.collectorUnreachable': 'The DashPersona Collector app is not running.',
+  'ui.data.error.collectorUnreachableFix': 'Start the Collector app to enable real-time data collection. You can also import data manually from the onboarding page.',
+  'ui.data.error.fetchError': 'Could not reach the data service.',
+  'ui.data.error.fetchErrorFix': 'Check that the web app server is running. Try refreshing the page.',
+  'ui.data.error.errorCode': 'Error code: {code}',
 };
 
 export default en;

@@ -998,6 +998,29 @@ const zh: Record<string, string> = {
   'ui.extension.notDetectedDesc': '10 秒内未收到扩展数据。请确认已安装 Data Passport 扩展且在 creator.douyin.com 页面上点击了「采集」按钮。',
   'ui.extension.fallbackToDemo': '查看演示数据',
   'ui.extension.tryOtherMethod': '尝试其他导入方式',
+
+  // ===========================================================================
+  // 数据来源感知
+  // ===========================================================================
+  'ui.data.source.demoBanner': '当前显示的是演示数据。使用 DashPersona Collector 采集真实创作者档案，或通过引导页导入数据。',
+  'ui.data.source.demoBannerAction': '导入数据',
+  'ui.data.source.collectedAt': '采集于 {time}',
+  'ui.data.source.staleWarning': '数据已超过7天未更新',
+
+  // ===========================================================================
+  // 数据错误信息
+  // ===========================================================================
+  'ui.data.error.readPermissionDenied': '无法读取数据目录，权限被拒绝。',
+  'ui.data.error.readPermissionDeniedFix': '请检查 ~/.dashpersona/data/ 目录是否可读。运行：chmod -R u+r ~/.dashpersona/data/',
+  'ui.data.error.readDirError': '无法读取数据目录。',
+  'ui.data.error.readDirErrorFix': '确认 ~/.dashpersona/data/ 目录存在且未损坏。尝试重启 Collector 应用。',
+  'ui.data.error.parseError': '一个或多个快照文件无效。',
+  'ui.data.error.parseErrorFix': '重新采集受影响的创作者档案。如问题持续，请删除 ~/.dashpersona/data/ 中的无效文件后重新采集。',
+  'ui.data.error.collectorUnreachable': 'DashPersona Collector 应用未运行。',
+  'ui.data.error.collectorUnreachableFix': '启动 Collector 应用以启用实时数据采集。你也可以通过引导页手动导入数据。',
+  'ui.data.error.fetchError': '无法连接数据服务。',
+  'ui.data.error.fetchErrorFix': '请检查 Web 应用服务器是否正在运行，尝试刷新页面。',
+  'ui.data.error.errorCode': '错误代码：{code}',
 };
 
 export default zh;
