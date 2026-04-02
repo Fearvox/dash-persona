@@ -67,7 +67,7 @@
 
 Plans:
 - [x] 03-01-PLAN.md — Data layer: extend resolveProfiles() with source metadata + utility modules
-- [ ] 03-02-PLAN.md — UI components + page loader upgrades for source-aware rendering
+- [x] 03-02-PLAN.md — UI components + page loader upgrades for source-aware rendering
 
 **Success criteria:**
 1. After collecting a creator in the Collector, the web app dashboard shows that creator's real data (not demo) without any manual configuration.
