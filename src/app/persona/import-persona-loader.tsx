@@ -122,12 +122,12 @@ export default function ImportPersonaLoader({ platform }: ImportPersonaLoaderPro
 
   return (
     <div className="flex flex-col gap-4">
-      {resolved.source === 'real' && resolved.collectedAt && (
+      {resolved?.source === 'real' && resolved?.collectedAt && (
         <div className="mx-auto w-full max-w-6xl px-6 pt-4">
           <CollectedAt timestamp={resolved.collectedAt} />
         </div>
       )}
-      <DataSourceBanner source={resolved.source} reason={resolved.reason} />
+      <DataSourceBanner source={resolved?.source ?? 'demo'} reason={resolved?.reason} />
       <PersonaDetailContent
         score={data.score}
         suggestions={data.suggestions}

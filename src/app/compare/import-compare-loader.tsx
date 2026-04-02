@@ -264,7 +264,7 @@ export default function ImportCompareLoader() {
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
             Cross-Platform Comparison
           </h1>
-          {result.source === 'real' && result.collectedAt && (
+          {result?.source === 'real' && result?.collectedAt && (
             <CollectedAt timestamp={result.collectedAt} />
           )}
         </div>
@@ -273,7 +273,7 @@ export default function ImportCompareLoader() {
         </p>
       </header>
 
-      <DataSourceBanner source={result.source} reason={result.reason} />
+      <DataSourceBanner source={result?.source ?? 'demo'} reason={result?.reason} />
 
       {/* Radar Chart */}
       <section>

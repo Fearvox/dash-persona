@@ -169,8 +169,8 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
               <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
                 {t('ui.timeline.title')}
               </h1>
-              {resolved?.source === 'real' && resolved.collectedAt && (
-                <CollectedAt timestamp={resolved.collectedAt} />
+              {resolved?.source === 'real' && resolved?.collectedAt && (
+                <CollectedAt timestamp={resolved?.collectedAt} />
               )}
             </div>
             <p

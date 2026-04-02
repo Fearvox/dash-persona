@@ -109,7 +109,7 @@ export default function ImportDashboardLoader() {
           </Link>
           <h1 className="text-lg font-bold tracking-tight sm:text-xl">{t('ui.dashboard.title')}</h1>
           <span className="badge badge-green">{t('ui.common.import')}</span>
-          {result.source === 'real' && result.collectedAt && (
+          {result?.source === 'real' && result?.collectedAt && (
             <CollectedAt timestamp={result.collectedAt} />
           )}
         </div>
@@ -118,7 +118,7 @@ export default function ImportDashboardLoader() {
         </Link>
       </header>
 
-      <DataSourceBanner source={result.source} reason={result.reason} />
+      <DataSourceBanner source={result?.source ?? 'demo'} reason={result?.reason} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="flex min-w-0 flex-col gap-6">

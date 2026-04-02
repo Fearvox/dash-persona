@@ -141,7 +141,7 @@ export default function ImportCalendarLoader() {
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
             {t('ui.calendar.title')}
           </h1>
-          {resolved?.source === 'real' && resolved.collectedAt && (
+          {resolved?.source === 'real' && resolved?.collectedAt && (
             <CollectedAt timestamp={resolved.collectedAt} />
           )}
         </div>
