@@ -3,19 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { t } from '@/lib/i18n';
-import type { CreatorProfile } from '@/lib/schema/creator-data';
-import { resolveProfiles } from '@/lib/store/profile-store';
+import { resolveProfiles, type ResolvedProfiles } from '@/lib/store/profile-store';
 import { runAllEngines, type AllEngineResults } from '@/lib/engine';
 import DashboardInteractive from '@/components/dashboard-interactive';
 import PlatformComparison from '@/components/platform-comparison';
 import StrategySuggestions from '@/components/strategy-suggestions';
 import ForYouCard from '@/components/for-you-card';
 import NicheDetectCard from '@/components/niche-detect-card';
+import { CollectedAt } from '@/components/ui/collected-at';
+import { DataSourceBanner } from '@/components/ui/data-source-banner';
+import { DataErrorCard } from '@/components/ui/data-error-card';
 import Link from 'next/link';
 
 export default function ImportDashboardLoader() {
   const router = useRouter();
-  const [profiles, setProfiles] = useState<Record<string, CreatorProfile> | null>(null);
+  const [result, setResult] = useState<ResolvedProfiles | null>(null);
 
   useEffect(() => {
     // Unified loading: resolveProfiles() checks sessionStorage cache →
@@ -23,17 +25,17 @@ export default function ImportDashboardLoader() {
     // All sources persist to IndexedDB so data survives navigation.
     resolveProfiles()
       .then((resolved) => {
-        if (Object.keys(resolved.profiles).length > 0) {
-          for (const p of Object.values(resolved.profiles)) {
-            if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
-          }
-          setProfiles(resolved.profiles);
-        } else {
+        if (resolved.source === 'empty') {
           router.replace('/onboarding');
+          return;
         }
+        for (const p of Object.values(resolved.profiles)) {
+          if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
+        }
+        setResult(resolved);
       })
       .catch(() => {
-        router.replace('/onboarding');
+        setResult({ profiles: {}, source: 'error', reason: 'Unexpected error loading profiles', code: 'FETCH_ERROR' });
       });
   }, [router]);
 
@@ -41,8 +43,10 @@ export default function ImportDashboardLoader() {
   const [engineResults, setEngineResults] = useState<AllEngineResults | null>(null);
   const [shimmerDone, setShimmerDone] = useState(false);
 
+  const profiles = result?.profiles ?? null;
+
   useEffect(() => {
-    if (!profiles) return;
+    if (!profiles || Object.keys(profiles).length === 0) return;
     // Run engines + enforce 2s minimum shimmer in parallel
     Promise.all([
       runAllEngines(profiles),
@@ -53,7 +57,26 @@ export default function ImportDashboardLoader() {
     });
   }, [profiles]);
 
-  if (!profiles || !engineResults || !shimmerDone) {
+  // Error state — show error card in page layout
+  if (result?.source === 'error') {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8">
+        <header className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="text-sm font-medium transition-colors hover:opacity-80 text-[var(--accent-green)]"
+            aria-label="Back to home"
+          >
+            &larr;
+          </Link>
+          <h1 className="text-lg font-bold tracking-tight sm:text-xl">{t('ui.dashboard.title')}</h1>
+        </header>
+        <DataErrorCard code={result.code} reason={result.reason} />
+      </div>
+    );
+  }
+
+  if (!profiles || Object.keys(profiles).length === 0 || !engineResults || !shimmerDone) {
     return (
       <div
         className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg-primary)]"
@@ -86,19 +109,16 @@ export default function ImportDashboardLoader() {
           </Link>
           <h1 className="text-lg font-bold tracking-tight sm:text-xl">{t('ui.dashboard.title')}</h1>
           <span className="badge badge-green">{t('ui.common.import')}</span>
+          {result.source === 'real' && result.collectedAt && (
+            <CollectedAt timestamp={result.collectedAt} />
+          )}
         </div>
         <Link href="/onboarding" className="nav-pill">
           {t('ui.common.importMore')}
         </Link>
       </header>
 
-      {/* Data enrichment prompt */}
-      <div className="animate-stagger animate-stagger-0 rounded-lg border border-[rgba(210,200,126,0.15)] bg-[rgba(210,200,126,0.04)] px-4 py-2.5 flex items-start gap-3">
-        <span className="mt-0.5 text-[var(--accent-yellow)] text-xs shrink-0">{t('ui.common.tip')}</span>
-        <p className="text-xs text-[var(--text-subtle)] leading-relaxed">
-          {t('ui.dashboard.enrichmentTipPre')}<strong className="text-[var(--text-secondary)]">{t('ui.common.importMore')}</strong>{t('ui.dashboard.enrichmentTipPost')}
-        </p>
-      </div>
+      <DataSourceBanner source={result.source} reason={result.reason} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="flex min-w-0 flex-col gap-6">

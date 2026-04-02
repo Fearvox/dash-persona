@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { t } from '@/lib/i18n';
-import type { CreatorProfile } from '@/lib/schema/creator-data';
 import { generateContentPlan, type ContentPlan } from '@/lib/engine';
-import { loadProfiles } from '@/lib/store/profile-store';
+import { resolveProfiles, type ResolvedProfiles } from '@/lib/store/profile-store';
+import { CollectedAt } from '@/components/ui/collected-at';
+import { DataSourceBanner } from '@/components/ui/data-source-banner';
+import { DataErrorCard } from '@/components/ui/data-error-card';
 import CalendarClient from './calendar-client';
 
 // ---------------------------------------------------------------------------
@@ -15,6 +17,7 @@ import CalendarClient from './calendar-client';
 
 export default function ImportCalendarLoader() {
   const router = useRouter();
+  const [resolved, setResolved] = useState<ResolvedProfiles | null>(null);
   const [plan, setPlan] = useState<ContentPlan | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,24 +25,28 @@ export default function ImportCalendarLoader() {
     let cancelled = false;
 
     async function load() {
-      // loadProfiles() handles sessionStorage-first + IndexedDB fallback
-      let profiles: Record<string, CreatorProfile> | null = null;
+      let result: ResolvedProfiles;
       try {
-        const loaded = await loadProfiles();
-        if (loaded && Object.keys(loaded).length > 0) {
-          profiles = loaded;
-        }
+        result = await resolveProfiles();
       } catch {
-        // storage unavailable
+        result = { profiles: {}, source: 'error', reason: 'Unexpected error loading profiles', code: 'FETCH_ERROR' };
       }
 
       if (cancelled) return;
 
-      // No data — redirect to onboarding
-      if (!profiles || Object.keys(profiles).length === 0) {
+      if (result.source === 'empty') {
         router.replace('/onboarding');
         return;
       }
+
+      setResolved(result);
+
+      if (result.source === 'error' || Object.keys(result.profiles).length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const profiles = result.profiles;
 
       // Ensure profileUrl exists (consistent with sibling loaders)
       for (const p of Object.values(profiles)) {
@@ -64,6 +71,22 @@ export default function ImportCalendarLoader() {
         <p className="text-sm text-[var(--text-secondary)]">
           {t('ui.common.loadingImported')}
         </p>
+      </div>
+    );
+  }
+
+  if (resolved?.source === 'error') {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
+        <header className="flex flex-col gap-2">
+          <Link href="/dashboard?source=import" className="nav-pill" aria-label="Back to dashboard">
+            &larr; Dashboard
+          </Link>
+          <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
+            {t('ui.calendar.title')}
+          </h1>
+        </header>
+        <DataErrorCard code={resolved.code} reason={resolved.reason} />
       </div>
     );
   }
@@ -114,13 +137,20 @@ export default function ImportCalendarLoader() {
         >
           &larr; Dashboard
         </Link>
-        <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-          {t('ui.calendar.title')}
-        </h1>
+        <div className="flex items-center gap-3 mt-2">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
+            {t('ui.calendar.title')}
+          </h1>
+          {resolved?.source === 'real' && resolved.collectedAt && (
+            <CollectedAt timestamp={resolved.collectedAt} />
+          )}
+        </div>
         <p className="text-sm text-[var(--text-subtle)]">
           {t('ui.calendar.subtitle', { dataPoints: plan.dataPoints, slots: plan.slots.length })}
         </p>
       </header>
+
+      <DataSourceBanner source={resolved?.source ?? 'demo'} reason={resolved?.reason} />
 
       {/* Interactive calendar */}
       <CalendarClient plan={plan} />

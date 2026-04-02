@@ -12,6 +12,10 @@ import {
   type PersonaScore,
   type CrossPlatformComparison,
 } from '@/lib/engine';
+import { resolveProfiles, type ResolvedProfiles } from '@/lib/store/profile-store';
+import { CollectedAt } from '@/components/ui/collected-at';
+import { DataSourceBanner } from '@/components/ui/data-source-banner';
+import { DataErrorCard } from '@/components/ui/data-error-card';
 import { PLATFORM_LABELS, scoreColor } from '@/lib/utils/constants';
 import CompareTable from './compare-table';
 import CompareRadarChart from './compare-radar-chart';
@@ -153,23 +157,19 @@ function buildContentOverlap(
 // ---------------------------------------------------------------------------
 
 export default function ImportCompareLoader() {
-  const [profiles, setProfiles] = useState<Record<string, CreatorProfile> | null>(null);
+  const [result, setResult] = useState<ResolvedProfiles | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('dashpersona-import-profiles');
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as Record<string, CreatorProfile>;
-        for (const p of Object.values(parsed)) {
-          if (!p.profileUrl) p.profileUrl = `https://creator.douyin.com`;
-        }
-        setProfiles(parsed);
-      } catch {
-        // fall through to empty state
-      }
-    }
-    setLoading(false);
+    resolveProfiles()
+      .then((resolved) => {
+        setResult(resolved);
+        setLoading(false);
+      })
+      .catch(() => {
+        setResult({ profiles: {}, source: 'error', reason: 'Unexpected error loading profiles', code: 'FETCH_ERROR' });
+        setLoading(false);
+      });
   }, []);
 
   if (loading) {
@@ -182,7 +182,25 @@ export default function ImportCompareLoader() {
     );
   }
 
-  if (!profiles || Object.keys(profiles).length === 0) {
+  if (result?.source === 'error') {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
+        <header className="flex flex-col gap-2">
+          <Link href="/dashboard?source=import" className="nav-pill" aria-label="Back to dashboard">
+            &larr; Dashboard
+          </Link>
+          <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl">
+            {t('ui.compare.title')}
+          </h1>
+        </header>
+        <DataErrorCard code={result.code} reason={result.reason} />
+      </div>
+    );
+  }
+
+  const profiles = result?.profiles;
+
+  if (!profiles || Object.keys(profiles).length === 0 || result?.source === 'empty') {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
         <header className="flex flex-col gap-2">
@@ -196,6 +214,11 @@ export default function ImportCompareLoader() {
         <SinglePlatformNotice />
       </div>
     );
+  }
+
+  // Ensure profileUrl exists (consistent with sibling loaders)
+  for (const p of Object.values(profiles)) {
+    if (!p.profileUrl) p.profileUrl = 'https://creator.douyin.com';
   }
 
   const platformKeys = Object.keys(profiles);
@@ -237,13 +260,20 @@ export default function ImportCompareLoader() {
         <Link href="/dashboard?source=import" className="nav-pill" aria-label="Back to dashboard">
           &larr; Dashboard
         </Link>
-        <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl">
-          Cross-Platform Comparison
-        </h1>
+        <div className="flex items-center gap-3 mt-2">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+            Cross-Platform Comparison
+          </h1>
+          {result.source === 'real' && result.collectedAt && (
+            <CollectedAt timestamp={result.collectedAt} />
+          )}
+        </div>
         <p className="text-sm text-[var(--text-subtle)]">
           {platformKeys.map((p) => PLATFORM_LABELS[p] ?? p).join(' vs ')}
         </p>
       </header>
+
+      <DataSourceBanner source={result.source} reason={result.reason} />
 
       {/* Radar Chart */}
       <section>

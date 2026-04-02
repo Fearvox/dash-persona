@@ -3,14 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { t } from '@/lib/i18n';
-import type { CreatorProfile } from '@/lib/schema/creator-data';
 import {
   computePersonaScore,
   generateStrategySuggestions,
   type PersonaScore,
   type StrategySuggestion,
 } from '@/lib/engine';
-import { loadProfiles } from '@/lib/store/profile-store';
+import { resolveProfiles, type ResolvedProfiles } from '@/lib/store/profile-store';
+import { CollectedAt } from '@/components/ui/collected-at';
+import { DataSourceBanner } from '@/components/ui/data-source-banner';
+import { DataErrorCard } from '@/components/ui/data-error-card';
 import PersonaDetailContent from './persona-detail-content';
 
 // ---------------------------------------------------------------------------
@@ -27,6 +29,7 @@ interface ImportPersonaLoaderProps {
 
 export default function ImportPersonaLoader({ platform }: ImportPersonaLoaderProps) {
   const router = useRouter();
+  const [resolved, setResolved] = useState<ResolvedProfiles | null>(null);
   const [data, setData] = useState<{
     score: PersonaScore;
     suggestions: StrategySuggestion[];
@@ -40,24 +43,28 @@ export default function ImportPersonaLoader({ platform }: ImportPersonaLoaderPro
     let cancelled = false;
 
     async function load() {
-      // loadProfiles() already handles sessionStorage-first + IndexedDB fallback
-      let profiles: Record<string, CreatorProfile> | null = null;
+      let result: ResolvedProfiles;
       try {
-        const loaded = await loadProfiles();
-        if (loaded && Object.keys(loaded).length > 0) {
-          profiles = loaded;
-        }
+        result = await resolveProfiles();
       } catch {
-        // storage unavailable
+        result = { profiles: {}, source: 'error', reason: 'Unexpected error loading profiles', code: 'FETCH_ERROR' };
       }
 
       if (cancelled) return;
 
-      // No data — redirect to onboarding
-      if (!profiles || Object.keys(profiles).length === 0) {
+      if (result.source === 'empty') {
         router.replace('/onboarding');
         return;
       }
+
+      setResolved(result);
+
+      if (result.source === 'error' || Object.keys(result.profiles).length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const profiles = result.profiles;
 
       // Ensure profileUrl exists (consistent with sibling loaders)
       for (const p of Object.values(profiles)) {
@@ -103,16 +110,32 @@ export default function ImportPersonaLoader({ platform }: ImportPersonaLoaderPro
     );
   }
 
-  if (!data) return null;
+  if (resolved?.source === 'error') {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
+        <DataErrorCard code={resolved.code} reason={resolved.reason} />
+      </div>
+    );
+  }
+
+  if (!data || !resolved) return null;
 
   return (
-    <PersonaDetailContent
-      score={data.score}
-      suggestions={data.suggestions}
-      platform={data.platform}
-      platforms={data.platforms}
-      source="import"
-      personaType={data.personaType}
-    />
+    <div className="flex flex-col gap-4">
+      {resolved.source === 'real' && resolved.collectedAt && (
+        <div className="mx-auto w-full max-w-6xl px-6 pt-4">
+          <CollectedAt timestamp={resolved.collectedAt} />
+        </div>
+      )}
+      <DataSourceBanner source={resolved.source} reason={resolved.reason} />
+      <PersonaDetailContent
+        score={data.score}
+        suggestions={data.suggestions}
+        platform={data.platform}
+        platforms={data.platforms}
+        source="import"
+        personaType={data.personaType}
+      />
+    </div>
   );
 }

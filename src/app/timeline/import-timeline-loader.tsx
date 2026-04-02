@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { t } from '@/lib/i18n';
-import type { CreatorProfile } from '@/lib/schema/creator-data';
 import type { PersonaTree } from '@/lib/schema/persona-tree';
 import type { PersonaTreeNode } from '@/lib/schema/persona-tree';
 import { generateDemoTree, getTreeLanes, generateExperimentIdeas, type ExperimentIdea } from '@/lib/engine';
-import { loadProfiles } from '@/lib/store/profile-store';
+import { resolveProfiles, type ResolvedProfiles } from '@/lib/store/profile-store';
+import { CollectedAt } from '@/components/ui/collected-at';
+import { DataSourceBanner } from '@/components/ui/data-source-banner';
+import { DataErrorCard } from '@/components/ui/data-error-card';
 import { PLATFORM_LABELS } from '@/lib/utils/constants';
 import { profileKey } from '@/lib/history/store';
 import TimelineClient from './timeline-client';
@@ -43,6 +45,7 @@ interface ImportTimelineLoaderProps {
 
 export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderProps) {
   const router = useRouter();
+  const [resolved, setResolved] = useState<ResolvedProfiles | null>(null);
   const [data, setData] = useState<LoadedData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,24 +53,28 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
     let cancelled = false;
 
     async function load() {
-      // loadProfiles() handles sessionStorage-first + IndexedDB fallback
-      let profiles: Record<string, CreatorProfile> | null = null;
+      let result: ResolvedProfiles;
       try {
-        const loaded = await loadProfiles();
-        if (loaded && Object.keys(loaded).length > 0) {
-          profiles = loaded;
-        }
+        result = await resolveProfiles();
       } catch {
-        // storage unavailable
+        result = { profiles: {}, source: 'error', reason: 'Unexpected error loading profiles', code: 'FETCH_ERROR' };
       }
 
       if (cancelled) return;
 
-      // No data — redirect to onboarding
-      if (!profiles || Object.keys(profiles).length === 0) {
+      if (result.source === 'empty') {
         router.replace('/onboarding');
         return;
       }
+
+      setResolved(result);
+
+      if (result.source === 'error' || Object.keys(result.profiles).length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const profiles = result.profiles;
 
       // Ensure profileUrl exists (consistent with sibling loaders)
       for (const p of Object.values(profiles)) {
@@ -116,6 +123,22 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
     );
   }
 
+  if (resolved?.source === 'error') {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
+        <header className="flex flex-col gap-2">
+          <Link href="/dashboard?source=import" className="nav-pill" aria-label="Back to dashboard">
+            &larr; Dashboard
+          </Link>
+          <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
+            {t('ui.timeline.title')}
+          </h1>
+        </header>
+        <DataErrorCard code={resolved.code} reason={resolved.reason} />
+      </div>
+    );
+  }
+
   if (!data) return null;
 
   const { tree, lanes, ideas, storeKeys, platforms } = data;
@@ -142,9 +165,14 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-              {t('ui.timeline.title')}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
+                {t('ui.timeline.title')}
+              </h1>
+              {resolved?.source === 'real' && resolved.collectedAt && (
+                <CollectedAt timestamp={resolved.collectedAt} />
+              )}
+            </div>
             <p
               className="mt-1 text-sm text-[var(--text-subtle)]"
             >
@@ -183,6 +211,8 @@ export default function ImportTimelineLoader({ platform }: ImportTimelineLoaderP
           </div>
         </div>
       </header>
+
+      <DataSourceBanner source={resolved?.source ?? 'demo'} reason={resolved?.reason} />
 
       {/* Summary stats */}
       <section className="grid gap-4 grid-cols-2 sm:grid-cols-4">
