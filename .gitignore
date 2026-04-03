@@ -18,6 +18,10 @@ collector/release/
 # User data
 data/raw/
 data/runtime/
+
+# Presentation
+*.pptx
+Presentation\ Template.pptx
 data/user/
 
 # Vercel
