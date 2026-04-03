@@ -10,6 +10,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 
 ### Added
 
+- **Multi-creator comparison** (`compareMultiCreator()` in comparator.ts) — Hazen percentile normalization across 5 metrics (followers, engagementRate, postCount, totalViews, totalEngagement) for 2-5 arbitrary creators
+- **CreatorPicker component** (`src/components/ui/creator-picker.tsx`) — Searchable multi-select with platform badges, selected chips, min/max enforcement
+- **ComparisonBarChart** (`src/components/comparison-bar-chart.tsx`) — Horizontal grouped bar chart with CREATOR_COLORS, RankTable with winner highlighting
+- **CompareMultiClient** (`src/app/compare/compare-multi-client.tsx`) — `?mode=multi` route, CreatorPicker + auto-switch radar/bar chart, MetricRankingTable with star annotations
+- **Floating Compare (N) button** — Dashboard benchmark cards gain "Add to Compare" action; fixed bottom-right button appears when >=2 selected, links to `/compare?mode=multi`
+- **ComparisonSet sessionStorage** — `getComparisonSet/setComparisonSet/addToComparison/removeFromComparison/clearComparison` via `dashpersona-comparison-set` key
+- **Profile storage v2** — `Record<string, CreatorProfile[]>` format supporting multiple profiles per platform; `getAllProfiles()` exported for iteration
 - **Unified profile resolver** (`resolveProfiles()` in profile-store.ts) — Single source of truth for all pages. Data priority: sessionStorage cache → IndexedDB → /api/profiles (Collector). Collector data is persisted to IndexedDB on first fetch so it survives page navigation.
 - **XHS (Red Note) notes import** — Parse `笔记标题明细表.xlsx` exports from XHS Creator Center. Handles Chinese date format (`2026年03月25日09时49分34秒`), filters placeholder banner rows.
 - **Douyin 30-day aggregate import** — Four new schema types: `douyin_interaction`, `douyin_posting`, `douyin_follower`, `douyin_view`. Parses `指标/数值` key-value format with `环比` (period-over-period) columns.
