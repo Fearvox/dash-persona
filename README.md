@@ -10,8 +10,8 @@
 [![Built with EverMemOS](https://img.shields.io/badge/Built%20with-EverMemOS-F5A623?style=flat&logo=github&logoColor=000)](https://github.com/EverMind-AI/EverMemOS)
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=XwvHWx6m6dw">
-    <img src="https://img.youtube.com/vi/XwvHWx6m6dw/maxresdefault.jpg" alt="DashPersona Demo Video" width="720" />
+  <a href="https://www.youtube.com/watch?v=4Q379aRDy9o">
+    <img src="https://img.youtube.com/vi/4Q379aRDy9o/maxresdefault.jpg" alt="DashPersona Demo Video" width="720" />
   </a>
   <br />
   <!-- Click the thumbnail above to watch the demo on YouTube -->
