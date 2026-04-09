@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="ascii"?>
+<p:presentation xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" strictFirstAndLastChars="0" embedTrueTypeFonts="1" saveSubsetFonts="1" autoCompressPictures="0">
+  <p:sldMasterIdLst>
+    <p:sldMasterId id="2147483648" r:id="rId1"/>
+  </p:sldMasterIdLst>
+  <p:notesMasterIdLst>
+    <p:notesMasterId r:id="rId11"/>
+  </p:notesMasterIdLst>
+  <p:sldIdLst>
+    <p:sldId id="256" r:id="rId2"/>
+    <p:sldId id="258" r:id="rId3"/>
+    <p:sldId id="259" r:id="rId4"/>
+    <p:sldId id="260" r:id="rId5"/>
+    <p:sldId id="261" r:id="rId6"/>
+    <p:sldId id="262" r:id="rId7"/>
+    <p:sldId id="265" r:id="rId8"/>
+    <p:sldId id="266" r:id="rId9"/>
+    <p:sldId id="267" r:id="rId10"/>
+  </p:sldIdLst>
+  <p:sldSz cx="9144000" cy="5143500" type="screen16x9"/>
+  <p:notesSz cx="5143500" cy="9144000"/>
+  <p:embeddedFontLst>
+    <p:embeddedFont>
+      <p:font typeface="Neuton" pitchFamily="2" charset="0"/>
+      <p:regular r:id="rId12"/>
+      <p:bold r:id="rId13"/>
+      <p:italic r:id="rId14"/>
+    </p:embeddedFont>
+    <p:embeddedFont>
+      <p:font typeface="Open Sans" panose="020B0606030504020204" pitchFamily="34" charset="0"/>
+      <p:regular r:id="rId15"/>
+      <p:bold r:id="rId16"/>
+      <p:italic r:id="rId17"/>
+      <p:boldItalic r:id="rId18"/>
+    </p:embeddedFont>
+  </p:embeddedFontLst>
+  <p:defaultTextStyle>
+    <a:defPPr marR="0" lvl="0" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+    </a:defPPr>
+    <a:lvl1pPr marR="0" lvl="0" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl1pPr>
+    <a:lvl2pPr marR="0" lvl="1" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl2pPr>
+    <a:lvl3pPr marR="0" lvl="2" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl3pPr>
+    <a:lvl4pPr marR="0" lvl="3" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl4pPr>
+    <a:lvl5pPr marR="0" lvl="4" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl5pPr>
+    <a:lvl6pPr marR="0" lvl="5" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl6pPr>
+    <a:lvl7pPr marR="0" lvl="6" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl7pPr>
+    <a:lvl8pPr marR="0" lvl="7" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl8pPr>
+    <a:lvl9pPr marR="0" lvl="8" algn="l" rtl="0">
+      <a:lnSpc>
+        <a:spcPct val="100000"/>
+      </a:lnSpc>
+      <a:spcBef>
+        <a:spcPts val="0"/>
+      </a:spcBef>
+      <a:spcAft>
+        <a:spcPts val="0"/>
+      </a:spcAft>
+      <a:buClr>
+        <a:srgbClr val="000000"/>
+      </a:buClr>
+      <a:buFont typeface="Arial"/>
+      <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike" cap="none">
+        <a:solidFill>
+          <a:srgbClr val="000000"/>
+        </a:solidFill>
+        <a:latin typeface="Arial"/>
+        <a:ea typeface="Arial"/>
+        <a:cs typeface="Arial"/>
+        <a:sym typeface="Arial"/>
+      </a:defRPr>
+    </a:lvl9pPr>
+  </p:defaultTextStyle>
+  <p:extLst>
+    <p:ext uri="{EFAFB233-063F-42B5-8137-9DF3F51BA10A}">
+      <p15:sldGuideLst xmlns:p15="http://schemas.microsoft.com/office/powerpoint/2012/main"/>
+    </p:ext>
+    <p:ext uri="GoogleSlidesCustomDataVersion2">
+      <go:slidesCustomData xmlns="" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mv="urn:schemas-microsoft-com:mac:vml" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:pvml="urn:schemas-microsoft-com:office:powerpoint" xmlns:com="http://schemas.openxmlformats.org/drawingml/2006/compatibility" xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main" xmlns:p15="http://schemas.microsoft.com/office/powerpoint/2012/main" xmlns:ahyp="http://schemas.microsoft.com/office/drawing/2018/hyperlinkcolor" xmlns:go="http://customooxmlschemas.google.com/" r:id="rId25" roundtripDataSignature="AMtx7mieXDL1erOY+9mdRpisdytoS+oyKw=="/>
+    </p:ext>
+  </p:extLst>
+</p:presentation>

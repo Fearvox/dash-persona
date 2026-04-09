@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #10291F; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #10291F; font-family: Arial, sans-serif;
+  display: flex; flex-direction: column;
+}
+.header {
+  background: #0a0f0d;
+  padding: 12pt 30pt;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.brand { font-size: 11pt; font-weight: bold; color: #F0EE9B; letter-spacing: 0.05em; }
+.nav-label { font-size: 8pt; color: #8a9590; text-transform: uppercase; letter-spacing: 0.1em; }
+.content { flex: 1; padding: 20pt 30pt 30pt; display: flex; flex-direction: column; }
+.section-label { font-size: 8pt; color: #7ed29a; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 5pt; font-weight: bold; }
+.headline { font-size: 20pt; font-weight: bold; color: #ddd6c7; margin: 0 0 14pt 0; }
+.two-col { display: flex; gap: 16pt; flex: 1; }
+.tech-stack {
+  flex: 1;
+  background: #151d19;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8pt;
+  padding: 14pt;
+}
+.stack-title { font-size: 9pt; font-weight: bold; color: #F0EE9B; margin-bottom: 8pt; text-transform: uppercase; letter-spacing: 0.05em; }
+.stack-item { margin-bottom: 6pt; }
+.stack-name { font-size: 8.5pt; color: #ddd6c7; font-weight: bold; }
+.stack-desc { font-size: 7.5pt; color: #8a9590; }
+.stack-badge {
+  display: inline-block;
+  font-size: 6.5pt;
+  padding: 1pt 5pt;
+  border-radius: 3pt;
+}
+.badge-active { background: rgba(126,210,154,0.15); color: #7ed29a; }
+.badge-beta { background: rgba(210,200,126,0.15); color: #d2c87e; }
+.adapters {
+  flex: 1;
+  background: #151d19;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8pt;
+  padding: 14pt;
+}
+.adapter-title { font-size: 9pt; font-weight: bold; color: #F0EE9B; margin-bottom: 8pt; text-transform: uppercase; letter-spacing: 0.05em; }
+.adapter-list { font-size: 8pt; color: #b8c4be; line-height: 1.5; }
+.adapter-item { margin-bottom: 3pt; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <span class="brand">DASH</span>
+    <span class="nav-label">Persona</span>
+  </div>
+  <span class="nav-label">Technical Architecture</span>
+</div>
+<div class="content">
+  <p class="section-label">How We Built It</p>
+  <h2 class="headline">The Full Stack</h2>
+  <div class="two-col">
+    <div class="tech-stack">
+      <p class="stack-title">Frontend Stack</p>
+      <div class="stack-item">
+        <p class="stack-name">Next.js 16.2 + React 19 <span class="stack-badge badge-active">Active</span></p>
+        <p class="stack-desc">App Router, Tailwind CSS 4, dark mode only</p>
+      </div>
+      <div class="stack-item">
+        <p class="stack-name">Recharts 3.8 <span class="stack-badge badge-active">Active</span></p>
+        <p class="stack-desc">Data visualization and radar charts</p>
+      </div>
+      <div class="stack-item">
+        <p class="stack-name">@xyflow/react + elkjs <span class="stack-badge badge-active">Active</span></p>
+        <p class="stack-desc">Pipeline visualization and node graphs</p>
+      </div>
+      <div class="stack-item">
+        <p class="stack-name">Electron 33 + Playwright <span class="stack-badge badge-active">Active</span></p>
+        <p class="stack-desc">Desktop Collector app</p>
+      </div>
+      <div class="stack-item">
+        <p class="stack-name">Chrome Extension MV3 <span class="stack-badge badge-beta">Beta</span></p>
+        <p class="stack-desc">Data Passport one-click capture</p>
+      </div>
+    </div>
+    <div class="adapters">
+      <p class="adapter-title">7 Data Adapters</p>
+      <div class="adapter-list">
+        <p class="adapter-item">DASH Collector — Express :3458, system tray</p>
+        <p class="adapter-item">CDPAdapter — Chrome DevTools Protocol</p>
+        <p class="adapter-item">FileImportAdapter — XLSX/CSV/JSON, 11 formats</p>
+        <p class="adapter-item">ExtensionAdapter — Chrome MV3 single-click</p>
+        <p class="adapter-item">HTMLParseAdapter — Platform HTML exports</p>
+        <p class="adapter-item">BrowserAdapter — Headless automation</p>
+        <p class="adapter-item">DemoAdapter — Built-in sample data</p>
+      </div>
+      <p style="font-size: 7.5pt; color: #7ed29a; margin-top: 10pt; font-weight: bold;">308+ Unit Tests | 15 E2E Test Cases</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

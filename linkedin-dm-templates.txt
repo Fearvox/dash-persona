@@ -1,0 +1,25 @@
+=== ENGLISH (peers / general network) ===
+
+Hey [Name] — wanted to share a quick update.
+
+I just won an award at an AI competition held at the Computer History Museum (backed by OpenAI and AWS). Built two products by orchestrating AI agents instead of writing code — one for creator analytics, one for hotel operations.
+
+Just reposted about it on LinkedIn if you want to take a look. No pressure at all — just thought you might find it interesting.
+
+
+=== CHINESE (华人人脉) ===
+
+[Name] 你好～分享一个近况：
+
+上周五在计算机历史博物馆参加了一个 AI 竞赛（OpenAI 和 AWS 支持的），拿了个 Excellence Award。做了两个产品——一个创作者数据分析，一个酒店返现管理系统。
+
+刚在 LinkedIn 上发了个转发，方便的话帮我点个赞就行哈，不用特意回复～
+
+
+=== ENGLISH (professors / mentors) ===
+
+Hi Professor [Name] — hope you're doing well.
+
+Quick update: I received an Excellence Award at EverMind's Memory Genesis Competition last Friday at the Computer History Museum. I built the product using AI agent orchestration rather than traditional coding — something I've been exploring since your class.
+
+I shared a short post about it on LinkedIn. If you have a moment, I'd really appreciate a like or comment. Either way, thank you for the foundation you gave me.

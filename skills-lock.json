@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "powerpoint": {
+      "source": "igorwarzocha/opencode-workflows",
+      "sourceType": "github",
+      "computedHash": "a16d52363f95bf9030a173b75282017319ddb0b8466ed11cd8b77a760030ed37"
+    }
+  }
+}

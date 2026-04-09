@@ -1,6 +1,7 @@
 """Evolution Memory Storage - JSONL-based persistence layer."""
 
 import json
+import os
 from pathlib import Path
 from typing import Optional, List
 
@@ -88,9 +89,14 @@ class EvolutionStorage:
         # Store by signal_type subdirectory for organization
         # e.g., signals/alignment-failure.jsonl
         signals_file = self._signals_dir() / f"{signal_type}.jsonl"
-        with open(signals_file, "a") as f:
-            f.write(json.dumps(entry.to_dict()) + "\n")
-        
+        try:
+            with open(signals_file, "a") as f:
+                f.write(json.dumps(entry.to_dict()) + "\n")
+                f.flush()
+                os.fsync(f.fileno())
+        except OSError as e:
+            raise IOError(f"Failed to write signal to {signals_file}: {e}") from e
+
         return entry
     
     def append_error_memory(
@@ -140,9 +146,14 @@ class EvolutionStorage:
         )
         
         memories_file = self._memories_dir() / self.MEMORIES_FILE
-        with open(memories_file, "a") as f:
-            f.write(json.dumps(memory.to_dict()) + "\n")
-        
+        try:
+            with open(memories_file, "a") as f:
+                f.write(json.dumps(memory.to_dict()) + "\n")
+                f.flush()
+                os.fsync(f.fileno())
+        except OSError as e:
+            raise IOError(f"Failed to write memory to {memories_file}: {e}") from e
+
         return memory
     
     def append_task_summary(
@@ -178,9 +189,14 @@ class EvolutionStorage:
         )
         
         summaries_file = self._summaries_dir() / self.SUMMARIES_FILE
-        with open(summaries_file, "a") as f:
-            f.write(json.dumps(summary.to_dict()) + "\n")
-        
+        try:
+            with open(summaries_file, "a") as f:
+                f.write(json.dumps(summary.to_dict()) + "\n")
+                f.flush()
+                os.fsync(f.fileno())
+        except OSError as e:
+            raise IOError(f"Failed to write summary to {summaries_file}: {e}") from e
+
         return summary
     
     def query_memories(
@@ -209,8 +225,13 @@ class EvolutionStorage:
             for line in f:
                 if not line.strip():
                     continue
-                record = json.loads(line)
-                
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    import logging
+                    logging.warning(f"Skipping corrupted line in {memories_file}: {line[:50]!r}")
+                    continue
+
                 # Apply filters
                 if pattern_id is not None and record.get("pattern_id") != pattern_id:
                     continue
@@ -241,7 +262,12 @@ class EvolutionStorage:
                     for line in f:
                         if not line.strip():
                             continue
-                        results.append(json.loads(line))
+                        try:
+                            results.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            import logging
+                            logging.warning(f"Skipping corrupted line in {signal_file}: {line[:50]!r}")
+                            continue
         else:
             # Load all signal files
             for signal_file in self._signals_dir().glob("*.jsonl"):
@@ -249,7 +275,12 @@ class EvolutionStorage:
                     for line in f:
                         if not line.strip():
                             continue
-                        results.append(json.loads(line))
+                        try:
+                            results.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            import logging
+                            logging.warning(f"Skipping corrupted line in {signal_file}: {line[:50]!r}")
+                            continue
         
         return results
     
@@ -269,6 +300,11 @@ class EvolutionStorage:
             for line in f:
                 if not line.strip():
                     continue
-                results.append(json.loads(line))
-        
+                try:
+                    results.append(json.loads(line))
+                except json.JSONDecodeError:
+                    import logging
+                    logging.warning(f"Skipping corrupted line in {summaries_file}: {line[:50]!r}")
+                    continue
+
         return results

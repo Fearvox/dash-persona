@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #10291F; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #10291F; font-family: Arial, sans-serif;
+  display: flex; flex-direction: column;
+}
+.header {
+  background: #0a0f0d;
+  padding: 12pt 30pt;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.brand { font-size: 11pt; font-weight: bold; color: #F0EE9B; letter-spacing: 0.05em; }
+.nav-label { font-size: 8pt; color: #8a9590; text-transform: uppercase; letter-spacing: 0.1em; }
+.content { flex: 1; padding: 18pt 30pt 30pt; display: flex; flex-direction: column; }
+.section-label { font-size: 8pt; color: #7ed29a; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4pt; font-weight: bold; }
+.headline { font-size: 20pt; font-weight: bold; color: #ddd6c7; margin: 0 0 12pt 0; }
+.pipeline-flow { display: flex; gap: 8pt; align-items: stretch; flex: 1; }
+.pipe-section {
+  flex: 1;
+  background: #151d19;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8pt;
+  padding: 10pt;
+  display: flex; flex-direction: column;
+}
+.pipe-title { font-size: 8.5pt; font-weight: bold; color: #F0EE9B; margin-bottom: 6pt; text-transform: uppercase; letter-spacing: 0.05em; }
+.pipe-items { font-size: 7.5pt; color: #b8c4be; line-height: 1.5; flex: 1; }
+.pipe-item { margin-bottom: 2pt; }
+.arrow-col { display: flex; align-items: center; justify-content: center; padding: 0 2pt; }
+.arrow-text { font-size: 14pt; color: #7ed29a; }
+.key-note {
+  margin-top: 10pt;
+  background: rgba(126,210,154,0.08);
+  border: 1px solid rgba(126,210,154,0.2);
+  border-radius: 6pt;
+  padding: 8pt 12pt;
+}
+.note-text { font-size: 8pt; color: #7ed29a; line-height: 1.4; margin: 0; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <span class="brand">DASH</span>
+    <span class="nav-label">Persona</span>
+  </div>
+  <span class="nav-label">Data Pipeline</span>
+</div>
+<div class="content">
+  <p class="section-label">Architecture</p>
+  <h2 class="headline">Deterministic Pipeline</h2>
+  <div class="pipeline-flow">
+    <div class="pipe-section">
+      <p class="pipe-title">Data Input</p>
+      <div class="pipe-items">
+        <p class="pipe-item">CDP Proxy Collection</p>
+        <p class="pipe-item">JSON/CSV/TSV Files</p>
+        <p class="pipe-item">XLSX Exports</p>
+        <p class="pipe-item">Chrome Extension</p>
+      </div>
+    </div>
+    <div class="arrow-col"><p class="arrow-text">-</p></div>
+    <div class="pipe-section">
+      <p class="pipe-title">Quality Filter</p>
+      <div class="pipe-items">
+        <p class="pipe-item">Bot Detection</p>
+        <p class="pipe-item">Low-Quality Flagging</p>
+        <p class="pipe-item">Engagement Validation</p>
+      </div>
+    </div>
+    <div class="arrow-col"><p class="arrow-text">-</p></div>
+    <div class="pipe-section">
+      <p class="pipe-title">Storage Layer</p>
+      <div class="pipe-items">
+        <p class="pipe-item">IndexedDB Persist</p>
+        <p class="pipe-item">Session Cache</p>
+        <p class="pipe-item">History Snapshots</p>
+      </div>
+    </div>
+    <div class="arrow-col"><p class="arrow-text">-</p></div>
+    <div class="pipe-section">
+      <p class="pipe-title">11 Engines</p>
+      <div class="pipe-items">
+        <p class="pipe-item">Hazen Percentile</p>
+        <p class="pipe-item">OLS Regression</p>
+        <p class="pipe-item">Signal Collector</p>
+      </div>
+    </div>
+    <div class="arrow-col"><p class="arrow-text">-</p></div>
+    <div class="pipe-section">
+      <p class="pipe-title">Output</p>
+      <div class="pipe-items">
+        <p class="pipe-item">Dashboard View</p>
+        <p class="pipe-item">Radar Charts</p>
+        <p class="pipe-item">PDF Reports</p>
+      </div>
+    </div>
+  </div>
+  <div class="key-note">
+    <p class="note-text">All engines run deterministically: same input produces same output. No random elements. Every score is traceable to its source formula.</p>
+  </div>
+</div>
+</body>
+</html>

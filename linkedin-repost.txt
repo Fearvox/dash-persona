@@ -1,0 +1,11 @@
+I study hospitality management at USC. No CS background.
+
+Last Friday I took the Excellence Award at this competition — at the Computer History Museum, no less.
+
+I don't write code. I orchestrate AI agents to build software. I call it harness engineering.
+
+Two products shipped this way:
+— DashPersona: creator analytics across Douyin, TikTok, and XHS (dash-persona.vercel.app)
+— HCO: hotel cashback claim management, replacing Excel (hotel-cashback-ops.vercel.app/showcase/)
+
+Thank you @Yafeng Deng for the recognition.

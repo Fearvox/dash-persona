@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #10291F; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #10291F; font-family: Arial, sans-serif;
+  display: flex; flex-direction: column;
+}
+.header {
+  background: #0a0f0d;
+  padding: 10pt 30pt;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.brand { font-size: 10pt; font-weight: bold; color: #F0EE9B; letter-spacing: 0.05em; }
+.nav-label { font-size: 7pt; color: #8a9590; text-transform: uppercase; letter-spacing: 0.1em; }
+.content { flex: 1; padding: 14pt 30pt 30pt; display: flex; flex-direction: column; }
+.section-label { font-size: 7pt; color: #7ed29a; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4pt; font-weight: bold; }
+.headline { font-size: 18pt; font-weight: bold; color: #ddd6c7; margin: 0 0 10pt 0; }
+.stats-grid { display: flex; gap: 12pt; }
+.stat-card {
+  flex: 1;
+  background: #151d19;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6pt;
+  padding: 14pt;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center;
+}
+.big-stat { font-size: 32pt; font-weight: bold; color: #F0EE9B; line-height: 1; }
+.stat-desc { font-size: 8pt; color: #b8c4be; margin-top: 6pt; line-height: 1.3; }
+.stat-note { font-size: 6.5pt; color: #8a9590; margin-top: 4pt; }
+.highlight-card {
+  background: rgba(126,210,154,0.08);
+  border-color: rgba(126,210,154,0.2);
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <span class="brand">DASH</span>
+    <span class="nav-label">Persona</span>
+  </div>
+  <span class="nav-label">Key Numbers</span>
+</div>
+<div class="content">
+  <p class="section-label">By The Numbers</p>
+  <h2 class="headline">Engineering Results</h2>
+  <div class="stats-grid">
+    <div class="stat-card highlight-card">
+      <p class="big-stat">11</p>
+      <p class="stat-desc">Analysis Engines</p>
+      <p class="stat-note">Deterministic algorithms</p>
+    </div>
+    <div class="stat-card">
+      <p class="big-stat">18</p>
+      <p class="stat-desc">Intelligence Signals</p>
+      <p class="stat-note">5 categories tracked</p>
+    </div>
+    <div class="stat-card">
+      <p class="big-stat">7</p>
+      <p class="stat-desc">Data Adapters</p>
+      <p class="stat-note">Multi-source support</p>
+    </div>
+    <div class="stat-card">
+      <p class="big-stat">308+</p>
+      <p class="stat-desc">Unit Tests</p>
+      <p class="stat-note">Test coverage</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

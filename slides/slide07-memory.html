@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #10291F; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #10291F; font-family: Arial, sans-serif;
+  display: flex; flex-direction: column;
+}
+.header {
+  background: #0a0f0d;
+  padding: 12pt 30pt;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.brand { font-size: 11pt; font-weight: bold; color: #F0EE9B; letter-spacing: 0.05em; }
+.nav-label { font-size: 8pt; color: #8a9590; text-transform: uppercase; letter-spacing: 0.1em; }
+.content { flex: 1; padding: 18pt 30pt 30pt; display: flex; flex-direction: column; }
+.section-label { font-size: 8pt; color: #7ed29a; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4pt; font-weight: bold; }
+.headline { font-size: 20pt; font-weight: bold; color: #ddd6c7; margin: 0 0 4pt 0; }
+.subhead { font-size: 10pt; color: #8a9590; margin: 0 0 12pt 0; }
+.three-col { display: flex; gap: 12pt; flex: 1; }
+.mem-card {
+  flex: 1;
+  background: #151d19;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8pt;
+  padding: 12pt;
+}
+.mem-title { font-size: 10pt; font-weight: bold; color: #F0EE9B; margin-bottom: 6pt; }
+.mem-text { font-size: 8pt; color: #b8c4be; line-height: 1.4; }
+.problem-box {
+  margin-top: 10pt;
+  background: rgba(200,126,126,0.08);
+  border: 1px solid rgba(200,126,126,0.2);
+  border-radius: 6pt;
+  padding: 10pt 12pt;
+}
+.problem-text { font-size: 8pt; color: #c87e7e; line-height: 1.4; margin: 0; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <span class="brand">DASH</span>
+    <span class="nav-label">Persona</span>
+  </div>
+  <span class="nav-label">Memory Layer</span>
+</div>
+<div class="content">
+  <p class="section-label">Context Preservation</p>
+  <h2 class="headline">EverMemOS</h2>
+  <p class="subhead">Context never dies between AI sessions.</p>
+  <div class="three-col">
+    <div class="mem-card">
+      <p class="mem-title">Episodic Memory</p>
+      <p class="mem-text">Captures what happened in each session. Original requirements from day one are still accessible. The edge case caught in code review last Tuesday is never lost.</p>
+    </div>
+    <div class="mem-card">
+      <p class="mem-title">Trait Memory</p>
+      <p class="mem-text">Captures what matters: architectural decisions, design constraints, and project conventions. When a new session starts, the agent already knows what we are building.</p>
+    </div>
+    <div class="mem-card">
+      <p class="mem-title">Persistent Recall</p>
+      <p class="mem-text">Both Claude Code and OpenClaw share structured memory across sessions. The 3 AM architectural decision you barely remember? EverMemOS remembers.</p>
+    </div>
+  </div>
+  <div class="problem-box">
+    <p class="problem-text">The Problem It Solves: Context dies between AI sessions. You spec 18 signals on Monday, by Wednesday the agent forgot half. By Friday, it is reimplementing things that already exist.</p>
+  </div>
+</div>
+</body>
+</html>
