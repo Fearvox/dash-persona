@@ -13,11 +13,11 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@chenglou/pretext": "0.0.2",
+    "@chenglou/pretext": "0.0.5",
     "@xyflow/react": "^12.10.1",
     "elkjs": "^0.11.1",
     "html2canvas-pro": "^2.0.2",
-    "next": "16.2.1",
+    "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.0",
