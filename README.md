@@ -319,7 +319,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for a detailed version history.
 
 - Source available — read, fork, and modify freely
 - Non-production use permitted without a license
-- Production use requires a commercial license from [Fearvox](mailto:nolan@openclaw.dev)
+- Production use requires a commercial license from [Fearvox](mailto:business@zonicdesign.art)
 - Converts to **Apache 2.0** on 2030-03-24
 
 See [LICENSE](./LICENSE) for the full text.
