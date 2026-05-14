@@ -24,6 +24,18 @@
 
 ---
 
+## Where this fits in DASH
+
+DashPersona is the origin layer of the DASH stack: a deterministic persona
+intelligence surface that turns creator data into auditable scores, tags, and
+strategy signals. It is the first public proof that DASH can make a messy human
+workflow legible without hiding the decision path behind model confidence.
+
+In the broader DASH map, DashPersona provides the persona and analytics layer.
+Evensong, Multica Ultimate Workbench, Windburn, Research Vault, and DASH Design
+Infra extend the same operating idea into agent workbenches, memory, review
+gates, research evidence, and design constraints.
+
 ## The Problem
 
 Content creators manage multiple platforms but have no unified view of their performance. Each platform's analytics lives in a silo, metrics aren't comparable, and most "analytics tools" are either expensive SaaS products or black-box AI that can't explain its recommendations.
@@ -153,6 +165,35 @@ npm run dev
 Open [localhost:3000](http://localhost:3000) and click **Try Demo** to explore with sample data.
 
 For real data collection, see the [installation guide](https://dash-persona.vercel.app/install).
+
+## Verification / tests
+
+Use these commands when changing the app:
+
+```bash
+npm run lint
+npm run type-check
+npm run test
+npm run build
+```
+
+For browser-facing or dashboard changes, also run the relevant Playwright
+checks with `npm run test:e2e`.
+
+## Status
+
+DashPersona is active and public-facing. The deterministic analysis engine,
+demo flow, import paths, and collector direction are part of the live DASH
+story, but the repository should still be treated as an evolving product and
+research surface rather than a finished SaaS platform.
+
+## Related repos
+
+- [Evensong](https://github.com/Fearvox/Evensong) — agent workbench and retrieval evidence layer.
+- [multica-ultimate-workbench](https://github.com/Fearvox/multica-ultimate-workbench) — multi-agent coordination and review-gate operating memory.
+- [project-windburn](https://github.com/Fearvox/project-windburn) — state hygiene and cognitive-cache direction.
+- [dash-research-vault](https://github.com/Fearvox/dash-research-vault) — durable research memory and benchmark evidence.
+- [dash-design-infra](https://github.com/Fearvox/dash-design-infra) — design constraints, layout tokens, and verification surfaces.
 
 ---
 
